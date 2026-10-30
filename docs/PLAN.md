@@ -1,6 +1,6 @@
 # Plan: personal GitOps platform (`tonypham-prototypes-deploy`)
 
-Status: v4.1. Astra rubric scores: v3.1 = 74/100, v4 = 84/100, v4.1 = 87/100 ("ready for implementation", no remaining P0/P1). Action items A1–A12 (review #4) and B1–B5 (review #5) are applied. Rubric: `docs/reviews/astra-review-4-rubric.md` · Task: TPD-1 · Owner: Tony Pham (`tonydata22au`)
+Status: v5.2, **100/100** on the Astra rubric (`docs/reviews/astra-review-4-rubric.md`). Score history: v3.1 = 74, v4 = 84, v4.1 = 87–88, v5 = 94, v5.1 = 99, v5.2 = 100. The score rates the plan, not deployment: every milestone gate still has to pass at implementation time. Action items A1–A12 (review #4) and B1–B5 (review #5) are applied. Rubric: `docs/reviews/astra-review-4-rubric.md` · Task: TPD-1 · Owner: Tony Pham (`tonydata22au`)
 
 ## 1. Goal
 
@@ -76,7 +76,7 @@ Two separate flows:
 │   ├── SECRETS.md
 │   └── OPERATIONS.md           # upgrades, rotation, recovery, troubleshooting
 ├── platform/
-│   ├── versions.env            # pins consumed by scripts: LIMA, K3S, ARGOCD_CHART, GATEWAY_API
+│   ├── versions.env            # LIMA=v2.2.1 K3S=v1.36.5+k3s1 ARGOCD_CHART=10.11.6 GATEWAY_API=v1.6.1 TAILSCALE=1.104.4 (§4.1)
 │   ├── lima/proto.yaml         # VM definition
 │   ├── k3s/config.yaml
 │   ├── argocd/
@@ -120,7 +120,41 @@ Two separate flows:
 
 Version pins live in exactly two places. `platform/versions.env` holds Lima, K3s, and the *initial* Argo chart version (used by scripts only). The `targetRevision` fields in `platform/apps/*.yaml` hold every in-cluster chart. `GATEWAY_API` is a compatibility **assertion**, not an installer: `scripts/validate` checks that the Gateway API version shipped by the pinned `gateway-crds-helm` chart matches it, and that the Argo chart version in both places agrees.
 
-Upgrades split by layer. In-cluster components are upgraded only by a commit to `main`; bootstrap never re-installs or upgrades them. K3s and Lima are upgraded by bumping `versions.env` and re-running `bootstrap --stage cluster`.
+Upgrades split by layer and by machine:
+
+- **In-cluster components:** upgraded only by a commit to `main`.
+- **Lima:** upgraded on the **Mac** (`brew` pinned version, then `scripts/vm-up` restarts the instance).
+- **K3s:** upgraded **inside the VM** by `bootstrap --stage cluster` after bumping `versions.env`.
+
+Bootstrap never touches Lima. It installs in-cluster components only once (Argo, then the root Application); after that ownership handoff, it never changes them again.
+
+**Where each script runs:**
+
+- `[mac]` `vm-up`, `backup-keys`, `restore-keys`, `validate`, `check-previews`, `e2e`, `proto`.
+- `[vm]` `bootstrap --stage cluster`, invoked from the Mac as `limactl shell proto -- sudo /opt/proto/bootstrap --stage cluster`, with secrets piped through stdin.
+- `[mac→cluster]` `bootstrap --stage keys|platform` runs on the Mac against kube context `proto`.
+### 4.1 Version baseline (selected 2026-10-30, **not yet runtime-verified**)
+
+| Component | Pin | Why this one / source |
+|---|---|---|
+| Lima (Mac) | `v2.2.1` | Latest. `limactl autostart` requires ≥ 2.2 ([autostart docs](https://lima-vm.io/docs/usage/autostart/)) |
+| Guest OS | Lima `template:ubuntu-26.04` (arm64) | Current Ubuntu LTS; template ships in Lima v2.2.1 |
+| K3s / Kubernetes | `v1.36.5+k3s1` / 1.36 | **Not** 1.37: Envoy Gateway 1.9 is tested on 1.33–1.36 ([EG compatibility matrix](https://gateway.envoyproxy.io/news/releases/matrix/)), and Argo CD 3.5 on 1.33–1.36 (`docs/operator-manual/tested-kubernetes-versions.md` at `v3.5.6`) |
+| Argo CD | chart `argo-cd` `10.11.6` = app `v3.5.6` | Latest 3.5 patch; [argo-helm index](https://argoproj.github.io/argo-helm/index.yaml) |
+| Sealed Secrets | chart `2.22.0` = controller `v0.41.2` | Latest; chart values `keyrenewperiod`, `fullnameOverride`, `updateStatus: true` (default) confirmed in chart `values.yaml` at `helm-v2.22.0` |
+| Envoy Gateway | `oci://docker.io/envoyproxy/gateway-helm` + `gateway-crds-helm`, both `v1.9.3` | Latest 1.9 patch. CRD settings per the v1.9.3 [install guide](https://gateway.envoyproxy.io/docs/install/install-helm/): `gateway-crds-helm` defaults both CRD groups to **off** and the Gateway API channel to **experimental**, so all three are set explicitly; `gateway-helm` takes `crds.enabled: false` |
+| Gateway API | `v1.6.1`, standard channel | The version compiled into EG 1.9 (matrix). Upstream `v1.7.0` is newer but untested with EG 1.9, so it is **not** used |
+| Tailscale (guest) | `1.104.4` (apt, held with `apt-mark hold`) | Latest stable |
+| Helm (Mac, for `validate`/`check-previews`) | `v4.2.1` (**exact match**) | Argo CD v3.5.6 builds with Helm 4.2.1 (`hack/tool-versions.sh` at `v3.5.6`). Local rendering uses the same version, so local results equal Argo's. At M2, `scripts/validate` reads `helm version` from the repo-server pod and fails on any mismatch |
+| Local tools | `kubectl` 1.36.x (±1 minor of the server), `kubeseal` 0.41.2 (= controller), `argocd` 3.5.6 (= server), `age`, `gh`, `yq` v4, `jq`, `kubeconform`, `crane` | Pinned via Homebrew; `scripts/validate` checks the versions |
+
+**Decisions this baseline settles:**
+
+- **Namespace restriction:** Argo CD 3.5 supports name-restricted cluster resources. The `previews` AppProject uses `clusterResourceWhitelist: [{group: "", kind: Namespace, name: "app-*"}]` (Argo `docs/user-guide/projects.md` at `v3.5.6`). There is no fallback branch.
+- **SealedSecret health:** the built-in `resource_customizations/bitnami.com/SealedSecret/health.lua` at `v3.5.6` returns Healthy on `Synced=True` **without comparing generations**. That would let the Deployment roll out against a stale Secret, so §7 installs an override (§9).
+
+**Gates:** each row is checked at the milestone that first uses it (M1: Lima, Ubuntu, K3s, Tailscale; M2: Argo, Envoy, Sealed Secrets, Helm parity). A failure **stops** that milestone. The fix is to move to the next patch release of the same minor version, or, if no such patch fixes it, to the previous minor release that the same matrix supports. The table is updated in the same commit.
+
 
 On a preview branch, the only added files are:
 
@@ -159,11 +193,11 @@ apps/<name>/
 ## 6. Phase 1: VM, K3s, network boundary
 
 1. `platform/lima/proto.yaml`:
-   - Ubuntu 24.04 arm64, `vmType: vz`, 4 vCPU / 8 GiB / 60 GiB. These are starting values, to tune by observation.
+   - Base `template:ubuntu-26.04` (arm64), `vmType: vz`, 4 vCPU / 8 GiB / 60 GiB. These are starting values, to tune by observation.
    - **No host mounts** (`mounts: []`).
    - **Default user-mode NAT networking only.** No `vzNAT`, no socket_vmnet, no bridged interface, so the VM is not on your LAN.
    - **Explicit `portForwards`:** forward guest `6443` → host `127.0.0.1:6443` only, then a final rule `ignore: true` for every other guest port. Lima's default would otherwise auto-forward any listening port to the Mac.
-2. `scripts/vm-up` creates and starts the instance `proto` with the pinned Lima version, then registers autostart (`limactl start-at-login proto`, per [Lima autostart](https://lima-vm.io/docs/usage/autostart/)).
+2. `scripts/vm-up` creates and starts the instance `proto` with the pinned Lima version, then registers autostart with `limactl autostart enable proto` (condition `login`; `start-at-login` is deprecated in Lima 2.2, per [Lima autostart](https://lima-vm.io/docs/usage/autostart/)). `--condition=boot`, which starts the VM without a login, is a documented later option. It is not used in v1, because FileVault on Apple Silicon needs a login after a reboot anyway.
 3. `scripts/bootstrap --stage cluster` runs inside the VM and is idempotent:
    - Writes `/etc/rancher/k3s/registries.yaml` (root-owned, mode 0600) with the GHCR token read from stdin. This happens **before** K3s is installed, so no restart is needed. On later token rotation, the script rewrites the file and restarts `k3s`.
    - Installs the pinned K3s with `config.yaml` containing:
@@ -188,7 +222,7 @@ apps/<name>/
 - A test pod pulls a private GHCR image by digest.
 - After a Mac reboot and login, the VM, K3s, and `tailscaled` return. Platform-level reboot checks begin at M2, once the platform exists.
 - From another LAN device, the Mac exposes nothing new.
-- From a tailnet device, only `https://proto.<tailnet>.ts.net` answers; `:80`, `:6443`, and NodePorts on the tailnet IP do not.
+- From a tailnet device, `:80`, `:6443`, `:22`, and NodePorts on the VM's tailnet IP do not answer. Successful HTTPS through Serve to an app is checked at M2, once the gateway exists.
 
 ## 7. Phase 2: platform via Argo CD (app-of-apps)
 
@@ -207,15 +241,17 @@ apps/<name>/
 
 `scripts/bootstrap --stage platform` (fresh):
 
-1. `helm install argocd argo/argo-cd --version $ARGOCD_CHART -n argocd -f platform/argocd/bootstrap-values.yaml`. This is a non-HA install with Dex disabled and the ApplicationSet controller enabled. The values include the `resource.customizations.health.argoproj.io_Application` health check, so the app-of-apps sync waves really wait for each child Application to be Healthy (Argo removed this check by default). Without it, wave order would only order *creation*.
+1. `helm install argocd argo/argo-cd --version $ARGOCD_CHART -n argocd -f platform/argocd/bootstrap-values.yaml`. This is a non-HA install with Dex disabled and the ApplicationSet controller enabled. The values include two health overrides:
+   - `resource.customizations.health.argoproj.io_Application`, so the app-of-apps sync waves really wait for each child Application to be Healthy (Argo removed this check by default). Without it, wave order would only order *creation*.
+   - `resource.customizations.health.bitnami.com_SealedSecret`, which reports Healthy only when `status.observedGeneration == metadata.generation` **and** condition `Synced=True`, Degraded on `Synced=False`, and Progressing otherwise. This fixes the gap in the built-in check (§4.1).
 2. `kubectl apply -f platform/argocd/root.yaml`. Argo then syncs `platform/apps/*` in waves:
    - **Wave 0:**
      - Argo CD adopts itself, with the same release name and values, so no diff.
      - Sealed Secrets (`fullnameOverride: sealed-secrets-controller`, `keyrenewperiod: "0"`).
      - CRDs from Envoy's `gateway-crds-helm` chart (version identical to `gateway-helm`). This is the **single owner** of both the Gateway API and Envoy CRDs. Values: `crds.gatewayAPI.enabled: true`, `crds.gatewayAPI.channel: standard`, `crds.envoyGateway.enabled: true` (all three default to off). The Application uses `syncOptions: [ServerSideApply=true]`, which avoids the last-applied annotation size limit on large CRDs. [Install CRDs separately](https://gateway.envoyproxy.io/docs/install/install-helm/#installing-crds-separately)
-   - **Wave 1:** Envoy Gateway (`gateway-helm`). CRD rendering is turned off using the pinned chart's documented setting (currently `crds.enabled: false`), plus `helm.skipCrds: true` as a belt-and-braces measure. It uses the default deployment mode, so the Envoy proxy pods run in `envoy-gateway-system`, not in `gateway`.
+   - **Wave 1:** Envoy Gateway (`gateway-helm`). CRD rendering is turned off with `crds.enabled: false`, the setting documented for v1.9.3. `helm.skipCrds: true` is added as a second guard. It uses the default deployment mode, so the Envoy proxy pods run in `envoy-gateway-system`, not in `gateway`.
    - **Wave 2:** `gateway` namespace, `GatewayClass eg`, `Gateway proto` (HTTP listener :80, `allowedRoutes` selecting namespaces with label `proto.dev/preview=true`). The Envoy Service is type LoadBalancer, which ServiceLB binds to VM port 80.
-   - **Wave 3:** `AppProject previews` + `ApplicationSet previews`.
+   - **Wave 3:** `AppProject previews` + `ApplicationSet previews`. `platform/apps/previews.yaml` is **added in M4**. M2's root syncs waves 0–2 only, and its completion does not depend on wave 3.
 3. **Fresh install only:** wait for the Sealed Secrets controller to generate its key, then immediately run `scripts/backup-keys`. The script exports the key, age-encrypts it, writes to both targets, decrypts one copy, and compares fingerprints. Bootstrap **fails** if verification fails, and the CLI refuses to seal until a verified backup exists (`~/.config/proto/key-backup.ok` holds the key fingerprint).
 
 Unmatched paths get Envoy's default 404. Argo CD UI/CLI access is through `kubectl port-forward` only.
@@ -330,15 +366,22 @@ resources:                # caps (chart `fail`): requests ≤ 250m / 256Mi / 128
 **Secret rotation ordering:**
 
 1. The SealedSecret is sync-wave −1, and the Deployment is wave 0.
-2. Argo's built-in SealedSecret health check reports Healthy only once the controller has unsealed the current generation. The plan must verify this against the pinned Argo version and add a `resource.customizations.health` override if it does not.
+2. The SealedSecret health **override** from §7 reports Healthy only once the controller has unsealed the *current* generation (`status.observedGeneration == metadata.generation`). The built-in check in Argo v3.5.6 does not compare generations, which is why the override exists.
 3. Argo will therefore not apply the Deployment until the Secret is updated. The Deployment carries a `checksum/secrets` annotation of the ciphertext, which triggers the rollout.
 4. The test (`e2e`, 5-minute timeout per step):
-   1. Scale the controller to 0 and push a rotated secret.
-   2. Assert that for 2 minutes the Deployment's `metadata.generation` and the pod template hash **do not change**, and the SealedSecret is not Healthy.
-   3. Scale the controller back up.
-   4. Assert that the Secret's `resourceVersion` changes **before** the new ReplicaSet appears, and that the new pod sees the new value.
+   1. **Suspend the whole reconciliation chain, parent first.**
+      1. Record the original sync policies of `root` and `sealed-secrets`.
+      2. `argocd app set root --sync-policy none`, then wait until `root` has no running operation. Otherwise `root` would restore the child's Git-defined policy.
+      3. `argocd app set sealed-secrets --sync-policy none`.
+      4. Scale the controller to 0 and push a rotated secret.
 
-   The test fails if an early rollout happened, even if it later recovered. The health semantics are checked against the pinned Argo release's [`SealedSecret/health.lua`](https://github.com/argoproj/argo-cd/blob/master/resource_customizations/bitnami.com/SealedSecret/health.lua).
+      The `app-<name>` preview Application keeps reconciling, so it applies the new SealedSecret.
+   2. Wait until the in-cluster SealedSecret's `metadata.generation` has incremented (Argo applied it). Assert the controller still has 0 replicas. **From that moment**, assert that for 2 minutes the Deployment's `metadata.generation` and pod template hash **do not change**, and the SealedSecret is Progressing.
+   3. Throughout step 2, assert every 15 s that **both** Applications still have no automated sync and the controller has 0 replicas. This spans several reconcile intervals.
+   4. Scale the controller back up. Cleanup (in a `trap`, so it also runs after a failed assertion) restores child-first: controller replicas, then the `sealed-secrets` policy, then the `root` policy, each to its recorded original.
+   5. Assert that the Secret's `resourceVersion` changes **before** the new ReplicaSet appears, and that the new pod sees the new value.
+
+   The test fails if an early rollout happened, even if it later recovered. This is the test that proves the §7 health override works.
 
 **App count:** about 10 concurrent apps is a *soft target*, to be measured at M4 against the 4 vCPU / 8 GiB VM. It is not a guarantee. `proto deploy` warns past the measured figure.
 
@@ -347,7 +390,8 @@ resources:                # caps (chart `fail`): requests ≤ 250m / 256Mi / 128
 - `helm lint`
 - `helm template` of every example
 - `kubeconform` against the pinned CRD schemas
-- negative fixtures: unknown keys, missing digest, a PVC attempt, privileged pods, non-canonical units, oversized resources, `replicas: 2`, and override attempts on `appName` are all rejected
+- negative fixtures, **rejected at render**: unknown keys (including `namespace`, `path`, `gateway`, `hostname`), missing digest, a PVC attempt, privileged pods, non-canonical units, oversized resources, `replicas: 2`
+- precedence fixtures, **harmlessly overridden**: an app `values.yaml` that sets `appName`, `prNumber`, or `publicHost` renders successfully, but the output carries the trusted parameter values (namespace `app-<branch name>`, the trusted host). This is correct per [Argo Helm value precedence](https://argo-cd.readthedocs.io/en/stable/user-guide/helm/#helm-value-precedence). `validate.yml` additionally lints preview branches and fails if the app file sets these keys at all, giving early feedback
 - all fixtures render with the **exact** ApplicationSet parameter set (`appName`, `prNumber`, `publicHost`, passed as `--set-string` to mirror `forceString: true`) and both value files, mirroring Argo. A fixture for PR `123` must pass the closed schema
 
 and `scripts/e2e` shows:
@@ -411,7 +455,7 @@ spec:
 **`AppProject previews`:**
 
 - Source: this repo only. Destination: in-cluster, namespaces `app-*`.
-- `clusterResourceWhitelist`: `{group: "", kind: Namespace}`.
+- `clusterResourceWhitelist`: `{group: "", kind: Namespace, name: "app-*"}`.
 - `namespaceResourceWhitelist`:
   - `apps/Deployment`
   - core `Service`, `ResourceQuota`, `LimitRange`
@@ -419,7 +463,7 @@ spec:
   - `bitnami.com/SealedSecret`
   - `networking.k8s.io/NetworkPolicy`
 - Plain `Secret`s are not allowed; only the controller creates those.
-- If the pinned Argo version supports name-restricted cluster resources, restrict `Namespace` to `app-*`. If not, the chart-computed namespace plus the schema are the guard, and `e2e` tests an override attempt.
+- `Namespace` is restricted by name to `app-*` (Argo 3.5, §4.1); `e2e` tests that an attempt to create another namespace is denied.
 
 **Lifecycle contract** (each row is an `e2e` test):
 
@@ -510,13 +554,45 @@ Config lives in `~/.config/proto/config.yaml`: owner/repo, registry prefix, tail
   2. `git fetch` and reset the worktree to the **remote** branch tip before editing.
   3. Edit with `yq`, changing only the targeted keys. Existing settings and other secrets' ciphertext are preserved.
   4. Commit and push **without force**. On a non-fast-forward rejection, go back to step 2 once, then fail with a clear message.
-  5. Reuse an existing branch and PR (`gh pr list --head preview/<name> --state all`; reopen if closed). A retried or interrupted deploy never opens a duplicate PR.
+  5. **PR selection**, in order:
+     1. Reuse the **open** PR whose head is `preview/<name>`.
+     2. Otherwise, reopen the most recent **closed, unmerged** one.
+     3. Otherwise, create one new draft PR.
+
+     A **merged** PR is never reopened. Deploying after a merge creates a new draft PR from the retained branch.
+
+     **Three distinct cases:**
+
+     - **New app** (no prior preview PR or branch for `<name>`): `deploy` initialises `values.yaml` from the supplied arguments (`--image`/dist build, `--port`, `--worker`) plus documented chart defaults, and creates `secrets.sealed.yaml` as `encryptedData: {}`.
+     - **Existing app, branch present:** edit it in place (steps 2–4).
+     - **Existing app** (a prior preview PR exists) **whose branch was deleted:** this is recovery, and the rule against synthesising config applies here only. The only allowed source is current `main`:
+     - When `apps/<name>/values.yaml` **and** `secrets.sealed.yaml` exist there and pass `scripts/validate`, the CLI recreates `preview/<name>` from them. Ciphertext and settings are kept byte-for-byte, then the deploy edits are applied.
+     - When either file is missing, it fails with `cannot recover <name>: restore valid values.yaml and secrets.sealed.yaml under apps/<name>/ on main, or deploy under a new name`. Re-running the same command keeps failing until that prerequisite changes, so it cannot loop.
+     - When either file is invalid, it fails with the validation errors and the instruction to fix them on `main` first.
+
+     It never synthesises config and never reads a local cache. Before creating, and after any API error or timeout, the CLI re-queries step 1. An interrupted `gh pr create` whose response was lost therefore finds the PR it already created, and never duplicates it.
 - **Success levels.** `proto deploy` prints *submitted* (PR updated, commit SHA). With `--wait` (default timeout 5 min), it additionally waits until:
   - Argo's `status.sync.revisions` includes **that** commit SHA,
   - the Deployment's pods run **that** digest and are Ready, and
   - for web apps, the URL returns 2xx/3xx.
 
   A stale Healthy status from the previous commit never satisfies `--wait`. Workers skip the HTTPS check.
+- **Pause is preserved.** `deploy` never changes `replicas`. For a paused app (`replicas: 0`), `--wait` checks:
+  - Argo synced the intended commit;
+  - the Deployment **template** carries the new digest;
+  - 0 pods are running.
+
+  It then reports `updated (paused)`, without probing HTTPS. `proto resume` starts it.
+- **Expected outcomes:**
+
+  | Case | Result |
+  |---|---|
+  | Deploy to a paused app | `updated (paused)`; template digest changed; 0 pods |
+  | Deploy after the PR was merged | New draft PR; old merged PR untouched |
+  | Interrupted after PR creation, before the CLI got the response | Retry finds and reuses that PR; there is exactly 1 open PR |
+  | Branch deleted after merge; valid files on `main` | Branch recreated from `main`; ciphertext unchanged; new draft PR |
+  | Branch deleted; files missing / invalid on `main` | Fails with the specific message above; no branch or PR created |
+  | Brand-new app name | Branch + draft PR created; `values.yaml` from arguments + chart defaults; `encryptedData: {}` |
 - It authenticates through `gh`.
 - Names must match `^[a-z][-a-z0-9]{0,22}[a-z0-9]$`, which keeps `app-<name>` and derived resource names well under limits.
 - Reserved names: `argocd`, `gateway`, `kube-*`, `default`.
@@ -549,7 +625,11 @@ Config lives in `~/.config/proto/config.yaml`: owner/repo, registry prefix, tail
 `docs/OPERATIONS.md` covers:
 
 - **Health:** `proto doctor`.
-- **Upgrades:** edit `platform/apps/*.yaml` versions and commit to `main`. For K3s and Lima, bump `versions.env` and re-run `bootstrap --stage cluster` (in-place K3s upgrade).
+- **Upgrades** (same split as §4):
+  - in-cluster: edit `platform/apps/*.yaml` and commit to `main`;
+  - Lima `[mac]`: bump `versions.env`, install that pinned Lima version, then `scripts/vm-up` (stop/start);
+  - K3s `[vm]`: bump `versions.env`, then `limactl shell proto -- sudo /opt/proto/bootstrap --stage cluster` (in-place upgrade);
+  - §4.1 is updated in the same commit, and its gates are re-run.
 - **App rollback:** revert the digest commit on the preview branch.
 - **Platform rollback:** `git revert` the bad commit on `main` and let Argo reconcile.
   - **CRD, K3s, and Envoy downgrades** are not assumed safe. Check the component's release notes before reverting a version bump, and prefer rolling forward.
@@ -571,11 +651,15 @@ Config lives in `~/.config/proto/config.yaml`: owner/repo, registry prefix, tail
 
 **Real recovery** (the original VM is lost):
 
-1. Decrypt the bundle into a wiped-on-exit temp directory and check the key fingerprints against the bundle's own `manifest.json`. Nothing from the old Mac is needed.
+1. `[mac]` Decrypt the bundle into a wiped-on-exit temp directory and check the key fingerprints against the bundle's own `manifest.json`. Nothing from the old Mac is needed.
+   - **Which config revision to restore:** recovery always converges on `main`. First run `scripts/validate` on current `main`, then compare its `versions.env` with the manifest's.
+     - If validation passes, use `main` as is. If `main` is newer, that is fine: `main` is the source of truth.
+     - If it fails, first `git revert` `main` back to the manifest's `mainCommit` (known-good) and push, then continue.
+   - **Credentials:** if the manifest shows expired tokens, issue new PATs first. They are entered at step 4, and `backup-keys` runs again at the end.
 2. Remove the stale `proto` node in the Tailscale admin console, so the hostname is reclaimed rather than becoming `proto-1`.
-3. Run `vm-up`, then `bootstrap --stage cluster`, using a fresh auth key.
-4. Run `bootstrap --stage keys --restore` (tokens + Sealed Secrets key) **before** any controller exists.
-5. Run `bootstrap --stage platform`. Sealed Secrets starts with the restored key, and the open previews redeploy.
+3. `[mac]` `scripts/vm-up`, then `[vm]` `bootstrap --stage cluster` (via `limactl shell`), using a fresh Tailscale auth key and the GHCR token from the bundle or a new one.
+4. `[mac→cluster]` `bootstrap --stage keys --restore` (tokens + Sealed Secrets key) **before** any controller exists.
+5. `[mac→cluster]` `bootstrap --stage platform`. Sealed Secrets starts with the restored key, and the open previews redeploy from `main`'s chart plus their branch values.
 6. Verify `doctor`, `tailscale serve status`, the hostname, and that `hello-api` reads its secret.
 
 **Drill** (run once at M6; never touches the live `proto`):
@@ -584,16 +668,17 @@ Config lives in `~/.config/proto/config.yaml`: owner/repo, registry prefix, tail
 - The Tailscale hostname is `proto-drill`, and the gateway hostname config is parameterised accordingly.
 - `bootstrap --drill` applies `root-drill.yaml` instead of `root.yaml` **before the first sync**. Its source is the declarative kustomize overlay `platform/overlays/drill`, which sets the ApplicationSet label `drill` and the `publicHost` parameter `proto-drill.<tailnet>.ts.net`, so self-heal keeps the drill isolated instead of reverting it. The drill checklist asserts that after several reconcile cycles no `deploy`-labelled app exists. Only a dedicated test PR (`preview/drillhello`, labelled `drill`, using a test secret) is deployed. **What the drill duplicates:** the sealing key and bootstrap tokens (that is the point of the drill). **What it does not:** production app workloads and their decrypted secrets.
 - Run it with an **empty** `~/.config/proto` (via `PROTO_CONFIG_DIR=$(mktemp -d)`), proving recovery needs only the bundle, the age identity, the repo, and the listed account access.
-- Run steps 1 and 3–6 above against it, and record the measured duration. Then delete the drill VM and its tailnet node, and confirm that the temp directories are gone.
+- **The drill never writes to Git and never touches the live cluster.** It uses step 1's validation only as a *check*. If `main` fails `scripts/validate`, the drill **stops** and reports the failure; repairing `main` belongs only to a real recovery. The drill's kube context is `proto-drill`, and every script refuses to run if the context is `proto` while `--drill` is set.
+- Run steps 1 (check only) and 3–6 above against it, and record the measured duration. Then delete the drill VM and its tailnet node, and confirm that the temp directories are gone.
 
 ## 15. Milestones
 
 | # | Deliverable | Proves |
 |---|---|---|
 | M1 | Repo skeleton, `versions.env`, Lima VM + K3s, tailnet policy + tests, private GHCR pull, VM-level reboot, network boundary tests | Host is viable and closed |
-| M2 | Argo bootstrap state machine + self-managed Argo, plus Git-managed CRD/Envoy/Gateway Applications. Tailscale Serve. A disposable hand-applied smoke-test app (the only manual resource; deleted at the end) with the full path-contract tests. Platform-level reboot test | Traffic path, GitOps-owned from day one |
-| M3 | Sealed Secrets + verified key bundle/manifest, `charts/app` (Restricted PSA, quotas, schema) + `scripts/validate` | Secrets + chart safety |
-| M4 | Preview ApplicationSet + `scripts/e2e` lifecycle and negative tests (static + API with secret) | Core workflow |
+| M2 | Argo bootstrap state machine + self-managed Argo (incl. both health overrides), Git-managed CRD/Envoy/Gateway **and Sealed Secrets** Applications, first verified key bundle + manifest. Tailscale Serve. A disposable hand-applied smoke-test app (the only manual resource; deleted at the end) with the full path-contract tests. Platform-level reboot test. Version gates for Argo/Envoy/Sealed Secrets/Helm parity | Traffic path + platform, GitOps-owned from day one; bootstrap completes |
+| M3 | `charts/app` (Restricted PSA, quotas, schema, SealedSecret template) + `scripts/validate`, with a hand-created Application rendering `hello-api` with a sealed secret | Chart safety + secret consumption |
+| M4 | `platform/apps/previews.yaml` (AppProject + ApplicationSet), M3's hand-created Application deleted, `scripts/e2e` lifecycle and negative tests (static + API with secret) | Core workflow |
 | M5 | `proto` shell CLI incl. `doctor` | Convenience |
 | M6 | CI workflows, OPERATIONS.md, isolated recovery drill in `proto-drill` | Durability |
 
@@ -608,7 +693,7 @@ Config lives in `~/.config/proto/config.yaml`: owner/repo, registry prefix, tail
 - [ ] A new digest rolls out. A broken image is reported clearly by `proto status`.
 - [ ] Close deletes the app and namespace. Reopen/redeploy restores it, including the secret. `--purge` is documented as irreversible.
 - [ ] Negative tests:
-  - [ ] Override attempts on namespace/path/gateway are rejected.
+  - [ ] Structural override keys (`namespace`, `path`, `gateway`, `hostname`) fail rendering. App-file copies of trusted parameters are ignored, and rendered identities stay unchanged.
   - [ ] Disallowed kinds and PVCs are rejected.
   - [ ] PRs with a mismatched branch or target are ignored.
   - [ ] A missing `values.yaml` fails closed for a new app and keeps the last good workload for an existing app.
