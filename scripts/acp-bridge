@@ -10,7 +10,7 @@ const path = require("node:path");
 const os = require("node:os");
 const readline = require("node:readline");
 
-const REPO = "tonydata22au/tonypham-prototypes-deploy";
+const REPO = (fs.readFileSync(path.join(__dirname, "..", "deploy.config"), "utf8").match(/^REPO=(\S+)/m) || [])[1] || "";
 // Pinned like wrangler: bump only after testing a real chat.
 const AGENTS = {
   claude: "npx -y @agentclientprotocol/claude-agent-acp@0.107.3",
@@ -40,7 +40,8 @@ let wt = process.env.ACP_WORKDIR;
 if (!wt) {
   let remote = "";
   try { remote = git(here, "remote", "get-url", "origin"); } catch { /* no origin */ }
-  if (!remote.includes(REPO)) die(`You are in the wrong folder. Go into the folder you got from "gh repo clone ${REPO}" (type: cd tonypham-prototypes-deploy), then run this again.`);
+  if (!REPO) die("deploy.config has no REPO=owner/name line. Add it, then run this again.");
+  if (!remote.includes(REPO)) die(`You are in the wrong folder. Go into the folder you got from "gh repo clone ${REPO}" (type: cd ${REPO.split("/")[1]}), then run this again.`);
   if (!process.env.ACP_WORKDIR) console.log(`\n  Getting your copy of "${name}" ready. This takes about 10 seconds...`);
   const branch = `demo/${name}`;
   try { git(here, "fetch", "-q", "origin", branch); } catch { die(`The demo "${name}" was not found. Check the spelling of its name, and that you are signed in to GitHub (type: gh auth status).`); }

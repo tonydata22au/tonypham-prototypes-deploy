@@ -1,10 +1,10 @@
-# Agent guide: tonypham-prototypes-deploy
+# Agent guide
 
-This repo hosts Tony's demos. Each demo is a branch `demo/<name>` with a PR that stays open. GitHub Actions deploys it to Cloudflare Pages (project `tonypham-demos`) and comments a public link. See [README.md](README.md) and [docs/plan/PLAN.md](docs/plan/PLAN.md).
+This repo is a demo site. Each demo is a branch `demo/<name>` with a PR that stays open. GitHub Actions deploys it to Cloudflare Pages and comments a public link. The repo name and the Cloudflare Pages project name are in `deploy.config`. See [README.md](README.md).
 
-## When the user says "deploy to tonypham proto"
+## When the user asks to deploy a demo
 
-Follow [agents/skills/deploy-to-tonypham-proto/SKILL.md](agents/skills/deploy-to-tonypham-proto/SKILL.md). In short: build the user's project to a static folder with `index.html`, then run `scripts/publish <name> <absolute-built-folder>` from a fresh clone of this repo, and report the `LIVE:` link. That request is approval to push a demo branch and open or update its draft PR, nothing more.
+Follow [agents/skills/deploy-to-tonypham-proto/SKILL.md](agents/skills/deploy-to-tonypham-proto/SKILL.md). In short: build the user's project to a static folder with `index.html`, run `scripts/publish <name> <absolute-built-folder>` from a fresh clone of the repo in `deploy.config`, and report the `LIVE:` link. That request is approval to push a demo branch and open or update its draft PR, nothing more.
 
 ## Rules
 

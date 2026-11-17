@@ -44,7 +44,8 @@ if [[ "$acp" == true ]]; then
   # The AI-edit panel (acp/panel.js) goes into index.html only.
   mkdir -p "$stage/public/_acp"
   cp "$here/acp/panel.js" "$stage/public/_acp/panel.js"
-  tag="<script src=\"/_acp/panel.js\" data-demo=\"$name\" defer></script>"
+  repo="$(sed -n 's/^REPO=//p' "$here/deploy.config")"
+  tag="<script src=\"/_acp/panel.js\" data-demo=\"$name\" data-repo=\"$repo\" defer></script>"
   index="$stage/public/index.html"
   if [[ -f "$index" ]] && grep -qi '</body>' "$index"; then
     TAG="$tag" perl -0pi -e 's#</body>#$ENV{TAG}\n</body>#i' "$index"
