@@ -57,11 +57,13 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           # Run from .stage so wrangler also picks up .stage/functions.
+          # --force keeps the deploy on classic Pages (pages.dev); wrangler 4.163+ may otherwise hand it to Workers.
           npx --yes wrangler@4.163.0 pages deploy public \
             --project-name tonypham-demos \
             --branch "demo-$NAME" \
             --commit-hash "$HEAD_SHA" \
-            --commit-dirty=true 2>&1 | tee deploy.log
+            --commit-dirty=true \
+            --force 2>&1 | tee deploy.log
           # Prefer the stable branch alias; fall back to the per-deploy URL.
           url="$(grep -i 'alias' deploy.log | grep -oE 'https://[a-z0-9.-]+\.pages\.dev' | tail -1 || true)"
           [[ -n "$url" ]] || url="$(grep -oE 'https://[a-z0-9.-]+\.pages\.dev' deploy.log | tail -1 || true)"

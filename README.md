@@ -9,7 +9,7 @@ Status: built, checked offline (`scripts/selftest`, `shellcheck`, `actionlint`, 
 You only do this once.
 
 1. **Create a Cloudflare account** at <https://dash.cloudflare.com/sign-up> (free plan).
-2. **Create the Pages project.** Run `npx wrangler@4.163.0 login`, then `npx wrangler@4.163.0 pages project create tonypham-demos --production-branch main`. If Cloudflare no longer offers Pages projects, stop: the fallback gives `workers.dev` links, not `pages.dev`.
+2. **Create the Pages project.** Run `npx wrangler@4.163.0 login`, then `npx wrangler@4.163.0 pages project create tonypham-demos --production-branch main --force`. The `--force` flag is needed: without it, Wrangler 4.163 hands the command to Cloudflare Workers, which gives `workers.dev` links, not `pages.dev`.
 3. **Create an API token.** In the dashboard, open *My Profile → API Tokens → Create Token → Custom token*. Give it one permission: *Account → Cloudflare Pages → Edit*, limited to your account. Copy the token.
 4. **Find your account ID.** It is on the right side of *Workers & Pages → Overview*.
 5. **Add two GitHub secrets.** In this repo on GitHub, open *Settings → Secrets and variables → Actions → New repository secret*. Add `CLOUDFLARE_API_TOKEN` (the token) and `CLOUDFLARE_ACCOUNT_ID` (the ID). Or, from a terminal: `gh secret set CLOUDFLARE_API_TOKEN` and `gh secret set CLOUDFLARE_ACCOUNT_ID`; each one asks for the value.

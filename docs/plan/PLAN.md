@@ -97,7 +97,7 @@ Closing a PR does not remove a Pages deployment by itself. On `pull_request: clo
 
 ## 9. Risks and open points
 
-- **Pages vs Workers.** Cloudflare now steers new projects toward Workers static assets. pages.dev is what you asked for, so this plan uses Pages. Check at M1 that creating a Pages project is still offered. If not, the fallback is Workers, which gives `*.workers.dev`, not `pages.dev`.
+- **Pages vs Workers.** Cloudflare now steers new projects toward Workers static assets. pages.dev is what you asked for, so this plan uses Pages. Checked at M1 (2026-11-17): Wrangler 4.163 hands `pages project create` and `pages deploy` for new projects to Workers unless `--force` is passed. The project was created with `--force`, and `preview.yml` passes `--force` too. If Cloudflare removes classic Pages, the fallback is Workers, which gives `*.workers.dev`, not `pages.dev`.
 - **Public means public.** Anyone with a link can open and share it. Pages URLs are not login-protected.
 - **Leftover deployments.** If cleanup fails, old deployments stay live. `cleanup.yml` should be re-runnable by hand.
 - **Branch alias truncation.** Long demo names are cut by Cloudflare, so keep names short (the regex above caps them at 24 characters).
