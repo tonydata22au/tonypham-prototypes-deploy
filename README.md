@@ -1,44 +1,89 @@
-# tonypham-prototypes-deploy
+# Demo site: a free public link for every demo
 
-A place to keep the demos I make. Each demo lives on its own `demo/<name>` branch with an open pull request (PR). GitHub Actions deploys it to Cloudflare Pages and comments a public `https://….pages.dev` link on the PR. Closing the PR takes the demo down.
+This repo turns a web project into a public link, like `https://demo-my-app.my-demos.pages.dev`, in about a minute. You give it a folder of website files. It puts them on Cloudflare Pages (free web hosting) and posts the link for you. You can also ask an AI agent to do every step for you.
 
-Status: built and live-tested on 2026-11-17 (deploy, PR comment, update on push, Pages Function, path guard, close and reopen). See [the plan](docs/plan/PLAN.md).
+It is for people who build small web demos and want to share them. You need a GitHub account and a little comfort with a terminal.
 
-## One-time setup (Cloudflare and GitHub)
+## Which way do I use it?
 
-You only do this once.
+There are two ways. Pick one.
 
-1. **Create a Cloudflare account** at <https://dash.cloudflare.com/sign-up> (free plan).
-2. **Create the Pages project.** Run `npx wrangler@4.163.0 login`, then `npx wrangler@4.163.0 pages project create tonypham-demos --production-branch main --force`. The `--force` flag is needed: without it, Wrangler 4.163 hands the command to Cloudflare Workers, which gives `workers.dev` links, not `pages.dev`.
-3. **Create an API token.** In the dashboard, open *My Profile → API Tokens → Create Token → Custom token*. Give it one permission: *Account → Cloudflare Pages → Edit*, limited to your account. Copy the token.
-4. **Find your account ID.** It is on the right side of *Workers & Pages → Overview*.
-5. **Add two GitHub secrets.** In this repo on GitHub, open *Settings → Secrets and variables → Actions → New repository secret*. Add `CLOUDFLARE_API_TOKEN` (the token) and `CLOUDFLARE_ACCOUNT_ID` (the ID). Or, from a terminal: `gh secret set CLOUDFLARE_API_TOKEN` and `gh secret set CLOUDFLARE_ACCOUNT_ID`; each one asks for the value.
+| | **Way A: your own copy** | **Way B: join someone's site** |
+|---|---|---|
+| Who it suits | Anyone | Friends or teammates of the site owner |
+| Whose Cloudflare | Your own free account | The owner's |
+| Setup time | About 15 minutes, once | About 2 minutes |
+| What you need | GitHub and Cloudflare accounts | The owner adds you to their repo |
 
-Never paste the token into chat, an issue or a file in this repo.
+Most people want **Way A**.
 
-## Make a demo, from zero to a live link
+## How does it work?
 
-You need `git`, `gh` (signed in with `gh auth login`), `jq`, and Node.js 22 or newer.
+Each demo gets its own branch and pull request in this repo. A **branch** is a separate copy of the files. A **pull request** (PR) is a page on GitHub that shows that branch. Here is what happens:
 
-1. Start on a clean `main`: `git switch main && git pull`.
-2. Preview what will happen: `scripts/new-demo my-demo --dry-run`. Nothing changes.
-3. Create it: `scripts/new-demo my-demo`. This makes `demos/my-demo/public/index.html`, the branch `demo/my-demo`, pushes it and opens a draft PR.
-4. Wait about a minute. The PR gets a comment with the link, such as `https://demo-my-demo.tonypham-demos.pages.dev`.
-5. Edit files in `demos/my-demo/`, commit and push. The same link updates.
-6. To take the demo down, close the PR. Reopen it to bring the demo back.
+1. Your demo's files go into `demos/<name>/` on a branch called `demo/<name>`.
+2. A PR opens for that branch. You leave it open and never merge it.
+3. GitHub Actions (GitHub's free robot that runs jobs) uploads the files to Cloudflare Pages.
+4. The robot posts the public link as a comment on the PR.
+5. When you push new files, the same link updates. When you close the PR, the demo goes offline.
 
-List your live demos with `gh pr list --search "head:demo/"`.
+## Way A: how do I set up my own copy?
 
-## Let an AI agent deploy it for you
+You do this once. It takes about 15 minutes.
 
-From any project, tell Claude Code or Codex: **"Deploy to tonypham proto"**. The agent builds the project, runs `scripts/publish` from a fresh clone of this repo, and gives you the live link. Say "update my demo" to redeploy, or "take down my demo" to close its PR.
+1. **Copy the repo.** On this repo's GitHub page, click **Use this template → Create a new repository**. Name it anything, for example `my-demos`. If there is no template button, click **Fork** instead.
+2. **Get the tools.** Install [Git](https://git-scm.com), the [GitHub CLI](https://cli.github.com) (`gh`), `jq` and [Node.js](https://nodejs.org) version 22 or newer. Then sign in to GitHub: `gh auth login`.
+3. **Download your copy.** Run `gh repo clone <you>/my-demos` and then `cd my-demos`.
+4. **Make a free Cloudflare account** at <https://dash.cloudflare.com/sign-up>.
+5. **Create a Pages project.** A project is one website on Cloudflare. Pick a name made of lowercase letters, digits and dashes, for example `my-demos`. Run:
 
-### Install the skill (once per computer)
+   ```sh
+   npx wrangler@4.163.0 login
+   npx wrangler@4.163.0 pages project create my-demos --production-branch main --force
+   ```
 
-The "Deploy to tonypham proto" phrase works because of a skill, a small instruction file in this repo (`agents/skills/deploy-to-tonypham-proto/SKILL.md`). Your AI tool does not know about it until you link it. After you clone this repo:
+   Keep `--force`. Without it, this Wrangler version makes a Cloudflare Workers site with a `workers.dev` link instead of a `pages.dev` one.
+6. **Make an API token.** A token is a password that lets GitHub upload to your Cloudflare account. In Cloudflare, open **My Profile → API Tokens → Create Token → Custom token**. Give it one permission: **Account → Cloudflare Pages → Edit**. Copy the token.
+7. **Find your account ID.** It is on the right side of **Workers & Pages → Overview**.
+8. **Give both to GitHub.** Run these two commands. Each one asks you to paste the value:
 
-1. Open Terminal and go into the clone: `cd tonypham-prototypes-deploy`.
-2. Run these three lines. They link the skill, so you do not copy any files:
+   ```sh
+   gh secret set CLOUDFLARE_API_TOKEN
+   gh secret set CLOUDFLARE_ACCOUNT_ID
+   ```
+
+   GitHub stores them as secrets, so nobody can read them back. Never paste the token into a chat, an issue or a file.
+9. **Fill in the settings file.** Open `deploy.config` and change both values to yours:
+
+   ```sh
+   REPO=<you>/my-demos
+   PAGES_PROJECT=my-demos
+   ```
+
+   Then save it to GitHub: `git commit -am "Use my settings" && git push`. This is the one time you push to `main`. After this, demos always go on their own branches.
+
+You are ready. Go to [How do I put a demo online?](#how-do-i-put-a-demo-online)
+
+## Way B: how do I join someone's site?
+
+1. Ask the owner to add you as a **collaborator** on their GitHub repo. Accept the email invite.
+2. Install the tools and sign in, as in step 2 of Way A.
+3. Download their repo: `gh repo clone <owner>/<repo>` and `cd <repo>`.
+
+You can change only the demos you published yourself. The owner can change any demo.
+
+## How do I put a demo online?
+
+First build your project into a folder of plain website files. It must have `index.html` at the top. Many projects make this folder with `npm run build`, and it is often called `dist/` or `build/`.
+
+### Option 1: ask your AI agent
+
+If you use Claude Code or Codex, say **"Deploy to tonypham proto"** (or "deploy my demo") from your project's folder. The agent builds the project, publishes it and replies with the live link. Say "update my demo" to publish again, or "take down my demo" to remove it.
+
+This works because of a **skill**: a small instruction file in `agents/skills/deploy-to-tonypham-proto/`. The skill uses the site named in your `deploy.config`. Your AI tool finds the skill only after you link it, once per computer:
+
+1. Go into your copy of the repo: `cd my-demos`.
+2. Run these three lines. They link the skill instead of copying it, so `git pull` keeps it up to date:
 
    ```sh
    mkdir -p ~/.claude/skills ~/.agents/skills
@@ -46,115 +91,89 @@ The "Deploy to tonypham proto" phrase works because of a skill, a small instruct
    ln -sfn "$PWD/agents/skills/deploy-to-tonypham-proto" ~/.agents/skills/deploy-to-tonypham-proto
    ```
 
-   `~/.claude/skills` is where Claude Code looks. `~/.agents/skills` is where Codex looks. It is safe to run them again.
-3. Close and reopen your AI tool, so it picks up the new skill.
-4. Check it: type `/deploy-to-tonypham-proto` in Claude Code (it should appear in the list), or just say **"Deploy to tonypham proto"** from any project.
+   Claude Code looks in `~/.claude/skills`. Codex looks in `~/.agents/skills`. You can run these lines again safely.
+3. Close your AI tool and open it again.
+4. Check that it worked: type `/deploy-to-tonypham-proto` in Claude Code, or just ask it to deploy.
 
-Also needed:
-- `gh auth login`, signed in to a GitHub account that can push to this repo. Ask the owner to add you as a collaborator first. You can change only demos you published yourself.
-- Optional: add one line to `~/.claude/CLAUDE.md` (Claude Code) or `~/.codex/AGENTS.md` (Codex), so the agent never asks where to deploy: *When I say "deploy to tonypham proto", use the `deploy-to-tonypham-proto` skill. The target is always `tonydata22au/tonypham-prototypes-deploy`.*
+If you move or delete the repo folder, run the `ln` lines again from the new place. Chat-only apps, like the ChatGPT website, cannot run commands on your computer. Use Claude Code, Codex or Option 2 instead.
 
-Because the skill is linked, not copied, it follows the clone: `git pull` updates it. If you move or delete the clone, run the `ln` lines again from the new place. Chat-only apps (the ChatGPT website or app) cannot run commands on your computer, so use Codex or Claude Code, or run `scripts/publish` yourself.
+### Option 2: run one command yourself
 
-You can also run it by hand from a fresh clone: `scripts/publish my-demo /path/to/dist` (add `--functions /path/to/functions` for Pages Functions, or `--dry-run` to check first).
-
-## Edit a demo by chatting with your own AI agent
-
-A demo can show an **Edit with AI** button. Behind it, you chat with your own agent (Claude Code or Codex, signed in with your own subscription) through the Agent Client Protocol (ACP). The agent edits the demo, the page reloads to show the change, and **Publish** updates the public link.
-
-1. Turn it on for the demo: publish with `--acp` (or add `"acp": true` to `demos/<name>/demo.json`). It is off by default. `--no-acp` turns it off.
-2. Sign in to your agent once: run `claude` and log in, or `codex login`.
-3. In a clone of this repo, run `scripts/acp-bridge <name>` (add `--agent codex` for Codex). It needs Node.js 22+, `git` and `gh`.
-4. Open <http://127.0.0.1:7878/>, click **Edit with AI** and ask for a change. Approve tool calls when the agent asks.
-5. Click **Publish**. About a minute later the public link shows the new version.
-
-The bridge works in a separate folder, `.acp/<name>/`, on the `demo/<name>` branch, so your own checkout is untouched. On the public site the button only shows these steps: your agent never runs on anyone else's computer.
-
-Who can change what: anyone with write access to this repo can use it, but only on demos whose PR they opened. The bridge checks this, and CI refuses pushes from anyone else (the repo owner can change any demo).
-
-## Step-by-step guide: edit a demo (for non-technical users)
-
-**Before you start (one time only)**
-
-You need three free tools:
-- **Git** — download from [git-scm.com](https://git-scm.com)
-- **GitHub CLI (gh)** — download from [cli.github.com](https://cli.github.com)
-- **Node.js** — download from [nodejs.org](https://nodejs.org) (version 22 or newer)
-
-You also need a **Claude** or **ChatGPT** account with a paid subscription.
-
-Sign in to GitHub once by opening Terminal and typing:
-```
-gh auth login
-```
-
-**Step 1: Sign in to your AI**
-
-Open Terminal. For Claude, type `claude`. For ChatGPT, type `codex login`. Sign in when prompted. (Do this once.)
-
-**Step 2: Get the demo files**
-
-```
-gh repo clone tonydata22au/tonypham-prototypes-deploy
-cd tonypham-prototypes-deploy
-```
-
-**Step 3: Start the chat bridge**
-
-Open the demo's public page and click the **Edit with AI** button (bottom right, black). Copy the command it shows and paste it into Terminal. It looks like:
-
-```
-scripts/acp-bridge demo-name --agent claude
-```
-
-Use `--agent codex` for ChatGPT.
-
-**Step 4: Open your local preview**
-
-After about 10 seconds, Terminal shows a box that says **READY!** and a link, `http://127.0.0.1:7878/`. Your browser should open it by itself. If it does not, click the link while holding Cmd (Mac) or Ctrl (Windows). This page is only on your computer. If something goes wrong, the box says **Something needs fixing** and tells you what to do.
-
-**Step 5: Ask for a change**
-
-Click **Edit with AI** and type a request in plain English:
-
-> Make the heading blue and larger
-
-Press Enter. The AI works and the page reloads with your change.
-
-**Step 6: Keep editing or start over**
-
-Ask for more changes the same way. Click **Stop** to cancel mid-way. If the AI asks permission, you'll see buttons to approve or deny. To start over: close Terminal (Ctrl+C) and re-run Step 3.
-
-**Step 7: Publish**
-
-Click **Publish** in the panel. About 1 minute later, the public link shows your version.
-
-**Step 8: Done**
-
-Press Ctrl+C in Terminal to close the bridge.
-
-## Try a demo on your computer
+The command switches branches, so run it in a new, untouched clone: `gh repo clone <you>/my-demos fresh && cd fresh`. Then run:
 
 ```sh
-scripts/stage my-demo
+scripts/publish my-app /full/path/to/dist
+```
+
+- `my-app` is the demo's name. Use 2 to 24 lowercase letters, digits or dashes, and start with a letter.
+- Add `--dry-run` to check everything first without changing anything.
+- Add `--functions /full/path/to/functions` if your project has Cloudflare Pages Functions (small bits of server code, such as `functions/api/hello.js`, which answers at `/api/hello`).
+
+The command makes the branch, opens the PR and waits for the upload, usually about a minute. Then it prints `LIVE:` with your link. If the link is not ready after 4 minutes, it prints the PR link instead, so you can check the robot's progress there.
+
+### Option 3: start a blank demo page
+
+Run `scripts/new-demo my-app --dry-run` to see what will happen, then `scripts/new-demo my-app` to do it. It makes `demos/my-app/public/index.html`, pushes it and opens the PR. Edit the files in `demos/my-app/`, commit and push, and the link updates.
+
+## How do I update or take down a demo?
+
+- **Update:** publish again with the same name, or push new commits to its branch. The link stays the same.
+- **Take down:** close the demo's PR on GitHub. The robot deletes it from Cloudflare. Reopen the PR to bring it back.
+- **See all your demos:** `gh pr list --search "head:demo/"`.
+
+## How do I edit a demo by chatting with AI?
+
+This part is optional. A demo can show an **Edit with AI** button. You chat with your own AI agent (Claude Code or Codex, on your own paid plan), it changes the demo, and you see the result right away. When you like it, you click **Publish** and the public link updates.
+
+The agent runs only on your computer. It talks to the page through the Agent Client Protocol (ACP), a standard way for apps to chat with coding agents.
+
+1. **Turn it on** for the demo: publish with `--acp`, or add `"acp": true` to `demos/<name>/demo.json`. Use `--no-acp` to turn it off.
+2. **Sign in to your agent** once: run `claude` and log in, or run `codex login`.
+3. **Start the bridge** in your copy of the repo. The public demo's **Edit with AI** button shows the exact command. It looks like this:
+
+   ```sh
+   scripts/acp-bridge my-app --agent claude
+   ```
+
+   Use `--agent codex` for Codex.
+4. **Open the preview.** After about 10 seconds, the terminal shows **READY!** and the link `http://127.0.0.1:7878/`. Your browser usually opens it by itself. This page exists only on your computer. If something goes wrong, the terminal says **Something needs fixing** and tells you what to do.
+5. **Ask for a change.** Click **Edit with AI** and type a request, such as *Make the heading blue and larger*. The page reloads with the change. Click **Stop** to cancel. If the agent asks for permission, click approve or deny.
+6. **Publish.** Click **Publish**. About a minute later, the public link shows the new version.
+7. **Finish.** Press Ctrl+C in the terminal to stop the bridge.
+
+The bridge works in a separate folder, `.acp/<name>/`, so your own files stay untouched.
+
+## How do I test a demo on my computer?
+
+```sh
+scripts/stage my-app
 cd .stage && npx wrangler@4.163.0 pages dev public
 ```
 
 Then open <http://localhost:8788>.
 
-## Layout
+## What is in this repo?
 
 ```text
 .
-├── demos/<name>/      # one folder per demo: public/, optional functions/, optional demo.json
-├── scripts/           # stage, check-paths, new-demo, publish, selftest
-├── .github/workflows/ # preview.yml (deploy + comment), cleanup.yml (delete on close)
-├── AGENTS.md          # rules for AI agents working in this repo (CLAUDE.md points to it)
-├── agents/            # skill that lets AI agents deploy here
-├── docs/              # plan/, prompts/, archive/
-└── tasks/             # build plan and task list
+├── deploy.config      # your settings: repo name and Cloudflare project name
+├── demos/<name>/      # one folder per demo, only on that demo's branch
+├── scripts/           # publish, new-demo, stage, check-paths, acp-bridge, selftest
+├── acp/               # the "Edit with AI" panel and its test
+├── agents/skills/     # the AI agent skill
+├── .github/workflows/ # the robot: preview.yml uploads, cleanup.yml removes
+├── AGENTS.md          # rules for AI agents working in this repo
+└── CONTRIBUTING.md    # demo rules, and how to change the scripts
 ```
 
-## Rules
+## What must I never do?
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+- **Never put secrets in a demo.** Every link is public. `scripts/publish` refuses files that look like secrets, such as `.env` or `.pem` files, but check your files too.
+- **Never merge a demo PR.** Demos live on their own branches.
+- **Never change files outside `demos/<name>/` on a demo branch.** The robot refuses the upload if you do.
+
+More rules are in [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## License
+
+MIT. See [LICENSE](LICENSE). You can use, copy and change this repo, as long as you keep the copyright notice.

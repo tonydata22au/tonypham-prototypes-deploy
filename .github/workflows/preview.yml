@@ -55,6 +55,13 @@ jobs:
         with:
           node-version: 22
 
+      - name: Read the Pages project name
+        id: cfg
+        run: |
+          project="$(sed -n 's/^PAGES_PROJECT=//p' deploy.config)"
+          [[ "$project" =~ ^[a-z0-9][-a-z0-9]*$ ]] || { echo "::error::deploy.config: set PAGES_PROJECT to your Cloudflare Pages project name"; exit 1; }
+          echo "project=$project" >> "$GITHUB_OUTPUT"
+
       - name: Stage
         env:
           NAME: ${{ steps.demo.outputs.name }}
@@ -65,13 +72,14 @@ jobs:
         working-directory: .stage
         env:
           NAME: ${{ steps.demo.outputs.name }}
+          PROJECT: ${{ steps.cfg.outputs.project }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           # Run from .stage so wrangler also picks up .stage/functions.
           # --force keeps the deploy on classic Pages (pages.dev); wrangler 4.163+ may otherwise hand it to Workers.
           npx --yes wrangler@4.163.0 pages deploy public \
-            --project-name tonypham-demos \
+            --project-name "$PROJECT" \
             --branch "demo-$NAME" \
             --commit-hash "$HEAD_SHA" \
             --commit-dirty=true \

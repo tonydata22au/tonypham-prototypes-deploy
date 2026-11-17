@@ -5,7 +5,7 @@ set -euo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$root"
 tmp="$(mktemp -d)"
-trap 'rm -rf "$tmp" demos/zz-selftest .stage' EXIT
+trap 'rm -rf "$tmp" demos/zz-selftest demos/zz-static demos/zz-api .stage' EXIT
 fails=0
 ok()   { echo "PASS  $1"; }
 bad()  { echo "FAIL  $1"; fails=$((fails + 1)); }
@@ -16,11 +16,17 @@ expect_exit() { # <want> <label> <cmd...>
   if [[ "$got" == "$want" ]]; then ok "$label"; else bad "$label (exit $got, want $want)"; cat "$tmp/out"; fi
 }
 
+# sample demos for the checks below (removed on exit)
+mkdir -p demos/zz-static/public demos/zz-api/public demos/zz-api/functions/api
+echo '<html><body>static</body></html>' > demos/zz-static/public/index.html
+echo '<html><body>api</body></html>' > demos/zz-api/public/index.html
+echo 'export const onRequestGet = () => new Response("hi");' > demos/zz-api/functions/api/hello.js
+
 # stage
-expect_exit 0 "stage hello-static" scripts/stage hello-static
-if [[ -f .stage/public/index.html && ! -e .stage/functions ]]; then ok "hello-static staged without functions"; else bad "hello-static layout"; fi
-expect_exit 0 "stage hello-api" scripts/stage hello-api
-if [[ -f .stage/public/index.html && -f .stage/functions/api/hello.js ]]; then ok "hello-api staged with functions"; else bad "hello-api layout"; fi
+expect_exit 0 "stage zz-static" scripts/stage zz-static
+if [[ -f .stage/public/index.html && ! -e .stage/functions ]]; then ok "zz-static staged without functions"; else bad "zz-static layout"; fi
+expect_exit 0 "stage zz-api" scripts/stage zz-api
+if [[ -f .stage/public/index.html && -f .stage/functions/api/hello.js ]]; then ok "zz-api staged with functions"; else bad "zz-api layout"; fi
 expect_exit 2 "stage rejects Bad_Name" scripts/stage Bad_Name
 expect_exit 2 "stage rejects 25-char name" scripts/stage abcdefghijklmnopqrstuvwxy
 expect_exit 1 "stage rejects missing demo" scripts/stage no-such-demo
@@ -29,19 +35,19 @@ mkdir -p demos/zz-selftest
 echo '{"build": "mkdir -p dist && echo built > dist/index.html", "output": "dist"}' > demos/zz-selftest/demo.json
 expect_exit 0 "stage runs demo.json build" scripts/stage zz-selftest
 if [[ "$(cat .stage/public/index.html 2>/dev/null)" == built ]]; then ok "build output staged"; else bad "build output staged"; fi
-echo '{"output": "../hello-api/public"}' > demos/zz-selftest/demo.json
+echo '{"output": "../zz-api/public"}' > demos/zz-selftest/demo.json
 expect_exit 1 "stage rejects output outside the demo" scripts/stage zz-selftest
 
 echo '{"acp": true}' > demos/zz-selftest/demo.json
 mkdir -p demos/zz-selftest/public
 echo '<html><BODY>x</BODY></html>' > demos/zz-selftest/public/index.html
 expect_exit 0 "stage with acp on" scripts/stage zz-selftest
-if grep -q 'src="/_acp/panel.js" data-demo="zz-selftest"' .stage/public/index.html && [[ -f .stage/public/_acp/panel.js ]]; then ok "acp panel injected"; else bad "acp panel injected"; fi
-expect_exit 0 "stage hello-static (acp off)" scripts/stage hello-static
+if grep -q "src=\"/_acp/panel.js\" data-demo=\"zz-selftest\" data-repo=\"$(sed -n 's/^REPO=//p' deploy.config)\"" .stage/public/index.html && [[ -f .stage/public/_acp/panel.js ]]; then ok "acp panel injected"; else bad "acp panel injected"; fi
+expect_exit 0 "stage zz-static (acp off)" scripts/stage zz-static
 if ! grep -q _acp .stage/public/index.html && [[ ! -e .stage/public/_acp ]]; then ok "no acp panel when off"; else bad "no acp panel when off"; fi
 expect_exit 2 "acp-bridge rejects bad name" scripts/acp-bridge Bad_Name
-expect_exit 2 "acp-bridge rejects unknown agent" scripts/acp-bridge hello-static --agent nope
-expect_exit 1 "acp-bridge refuses a demo with acp off" env ACP_WORKDIR="$root" scripts/acp-bridge hello-static
+expect_exit 2 "acp-bridge rejects unknown agent" scripts/acp-bridge zz-static --agent nope
+expect_exit 1 "acp-bridge refuses a demo with acp off" env ACP_WORKDIR="$root" scripts/acp-bridge zz-static
 expect_exit 0 "acp-bridge chat round trip (fake agent)" node acp/test.js
 
 # check-paths, in a throwaway repo
@@ -71,11 +77,13 @@ expect_exit 0 "new-demo --dry-run" scripts/new-demo zz-dry --dry-run
 after="$(git status --porcelain; git branch --list)"
 if [[ "$before" == "$after" && ! -e demos/zz-dry ]]; then ok "new-demo --dry-run changed nothing"; else bad "new-demo --dry-run changed something"; fi
 expect_exit 2 "new-demo rejects bad name" scripts/new-demo Bad --dry-run
-expect_exit 1 "new-demo refuses existing demo" scripts/new-demo hello-static --dry-run
+expect_exit 1 "new-demo refuses existing demo" scripts/new-demo zz-static --dry-run
 
 # publish (validation and dry run only; a real run needs GitHub and Cloudflare)
 site="$tmp/site"; mkdir -p "$site"; echo hi > "$site/index.html"
 expect_exit 0 "publish --dry-run on a good folder" scripts/publish zz-pub "$site" --dry-run
+repo="$(sed -n 's/^REPO=//p' deploy.config)"
+if grep -q "in $repo " "$tmp/out"; then ok "publish reads REPO from deploy.config"; else bad "publish reads REPO from deploy.config"; fi
 if [[ ! -e demos/zz-pub ]]; then ok "publish --dry-run wrote nothing"; else bad "publish --dry-run wrote something"; fi
 expect_exit 2 "publish rejects bad name" scripts/publish Bad_Name "$site" --dry-run
 expect_exit 1 "publish rejects a missing folder" scripts/publish zz-pub "$tmp/nope" --dry-run

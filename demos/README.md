@@ -1,4 +1,3 @@
 # Demos
 
-One folder per demo: `demos/<name>/` (`public/`, optional `functions/`, optional `demo.json`).
-See [CONTRIBUTING.md](../CONTRIBUTING.md) for the rules.
+Each demo lives on its own branch, `demo/<name>`, in the folder `demos/<name>/`. This folder is empty on `main`. See [CONTRIBUTING.md](../CONTRIBUTING.md) for the rules.

@@ -1,16 +1,17 @@
-# Agent guide: tonypham-prototypes-deploy
+# Agent guide
 
-This repo hosts Tony's demos. Each demo is a branch `demo/<name>` with a PR that stays open. GitHub Actions deploys it to Cloudflare Pages (project `tonypham-demos`) and comments a public link. See [README.md](README.md) and [docs/plan/PLAN.md](docs/plan/PLAN.md).
+This repo is a demo site. Each demo is a branch `demo/<name>` with a PR that stays open. GitHub Actions deploys it to Cloudflare Pages and comments a public link. The repo name and the Cloudflare Pages project name are in `deploy.config`. See [README.md](README.md).
 
-## When the user says "deploy to tonypham proto"
+## When the user asks to deploy a demo
 
-Follow [agents/skills/deploy-to-tonypham-proto/SKILL.md](agents/skills/deploy-to-tonypham-proto/SKILL.md). In short: build the user's project to a static folder with `index.html`, then run `scripts/publish <name> <absolute-built-folder>` from a fresh clone of this repo, and report the `LIVE:` link. That request is approval to push a demo branch and open or update its draft PR, nothing more.
+Follow [agents/skills/deploy-to-tonypham-proto/SKILL.md](agents/skills/deploy-to-tonypham-proto/SKILL.md). In short: build the user's project to a static folder with `index.html`, run `scripts/publish <name> <absolute-built-folder>` from a fresh clone of the repo in `deploy.config`, and report the `LIVE:` link. That request is approval to push a demo branch and open or update its draft PR, nothing more.
 
 ## Rules
 
 - A demo branch changes only `demos/<name>/`. CI fails the PR otherwise.
 - Demo links are public. Never publish secrets or private data. Never print, read or commit tokens, and never set GitHub or Cloudflare secrets.
 - Never merge a demo PR and never push demo work to `main`.
+- `main` is protected: changes go through a PR, the `checks` workflow must pass, and only squash or rebase merges are allowed.
 - Ask first before anything else outward-facing: pushing to `main`, closing other PRs, deleting deployments, changing workflows or secrets.
 - Wrangler is pinned (`wrangler@4.163.0`) and uses the hidden `--force` flag to stay on classic Pages (`pages.dev`). Do not change either without testing a live deploy.
 

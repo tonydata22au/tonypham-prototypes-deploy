@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Publish a BUILT folder as demo/<name>: branch, copy, commit, push, open or reopen the PR, print the live link.
-# Run it from a fresh clone (gh repo clone tonydata22au/tonypham-prototypes-deploy): it switches branches.
+# Run it from a fresh clone of the repo named in deploy.config: it switches branches.
 set -euo pipefail
 
-repo=tonydata22au/tonypham-prototypes-deploy
+repo="$(sed -n 's/^REPO=//p' "$(dirname "$0")/../deploy.config")"
+[[ "$repo" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]] || { echo "deploy.config: set REPO=owner/name" >&2; exit 1; }
 usage() { echo "usage: scripts/publish <name> <built-folder> [--functions <dir>] [--acp | --no-acp] [--dry-run]" >&2; exit 2; }
 
 name="" folder="" fn="" dry=0 acp=""

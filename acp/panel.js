@@ -4,6 +4,7 @@
 (() => {
   const me = document.currentScript;
   const name = me?.dataset.demo || "";
+  const repo = me?.dataset.repo || "this demo's GitHub repo";
   const local = location.hostname === "127.0.0.1"; // the bridge serves only 127.0.0.1 (wrangler dev uses localhost)
   const host = document.createElement("div");
   const root = host.attachShadow({ mode: "open" });
@@ -45,7 +46,7 @@
     const cmd = `scripts/acp-bridge ${name} --agent claude`;
     box.append(
       el("p", "", "Change this demo by chatting with your own AI agent (Claude Code or Codex, on your subscription)."),
-      el("p", "info", "You need write access to tonydata22au/tonypham-prototypes-deploy. In a clone of it, run:"),
+      el("p", "info", `You need write access to ${repo}. In a clone of it, run:`),
       el("code", "", cmd),
       el("p", "info", "Use --agent codex for Codex. It opens a local preview with the chat. You can change only demos whose PR you opened."),
     );
