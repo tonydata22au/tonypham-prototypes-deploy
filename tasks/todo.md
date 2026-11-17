@@ -44,8 +44,8 @@
 - [x] Build commit (local only, never pushed): stage by explicit path only — `scripts/`, `demos/hello-static/`, `demos/hello-api/`, `.github/workflows/`, `.gitignore`, `README.md`, `CONTRIBUTING.md`, `docs/plan/PLAN.md`, `tasks/` — never `git add -A`.
   - Before committing: `git diff --cached --name-status` shows only T1–T7 files and `tasks/`; anything else → stop and ask.
   - Verify after: `git show --stat --oneline HEAD` lists only those files; `git log --oneline -3` shows build commit on top of the T0 restructure commit; `git status --porcelain` is empty.
-- [ ] You review the build
+- [x] You review the build
 
 ## After your go (not in this build)
 
-- [ ] M1 done by you; live acceptance tests from PLAN §8, each with its own approval
+- [x] M1 done; live acceptance tests from PLAN §8 passed, each with its own approval (fork-PR test not run)

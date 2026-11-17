@@ -2,7 +2,7 @@
 
 A place to keep the demos I make. Each demo lives on its own `demo/<name>` branch with an open pull request (PR). GitHub Actions deploys it to Cloudflare Pages and comments a public `https://….pages.dev` link on the PR. Closing the PR takes the demo down.
 
-Status: built, checked offline (`scripts/selftest`, `shellcheck`, `actionlint`, `wrangler pages dev`). Not yet tested against Cloudflare or GitHub. See [the plan](docs/plan/PLAN.md).
+Status: built and live-tested on 2026-11-17 (deploy, PR comment, update on push, Pages Function, path guard, close and reopen). See [the plan](docs/plan/PLAN.md).
 
 ## One-time setup (Cloudflare and GitHub)
 

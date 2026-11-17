@@ -1,6 +1,6 @@
 # Plan: demo previews on pages.dev (`tonypham-prototypes-deploy`)
 
-Status: v6. Replaces the Mac + K3s + Tailscale plan, which is kept in `docs/archive/PLAN-v5.2-mac-gitops.md`. M2–M5 are built and checked offline (2026-11-17); M1 and the live checks in §7 and §8 are not done yet.
+Status: v6. Replaces the Mac + K3s + Tailscale plan, which is kept in `docs/archive/PLAN-v5.2-mac-gitops.md`. M1–M5 are built and live-tested (2026-11-17): §8 passed except the fork-PR test, which was not run (needs a second GitHub account; the job's `if` only allows same-repo PRs).
 
 ## 1. Goal
 
