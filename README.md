@@ -29,6 +29,14 @@ You need `git`, `gh` (signed in with `gh auth login`), `jq`, and Node.js 22 or n
 
 List your live demos with `gh pr list --search "head:demo/"`.
 
+## Let an AI agent deploy it for you
+
+From any project, tell Claude Code or Codex: **"Deploy to tonypham proto"**. The agent builds the project, runs `scripts/publish` from a fresh clone of this repo, and gives you the live link. Say "update my demo" to redeploy, or "take down my demo" to close its PR.
+
+This works because of a skill (`agents/skills/deploy-to-tonypham-proto/SKILL.md`) linked into `~/.agents/skills/` and `~/.claude/skills/`, plus short notes in `~/.claude/CLAUDE.md` and `~/.codex/AGENTS.md`. The skill is linked, not copied, so it follows this folder: if you move or delete the clone, link it again with `ln -s <this-folder>/agents/skills/deploy-to-tonypham-proto ~/.agents/skills/`. Chat-only apps (the ChatGPT website or app) cannot run commands on your computer, so use Codex, or run `scripts/publish` yourself.
+
+You can also run it by hand from a fresh clone: `scripts/publish my-demo /path/to/dist` (add `--functions /path/to/functions` for Pages Functions, or `--dry-run` to check first).
+
 ## Try a demo on your computer
 
 ```sh
@@ -43,8 +51,10 @@ Then open <http://localhost:8788>.
 ```text
 .
 ├── demos/<name>/      # one folder per demo: public/, optional functions/, optional demo.json
-├── scripts/           # stage, check-paths, new-demo, selftest
+├── scripts/           # stage, check-paths, new-demo, publish, selftest
 ├── .github/workflows/ # preview.yml (deploy + comment), cleanup.yml (delete on close)
+├── AGENTS.md          # rules for AI agents working in this repo (CLAUDE.md points to it)
+├── agents/            # skill that lets AI agents deploy here
 ├── docs/              # plan/, prompts/, archive/
 └── tasks/             # build plan and task list
 ```

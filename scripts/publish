@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+# Publish a BUILT folder as demo/<name>: branch, copy, commit, push, open or reopen the PR, print the live link.
+# Run it from a fresh clone (gh repo clone tonydata22au/tonypham-prototypes-deploy): it switches branches.
+set -euo pipefail
+
+repo=tonydata22au/tonypham-prototypes-deploy
+usage() { echo "usage: scripts/publish <name> <built-folder> [--functions <dir>] [--dry-run]" >&2; exit 2; }
+
+name="" folder="" fn="" dry=0
+while (( $# )); do
+  case "$1" in
+    --dry-run) dry=1 ;;
+    --functions) shift; fn="${1:-}"; [[ -n "$fn" ]] || usage ;;
+    -*) usage ;;
+    *) if [[ -z "$name" ]]; then name="$1"; elif [[ -z "$folder" ]]; then folder="$1"; else usage; fi ;;
+  esac
+  shift
+done
+if [[ ! "$name" =~ ^[a-z][-a-z0-9]{0,22}[a-z0-9]$ ]]; then
+  echo "name must match ^[a-z][-a-z0-9]{0,22}[a-z0-9]\$ (2-24 chars, lowercase, digits, dashes)" >&2
+  exit 2
+fi
+[[ -n "$folder" ]] || usage
+
+[[ -f "$folder/index.html" ]] || { echo "$folder/index.html not found: pass the BUILT folder (dist/, build/), not the source" >&2; exit 1; }
+[[ -z "$fn" || -d "$fn" ]] || { echo "functions folder not found: $fn" >&2; exit 1; }
+folder="$(cd "$folder" && pwd)"
+[[ -z "$fn" ]] || fn="$(cd "$fn" && pwd)"
+dirs=("$folder"); [[ -z "$fn" ]] || dirs+=("$fn")
+
+# The link is public, so refuse anything that looks like a secret or a file Pages rejects.
+secrets="$(find "${dirs[@]}" \( -name .git -o -name node_modules \) -prune -o -type f \
+  \( -name '.env*' -o -name '*.pem' -o -name '*.key' -o -name '*.p12' -o -name 'id_rsa*' \) -print)"
+if [[ -n "$secrets" ]]; then
+  echo "refusing: possible secrets in a public demo:" >&2; echo "$secrets" >&2; exit 1
+fi
+big="$(find "${dirs[@]}" -type f -size +25M -print)"
+[[ -z "$big" ]] || { echo "refusing: files over 25 MiB (Cloudflare Pages limit):" >&2; echo "$big" >&2; exit 1; }
+count="$(find "$folder" -type f | wc -l)"
+(( count <= 20000 )) || { echo "refusing: $count files (Cloudflare Pages limit is 20000)" >&2; exit 1; }
+
+if (( dry )); then
+  echo "dry run: would publish $folder as demo/$name in $repo (no changes made)"
+  exit 0
+fi
+
+cd "$(dirname "$0")/.."
+git remote get-url origin | grep -q "$repo" || { echo "run this inside a clone of $repo" >&2; exit 1; }
+[[ "$(gh api user -q .login)" == "${repo%%/*}" ]] || { echo "gh is signed in as the wrong account; run: gh auth switch -u ${repo%%/*}" >&2; exit 1; }
+[[ -z "$(git status --porcelain)" ]] || { echo "working tree is not clean; use a fresh clone" >&2; exit 1; }
+[[ "$(git branch --show-current)" == main ]] || { echo "start from main in a fresh clone" >&2; exit 1; }
+
+branch="demo/$name"
+dir="demos/$name"
+git fetch -q origin
+trap 'git switch -q main' EXIT
+if git ls-remote --exit-code --heads origin "$branch" > /dev/null 2>&1; then
+  git switch -q -C "$branch" "origin/$branch" # updating an existing demo
+else
+  git switch -q -c "$branch" origin/main
+fi
+
+rm -rf "$dir/public"
+mkdir -p "$dir/public"
+rsync -a --exclude .git --exclude node_modules "$folder"/ "$dir/public/"
+if [[ -n "$fn" ]]; then
+  rm -rf "$dir/functions"
+  mkdir -p "$dir/functions"
+  rsync -a --exclude .git --exclude node_modules "$fn"/ "$dir/functions/"
+fi
+
+git add -A "$dir"
+if git diff --cached --quiet; then
+  echo "nothing changed since the last publish"
+else
+  git commit -q -m "demo: publish $name"
+  git push -q -u origin "$branch"
+fi
+
+state="$(gh pr view "$branch" --json state -q .state 2> /dev/null || true)"
+case "$state" in
+  OPEN) ;;
+  CLOSED) gh pr reopen "$branch" > /dev/null ;;
+  *) gh pr create --draft --base main --head "$branch" --title "demo: $name" \
+       --body "Published by scripts/publish. Keep open; never merge. Close to take the demo down." > /dev/null ;;
+esac
+pr="$(gh pr view "$branch" --json url -q .url)"
+echo "PR: $pr"
+
+# Wait (up to 4 minutes) for the CI comment on this exact commit, then for the link to answer.
+sha7="$(git rev-parse HEAD | cut -c1-7)"
+for _ in $(seq 24); do
+  url="$(gh pr view "$branch" --json comments \
+    -q ".comments[] | select(.body | startswith(\"<!-- demo-preview -->\") and contains(\"Commit: $sha7\")) | .body" \
+    | grep -m1 -oE 'https://[a-z0-9.-]+\.pages\.dev' || true)"
+  if [[ -n "$url" && "$(curl -s -o /dev/null -w '%{http_code}' "$url/")" == 200 ]]; then
+    echo "LIVE: $url"
+    exit 0
+  fi
+  sleep 10
+done
+echo "Deploy not confirmed after 4 minutes; check the PR: $pr" >&2
+exit 1

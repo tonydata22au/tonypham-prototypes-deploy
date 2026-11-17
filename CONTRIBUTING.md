@@ -1,6 +1,6 @@
 # Adding a demo
 
-The quick way is `scripts/new-demo <name>`; see the [README](README.md). The rules it follows:
+The quick ways are `scripts/new-demo <name>` for a new page, `scripts/publish <name> <built-folder>` for an existing project, or asking an AI agent to "deploy to tonypham proto"; see the [README](README.md). The rules it follows:
 
 1. Pick a name matching `^[a-z][-a-z0-9]{0,22}[a-z0-9]$`: 2 to 24 characters, lowercase letters, digits and dashes, starting with a letter.
 2. Use branch `demo/<name>` and put everything in `demos/<name>/`:
@@ -13,4 +13,4 @@ The quick way is `scripts/new-demo <name>`; see the [README](README.md). The rul
 
 A demo branch may change only `demos/<name>/`; the deploy fails otherwise. Do not put secrets in a demo: its link is public.
 
-Before you push changes to the scripts or workflows, run `scripts/selftest`, `shellcheck scripts/stage scripts/check-paths scripts/new-demo scripts/selftest` and `actionlint`.
+Before you push changes to the scripts or workflows, run `scripts/selftest`, `shellcheck scripts/stage scripts/check-paths scripts/new-demo scripts/publish scripts/selftest` and `actionlint`.

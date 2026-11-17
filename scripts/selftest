@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Offline checks for scripts/stage, scripts/check-paths and scripts/new-demo. No network, no deploy.
+# Offline checks for scripts/stage, check-paths, new-demo and publish. No network, no deploy.
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
@@ -60,6 +60,20 @@ after="$(git status --porcelain; git branch --list)"
 if [[ "$before" == "$after" && ! -e demos/zz-dry ]]; then ok "new-demo --dry-run changed nothing"; else bad "new-demo --dry-run changed something"; fi
 expect_exit 2 "new-demo rejects bad name" scripts/new-demo Bad --dry-run
 expect_exit 1 "new-demo refuses existing demo" scripts/new-demo hello-static --dry-run
+
+# publish (validation and dry run only; a real run needs GitHub and Cloudflare)
+site="$tmp/site"; mkdir -p "$site"; echo hi > "$site/index.html"
+expect_exit 0 "publish --dry-run on a good folder" scripts/publish zz-pub "$site" --dry-run
+if [[ ! -e demos/zz-pub ]]; then ok "publish --dry-run wrote nothing"; else bad "publish --dry-run wrote something"; fi
+expect_exit 2 "publish rejects bad name" scripts/publish Bad_Name "$site" --dry-run
+expect_exit 1 "publish rejects a missing folder" scripts/publish zz-pub "$tmp/nope" --dry-run
+mkdir -p "$tmp/empty"
+expect_exit 1 "publish rejects a folder with no index.html" scripts/publish zz-pub "$tmp/empty" --dry-run
+echo SECRET=1 > "$site/.env.local"
+expect_exit 1 "publish refuses a folder holding .env files" scripts/publish zz-pub "$site" --dry-run
+rm "$site/.env.local"
+mkdir -p "$tmp/fn"
+expect_exit 0 "publish --dry-run accepts --functions" scripts/publish zz-pub "$site" --functions "$tmp/fn" --dry-run
 
 echo
 if (( fails )); then echo "$fails check(s) failed"; exit 1; fi
