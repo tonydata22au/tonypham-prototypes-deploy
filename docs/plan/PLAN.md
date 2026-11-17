@@ -59,12 +59,12 @@ Rule: branch `demo/<name>` may change only `demos/<name>/`. The deploy job fails
 
 1. Trigger: `pull_request` (`opened`, `synchronize`, `reopened`) when the head branch matches `^demo/[a-z][-a-z0-9]{0,22}[a-z0-9]$`.
 2. Check out the PR head. Run `scripts/stage <name>`: install and build if `demo.json` has a build command, then copy the output to `.stage/public` and `demos/<name>/functions` to `.stage/functions`.
-3. Run `npx wrangler pages deploy .stage/public --project-name tonypham-demos --branch demo-<name>`. Wrangler picks up `.stage/functions` when run from `.stage`.
+3. From `.stage`, run `npx wrangler@4.163.0 pages deploy public --project-name tonypham-demos --branch demo-<name> --force`. Running from `.stage` makes Wrangler pick up `.stage/functions`; `--force` keeps it on classic Pages (see §9).
 4. Post or update one PR comment with the deployment URL.
 
 Why Actions with Wrangler, not Cloudflare's own Git integration: the Git integration builds from the repo root with one `functions/` folder, so it cannot serve a different demo per branch. Staging a folder per demo avoids that.
 
-Security: the workflow runs only for PRs from this repo's own branches, never forks, because it holds the Cloudflare token. Secrets are GitHub Actions secrets `CLOUDFLARE_API_TOKEN` (scope: Pages edit only) and `CLOUDFLARE_ACCOUNT_ID`. Demo functions that need secrets use `wrangler pages secret put`, which is shared by all preview deploys of the project. Do not put real secrets in demos.
+Security: the workflow runs only for PRs from this repo's own branches, never forks, because it holds the Cloudflare token. Secrets are GitHub Actions secrets `CLOUDFLARE_API_TOKEN` (scope: Pages edit only) and `CLOUDFLARE_ACCOUNT_ID`. Demo functions that need secrets use `wrangler pages secret put`, which is shared by all preview deploys of the project. Do not put real secrets in demos. The path guard runs from the PR's own copy of the workflow and scripts, so it stops mistakes, not someone with push access; only give push access to people you trust with the Cloudflare token.
 
 ## 5. Closing a demo (`cleanup.yml`)
 

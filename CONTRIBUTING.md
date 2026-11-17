@@ -13,4 +13,4 @@ The quick way is `scripts/new-demo <name>`; see the [README](README.md). The rul
 
 A demo branch may change only `demos/<name>/`; the deploy fails otherwise. Do not put secrets in a demo: its link is public.
 
-Before you push changes to the scripts or workflows, run `scripts/selftest`, `shellcheck scripts/*` and `actionlint`.
+Before you push changes to the scripts or workflows, run `scripts/selftest`, `shellcheck scripts/stage scripts/check-paths scripts/new-demo scripts/selftest` and `actionlint`.

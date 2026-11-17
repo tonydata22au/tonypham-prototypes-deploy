@@ -82,7 +82,8 @@ jobs:
           **Preview:** $URL
           Commit: ${HEAD_SHA:0:7}. Push again to update; close this PR to take the demo down."
           id="$(gh api --paginate "repos/$REPO/issues/$PR/comments" \
-            --jq ".[] | select(.user.login == \"github-actions[bot]\" and (.body | startswith(\"$marker\"))) | .id" | head -1)"
+            --jq ".[] | select(.user.login == \"github-actions[bot]\" and (.body | startswith(\"$marker\"))) | .id")"
+          id="${id%%$'\n'*}" # first match only; avoids `| head -1` SIGPIPE under pipefail
           if [[ -n "$id" ]]; then
             gh api -X PATCH "repos/$REPO/issues/comments/$id" -f body="$body" > /dev/null
           else
