@@ -25,4 +25,4 @@ shellcheck scripts/stage scripts/check-paths scripts/new-demo scripts/publish sc
 actionlint
 ```
 
-`scripts/selftest` works offline. It never deploys anything.
+`scripts/selftest` works offline. It never deploys anything. GitHub also runs all three checks on every PR to `main`, and the PR can't merge until they pass. Nobody can push to `main` directly.

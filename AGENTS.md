@@ -11,6 +11,7 @@ Follow [agents/skills/deploy-to-tonypham-proto/SKILL.md](agents/skills/deploy-to
 - A demo branch changes only `demos/<name>/`. CI fails the PR otherwise.
 - Demo links are public. Never publish secrets or private data. Never print, read or commit tokens, and never set GitHub or Cloudflare secrets.
 - Never merge a demo PR and never push demo work to `main`.
+- `main` is protected: changes go through a PR, the `checks` workflow must pass, and only squash or rebase merges are allowed.
 - Ask first before anything else outward-facing: pushing to `main`, closing other PRs, deleting deployments, changing workflows or secrets.
 - Wrangler is pinned (`wrangler@4.163.0`) and uses the hidden `--force` flag to stay on classic Pages (`pages.dev`). Do not change either without testing a live deploy.
 

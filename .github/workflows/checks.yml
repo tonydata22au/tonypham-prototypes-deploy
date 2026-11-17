@@ -1,0 +1,37 @@
+name: checks
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  checks:
+    # Demo PRs are never merged, so skip them; a skipped job still counts as passing.
+    if: ${{ !startsWith(github.head_ref, 'demo/') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+
+      - name: Selftest
+        run: scripts/selftest
+
+      - name: Shellcheck
+        run: shellcheck scripts/stage scripts/check-paths scripts/new-demo scripts/publish scripts/selftest
+
+      - name: Actionlint
+        run: |
+          bash <(curl -fsSL https://raw.githubusercontent.com/rhysd/actionlint/v1.7.12/scripts/download-actionlint.bash) 1.7.12
+          ./actionlint
