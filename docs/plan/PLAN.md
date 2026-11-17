@@ -1,6 +1,6 @@
 # Plan: demo previews on pages.dev (`tonypham-prototypes-deploy`)
 
-Status: v6 draft. Replaces the Mac + K3s + Tailscale plan, which is kept in `docs/archive/PLAN-v5.2-mac-gitops.md`. Nothing here is built or runtime-verified yet.
+Status: v6. Replaces the Mac + K3s + Tailscale plan, which is kept in `docs/archive/PLAN-v5.2-mac-gitops.md`. M2–M5 are built and checked offline (2026-11-17); M1 and the live checks in §7 and §8 are not done yet.
 
 ## 1. Goal
 
@@ -45,7 +45,9 @@ One Cloudflare Pages project (`tonypham-demos`) holds every demo. Each branch de
 │   └── demo.json            # optional: {"build": "npm run build", "output": "dist"}
 ├── scripts/
 │   ├── new-demo <name>      # scaffold folder, branch demo/<name>, draft PR
-│   └── stage <name>         # build demo into .stage/ (used by CI and local test)
+│   ├── stage <name>         # build demo into .stage/ (used by CI and local test)
+│   ├── check-paths          # CI guard: the PR may change only demos/<name>/
+│   └── selftest             # offline checks for the scripts
 └── .github/workflows/
     ├── preview.yml          # on PR open/update for demo/*
     └── cleanup.yml          # on PR close for demo/*

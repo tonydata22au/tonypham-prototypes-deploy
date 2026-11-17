@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+# Offline checks for scripts/stage, scripts/check-paths and scripts/new-demo. No network, no deploy.
+set -euo pipefail
+
+root="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$root"
+tmp="$(mktemp -d)"
+trap 'rm -rf "$tmp" demos/zz-selftest .stage' EXIT
+fails=0
+ok()   { echo "PASS  $1"; }
+bad()  { echo "FAIL  $1"; fails=$((fails + 1)); }
+expect_exit() { # <want> <label> <cmd...>
+  local want="$1" label="$2"; shift 2
+  local got=0
+  "$@" > "$tmp/out" 2>&1 || got=$?
+  if [[ "$got" == "$want" ]]; then ok "$label"; else bad "$label (exit $got, want $want)"; cat "$tmp/out"; fi
+}
+
+# stage
+expect_exit 0 "stage hello-static" scripts/stage hello-static
+if [[ -f .stage/public/index.html && ! -e .stage/functions ]]; then ok "hello-static staged without functions"; else bad "hello-static layout"; fi
+expect_exit 0 "stage hello-api" scripts/stage hello-api
+if [[ -f .stage/public/index.html && -f .stage/functions/api/hello.js ]]; then ok "hello-api staged with functions"; else bad "hello-api layout"; fi
+expect_exit 2 "stage rejects Bad_Name" scripts/stage Bad_Name
+expect_exit 2 "stage rejects 25-char name" scripts/stage abcdefghijklmnopqrstuvwxy
+expect_exit 1 "stage rejects missing demo" scripts/stage no-such-demo
+
+mkdir -p demos/zz-selftest
+echo '{"build": "mkdir -p dist && echo built > dist/index.html", "output": "dist"}' > demos/zz-selftest/demo.json
+expect_exit 0 "stage runs demo.json build" scripts/stage zz-selftest
+if [[ "$(cat .stage/public/index.html 2>/dev/null)" == built ]]; then ok "build output staged"; else bad "build output staged"; fi
+echo '{"output": "../hello-api/public"}' > demos/zz-selftest/demo.json
+expect_exit 1 "stage rejects output outside the demo" scripts/stage zz-selftest
+
+# check-paths, in a throwaway repo
+repo="$tmp/repo"
+git init -q -b main "$repo"
+(
+  cd "$repo"
+  git config user.email t@example.com; git config user.name t
+  mkdir -p demos/aa demos/b
+  echo a > demos/aa/x; echo b > demos/b/y
+  git add -A; git commit -qm base
+  git switch -qc demo/aa; echo a2 > demos/aa/x; git commit -qam own
+  git switch -qc demo/aa-other main; echo b2 > demos/b/y; git commit -qam other
+  git switch -qc demo/aa-move main; git mv demos/b/y demos/aa/y; git commit -qm move
+  git switch -qc demo/aa-root main; echo r > README.md; git add README.md; git commit -qm root
+)
+cp_check() { (cd "$repo" && "$root/scripts/check-paths" "$@"); }
+expect_exit 0 "check-paths allows own folder" cp_check aa main demo/aa
+expect_exit 1 "check-paths blocks another demo's folder" cp_check aa main demo/aa-other
+expect_exit 1 "check-paths blocks moving another demo's file in" cp_check aa main demo/aa-move
+expect_exit 1 "check-paths blocks root files" cp_check aa main demo/aa-root
+expect_exit 2 "check-paths rejects bad name" cp_check A main demo/aa
+
+# new-demo
+before="$(git status --porcelain; git branch --list)"
+expect_exit 0 "new-demo --dry-run" scripts/new-demo zz-dry --dry-run
+after="$(git status --porcelain; git branch --list)"
+if [[ "$before" == "$after" && ! -e demos/zz-dry ]]; then ok "new-demo --dry-run changed nothing"; else bad "new-demo --dry-run changed something"; fi
+expect_exit 2 "new-demo rejects bad name" scripts/new-demo Bad --dry-run
+expect_exit 1 "new-demo refuses existing demo" scripts/new-demo hello-static --dry-run
+
+echo
+if (( fails )); then echo "$fails check(s) failed"; exit 1; fi
+echo "all checks passed"

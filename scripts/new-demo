@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# Scaffold demos/<name>, create branch demo/<name>, push it and open a draft PR.
+set -euo pipefail
+
+name="" dry=0
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) dry=1 ;;
+    *) name="$arg" ;;
+  esac
+done
+if [[ ! "$name" =~ ^[a-z][-a-z0-9]{0,22}[a-z0-9]$ ]]; then
+  echo "usage: scripts/new-demo <name> [--dry-run]   (name must match ^[a-z][-a-z0-9]{0,22}[a-z0-9]\$)" >&2
+  exit 2
+fi
+
+cd "$(dirname "$0")/.."
+branch="demo/$name"
+dir="demos/$name"
+
+run() {
+  echo "+ $*"
+  if (( ! dry )); then "$@"; fi
+}
+
+[[ ! -e "$dir" ]] || { echo "$dir already exists" >&2; exit 1; }
+if git show-ref --quiet "refs/heads/$branch"; then
+  echo "branch $branch already exists" >&2
+  exit 1
+fi
+if [[ -n "$(git status --porcelain)" ]]; then
+  if (( dry )); then
+    echo "warning: working tree is not clean; a real run would stop here" >&2
+  else
+    echo "working tree is not clean; commit or stash first" >&2
+    exit 1
+  fi
+fi
+
+run git switch -c "$branch" main
+echo "+ write $dir/public/index.html"
+if (( ! dry )); then
+  mkdir -p "$dir/public"
+  cat > "$dir/public/index.html" <<HTML
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>$name</title></head>
+<body><h1>$name</h1><p>Replace this page with your demo.</p></body>
+</html>
+HTML
+fi
+run git add "$dir"
+run git commit -m "demo: add $name"
+run git push -u origin "$branch"
+run gh pr create --draft --base main --head "$branch" --title "demo: $name" \
+  --body "Demo preview for \`$dir\`. Keep this PR open; never merge it. Close it to take the demo down."
+if (( dry )); then echo "dry run: nothing changed"; fi
