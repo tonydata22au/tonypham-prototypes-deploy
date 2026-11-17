@@ -7,6 +7,7 @@ const { spawn, execFileSync, execFile } = require("node:child_process");
 const fs = require("node:fs");
 const http = require("node:http");
 const path = require("node:path");
+const os = require("node:os");
 const readline = require("node:readline");
 
 const REPO = "tonydata22au/tonypham-prototypes-deploy";
@@ -17,12 +18,14 @@ const AGENTS = {
 };
 const SIGN_IN = { claude: "run `claude` once and sign in", codex: "run `codex login`" };
 
-const die = (msg, code = 1) => { console.error(msg); process.exit(code); };
+// Plain-language output for non-technical users: say what happened, then what to do.
+const die = (msg, code = 1) => { console.error(`\n  Something needs fixing:\n  ${msg}\n`); process.exit(code); };
+const log = path.join(os.tmpdir(), `acp-bridge-${process.argv[2] || "demo"}.log`); // the agent's technical chatter goes here, not on screen
 const args = process.argv.slice(2);
 const name = args.find((a, i) => !a.startsWith("-") && args[i - 1] !== "--agent") || "";
 const agent = args.includes("--agent") ? args[args.indexOf("--agent") + 1] : "claude";
 if (!/^[a-z][-a-z0-9]{0,22}[a-z0-9]$/.test(name) || !Object.hasOwn(AGENTS, agent)) {
-  die("usage: scripts/acp-bridge <name> [--agent claude|codex]", 2);
+  die("Type the command like this:  scripts/acp-bridge <demo-name> --agent claude\n  (use --agent codex if you use ChatGPT)", 2);
 }
 const here = path.resolve(__dirname, "..");
 const port = Number(process.env.ACP_PORT || 7878);
@@ -37,9 +40,10 @@ let wt = process.env.ACP_WORKDIR;
 if (!wt) {
   let remote = "";
   try { remote = git(here, "remote", "get-url", "origin"); } catch { /* no origin */ }
-  if (!remote.includes(REPO)) die(`run this inside a clone of ${REPO}`);
+  if (!remote.includes(REPO)) die(`You are in the wrong folder. Go into the folder you got from "gh repo clone ${REPO}" (type: cd tonypham-prototypes-deploy), then run this again.`);
+  if (!process.env.ACP_WORKDIR) console.log(`\n  Getting your copy of "${name}" ready. This takes about 10 seconds...`);
   const branch = `demo/${name}`;
-  try { git(here, "fetch", "-q", "origin", branch); } catch { die(`no branch ${branch} on GitHub: publish the demo first (scripts/publish)`); }
+  try { git(here, "fetch", "-q", "origin", branch); } catch { die(`The demo "${name}" was not found. Check the spelling of its name, and that you are signed in to GitHub (type: gh auth status).`); }
   wt = path.join(here, ".acp", name);
   if (!fs.existsSync(wt)) {
     let local = true;
@@ -53,12 +57,12 @@ if (!wt) {
     me = execFileSync("gh", ["api", "user", "-q", ".login"], { encoding: "utf8" }).trim();
     author = execFileSync("gh", ["pr", "view", branch, "--repo", REPO, "--json", "author", "-q", ".author.login"], { encoding: "utf8" }).trim();
   } catch { console.error("note: could not check the demo's owner with gh; CI checks it when you publish"); }
-  if (me && author && me !== author && me !== REPO.split("/")[0]) die(`demo ${name} belongs to ${author}; you (${me}) can change only your own demos`);
+  if (me && author && me !== author && me !== REPO.split("/")[0]) die(`"${name}" belongs to ${author}. You are signed in as ${me}, and you can only change demos you published yourself.`);
 }
 const demoDir = path.join(wt, "demos", name);
 let cfg = {};
 try { cfg = JSON.parse(fs.readFileSync(path.join(demoDir, "demo.json"), "utf8")); } catch { /* no demo.json */ }
-if (cfg.acp !== true) die(`AI editing is off for ${name}. Turn it on: add "acp": true to demos/${name}/demo.json (or publish with --acp).`);
+if (cfg.acp !== true) die(`"Edit with AI" is turned off for "${name}". Ask the demo's owner to turn it on.`);
 const stageDir = path.join(wt, ".stage", "public");
 // shortcut: restages (and rebuilds) the whole demo after every turn; fine for static demos, slow for big builds.
 const stage = () => run(path.join(here, "scripts", "stage"), [name], { env: { ...process.env, STAGE_ROOT: wt } });
@@ -72,9 +76,9 @@ const emit = (m) => {
 };
 
 // 3. ACP client: JSON-RPC 2.0, one JSON message per line on the agent's stdin/stdout.
-const child = spawn(process.env.ACP_AGENT_CMD || AGENTS[agent], { cwd: demoDir, shell: true, detached: true, stdio: ["pipe", "pipe", "inherit"] });
+const child = spawn(process.env.ACP_AGENT_CMD || AGENTS[agent], { cwd: demoDir, shell: true, detached: true, stdio: ["pipe", "pipe", fs.openSync(log, "w")] });
 const stopAgent = () => { try { process.kill(-child.pid); } catch { /* already gone */ } }; // the whole group: shell, npx, agent
-child.on("exit", (code) => { console.error(`agent stopped (exit ${code})`); process.exit(1); });
+child.on("exit", (code) => { die(`Your AI helper stopped unexpectedly (code ${code}). Run the same command again. If it keeps happening, the technical details are in: ${log}`); });
 let nextId = 1;
 const waiting = new Map();
 const permissions = new Map(); // rpc id -> history entry
@@ -212,12 +216,37 @@ const server = http.createServer((req, res) => {
   fs.createReadStream(file).pipe(res);
 });
 
+server.on("error", (e) => die(e.code === "EADDRINUSE"
+  ? "This helper is already running in another Terminal window. Close that window (or press Ctrl+C in it), then run this again."
+  : e.message));
+const ready = () => {
+  const line = "─".repeat(60);
+  console.log(`
+  ${line}
+   READY! Here is what to do next:
+
+   1. Open this link in your web browser
+      (click it while holding Cmd on Mac, or Ctrl on Windows):
+
+          ${origin}/
+
+   2. Click the black "Edit with AI" button, bottom right.
+   3. Type what you want to change, then press Enter.
+   4. Happy with it? Click "Publish" in the same box.
+
+   To stop: click this window and press Ctrl + C.
+  ${line}
+`);
+  if (!process.env.ACP_WORKDIR) { // also try to open the page for them; if it fails, the link above still works
+    const opener = { darwin: ["open"], win32: ["cmd", "/c", "start"] }[process.platform] || ["xdg-open"];
+    spawn(opener[0], [...opener.slice(1), `${origin}/`], { stdio: "ignore", detached: true }).on("error", () => {}).unref();
+  }
+};
 server.listen(port, "127.0.0.1", () => {
-  console.log(`Preview with chat: ${origin}/  (agent: ${agent}; Ctrl+C to stop)`);
-  start().catch((e) => {
+  start().then(ready).catch((e) => {
     const hint = e.code === -32000 ? ` Sign in first: ${SIGN_IN[agent]}.` : "";
     emit({ type: "error", text: `could not start ${agent}: ${e.message}.${hint}` });
-    console.error(`could not start ${agent}: ${e.message}.${hint}`);
+    die(`Could not start your AI helper (${agent}).${hint || " Make sure you signed in to it (Step 1 of the guide)."}\n  Technical details: ${log}`);
   });
 });
 for (const sig of ["SIGINT", "SIGTERM"]) process.on(sig, () => { stopAgent(); process.exit(0); });

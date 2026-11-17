@@ -90,7 +90,7 @@ Use `--agent codex` for ChatGPT.
 
 **Step 4: Open your local preview**
 
-Terminal prints: **Preview with chat: http://127.0.0.1:7878/**. Open that address in your browser. This page is only on your computer.
+After about 10 seconds, Terminal shows a box that says **READY!** and a link, `http://127.0.0.1:7878/`. Your browser should open it by itself. If it does not, click the link while holding Cmd (Mac) or Ctrl (Windows). This page is only on your computer. If something goes wrong, the box says **Something needs fixing** and tells you what to do.
 
 **Step 5: Ask for a change**
 
