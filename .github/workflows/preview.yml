@@ -32,6 +32,18 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Check who pushed
+        # Collaborators may change only demos whose PR they opened; the repo owner may change any.
+        env:
+          ACTOR: ${{ github.actor }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          [[ "$ACTOR" == "$AUTHOR" || "$ACTOR" == "$OWNER" ]] || {
+            echo "::error::$ACTOR may not change this demo: only its PR author ($AUTHOR) or $OWNER can."
+            exit 1
+          }
+
       - name: Check name and changed paths
         id: demo
         run: |

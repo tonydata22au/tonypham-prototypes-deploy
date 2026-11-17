@@ -37,6 +37,20 @@ This works because of a skill (`agents/skills/deploy-to-tonypham-proto/SKILL.md`
 
 You can also run it by hand from a fresh clone: `scripts/publish my-demo /path/to/dist` (add `--functions /path/to/functions` for Pages Functions, or `--dry-run` to check first).
 
+## Edit a demo by chatting with your own AI agent
+
+A demo can show an **Edit with AI** button. Behind it, you chat with your own agent (Claude Code or Codex, signed in with your own subscription) through the Agent Client Protocol (ACP). The agent edits the demo, the page reloads to show the change, and **Publish** updates the public link.
+
+1. Turn it on for the demo: publish with `--acp` (or add `"acp": true` to `demos/<name>/demo.json`). It is off by default. `--no-acp` turns it off.
+2. Sign in to your agent once: run `claude` and log in, or `codex login`.
+3. In a clone of this repo, run `scripts/acp-bridge <name>` (add `--agent codex` for Codex). It needs Node.js 22+, `git` and `gh`.
+4. Open <http://127.0.0.1:7878/>, click **Edit with AI** and ask for a change. Approve tool calls when the agent asks.
+5. Click **Publish**. About a minute later the public link shows the new version.
+
+The bridge works in a separate folder, `.acp/<name>/`, on the `demo/<name>` branch, so your own checkout is untouched. On the public site the button only shows these steps: your agent never runs on anyone else's computer.
+
+Who can change what: anyone with write access to this repo can use it, but only on demos whose PR they opened. The bridge checks this, and CI refuses pushes from anyone else (the repo owner can change any demo).
+
 ## Try a demo on your computer
 
 ```sh

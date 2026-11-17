@@ -4,12 +4,14 @@
 set -euo pipefail
 
 repo=tonydata22au/tonypham-prototypes-deploy
-usage() { echo "usage: scripts/publish <name> <built-folder> [--functions <dir>] [--dry-run]" >&2; exit 2; }
+usage() { echo "usage: scripts/publish <name> <built-folder> [--functions <dir>] [--acp | --no-acp] [--dry-run]" >&2; exit 2; }
 
-name="" folder="" fn="" dry=0
+name="" folder="" fn="" dry=0 acp=""
 while (( $# )); do
   case "$1" in
     --dry-run) dry=1 ;;
+    --acp) acp=true ;;     # turn on the "Edit with AI" panel (scripts/acp-bridge)
+    --no-acp) acp=false ;;
     --functions) shift; fn="${1:-}"; [[ -n "$fn" ]] || usage ;;
     -*) usage ;;
     *) if [[ -z "$name" ]]; then name="$1"; elif [[ -z "$folder" ]]; then folder="$1"; else usage; fi ;;
@@ -46,7 +48,7 @@ fi
 
 cd "$(dirname "$0")/.."
 git remote get-url origin | grep -q "$repo" || { echo "run this inside a clone of $repo" >&2; exit 1; }
-[[ "$(gh api user -q .login)" == "${repo%%/*}" ]] || { echo "gh is signed in as the wrong account; run: gh auth switch -u ${repo%%/*}" >&2; exit 1; }
+[[ "$(gh api "repos/$repo" -q .permissions.push)" == true ]] || { echo "your gh account cannot push to $repo; ask ${repo%%/*} to add you as a collaborator, or run: gh auth switch" >&2; exit 1; }
 [[ -z "$(git status --porcelain)" ]] || { echo "working tree is not clean; use a fresh clone" >&2; exit 1; }
 [[ "$(git branch --show-current)" == main ]] || { echo "start from main in a fresh clone" >&2; exit 1; }
 
@@ -67,6 +69,11 @@ if [[ -n "$fn" ]]; then
   rm -rf "$dir/functions"
   mkdir -p "$dir/functions"
   rsync -a --exclude .git --exclude node_modules "$fn"/ "$dir/functions/"
+fi
+if [[ -n "$acp" ]]; then
+  # demo.json survives updates (only public/ and functions/ are replaced), so the toggle sticks.
+  if [[ -f "$dir/demo.json" ]]; then cfg="$(cat "$dir/demo.json")"; else cfg='{}'; fi
+  jq --argjson on "$acp" '.acp = $on' <<< "$cfg" > "$dir/demo.json"
 fi
 
 git add -A "$dir"

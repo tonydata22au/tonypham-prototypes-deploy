@@ -8,15 +8,17 @@ if [[ ! "$name" =~ ^[a-z][-a-z0-9]{0,22}[a-z0-9]$ ]]; then
   exit 2
 fi
 
-root="$(cd "$(dirname "$0")/.." && pwd)"
+here="$(cd "$(dirname "$0")/.." && pwd)"
+root="${STAGE_ROOT:-$here}" # scripts/acp-bridge stages a worktree with these (newer) scripts
 demo="$root/demos/$name"
 stage="$root/.stage"
 [[ -d "$demo" ]] || { echo "no such demo: demos/$name" >&2; exit 1; }
 
-out=public
+out=public acp=false
 if [[ -f "$demo/demo.json" ]]; then
   build="$(jq -r '.build // empty' "$demo/demo.json")"
   out="$(jq -r '.output // "public"' "$demo/demo.json")"
+  acp="$(jq -r '.acp == true' "$demo/demo.json")"
   if [[ "$out" == /* || "$out" == *..* ]]; then
     echo "demo.json output must be a path inside demos/$name: $out" >&2
     exit 1
@@ -37,5 +39,17 @@ mkdir -p "$stage"
 cp -R "$demo/$out" "$stage/public"
 if [[ -d "$demo/functions" ]]; then
   cp -R "$demo/functions" "$stage/functions"
+fi
+if [[ "$acp" == true ]]; then
+  # The AI-edit panel (acp/panel.js) goes into index.html only.
+  mkdir -p "$stage/public/_acp"
+  cp "$here/acp/panel.js" "$stage/public/_acp/panel.js"
+  tag="<script src=\"/_acp/panel.js\" data-demo=\"$name\" defer></script>"
+  index="$stage/public/index.html"
+  if [[ -f "$index" ]] && grep -qi '</body>' "$index"; then
+    TAG="$tag" perl -0pi -e 's#</body>#$ENV{TAG}\n</body>#i' "$index"
+  elif [[ -f "$index" ]]; then
+    echo "$tag" >> "$index"
+  fi
 fi
 echo "staged demos/$name -> .stage/"
