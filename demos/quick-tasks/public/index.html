@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quick Tasks</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; padding: 20px; }
+    .container { max-width: 500px; margin: 0 auto; }
+    h1 { color: #333; margin-bottom: 20px; }
+    .task-list { background: white; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 20px; }
+    .task { display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
+    .task:last-child { border-bottom: none; }
+    .task input { margin-right: 12px; width: 18px; height: 18px; cursor: pointer; }
+    .task label { flex: 1; cursor: pointer; }
+    .task.done label { color: #999; text-decoration: line-through; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>✓ Quick Tasks</h1>
+    <div class="task-list">
+      <div class="task">
+        <input type="checkbox">
+        <label>Review pull requests</label>
+      </div>
+      <div class="task">
+        <input type="checkbox">
+        <label>Update documentation</label>
+      </div>
+      <div class="task">
+        <input type="checkbox">
+        <label>Test the demo</label>
+      </div>
+      <div class="task">
+        <input type="checkbox">
+        <label>Deploy to production</label>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.querySelectorAll('.task input').forEach(cb => {
+      cb.addEventListener('change', (e) => {
+        e.target.closest('.task').classList.toggle('done', e.target.checked);
+      });
+    });
+  </script>
+</body>
+</html>
