@@ -51,6 +51,67 @@ The bridge works in a separate folder, `.acp/<name>/`, on the `demo/<name>` bran
 
 Who can change what: anyone with write access to this repo can use it, but only on demos whose PR they opened. The bridge checks this, and CI refuses pushes from anyone else (the repo owner can change any demo).
 
+## Step-by-step guide: edit a demo (for non-technical users)
+
+**Before you start (one time only)**
+
+You need three free tools:
+- **Git** — download from [git-scm.com](https://git-scm.com)
+- **GitHub CLI (gh)** — download from [cli.github.com](https://cli.github.com)
+- **Node.js** — download from [nodejs.org](https://nodejs.org) (version 22 or newer)
+
+You also need a **Claude** or **ChatGPT** account with a paid subscription.
+
+Sign in to GitHub once by opening Terminal and typing:
+```
+gh auth login
+```
+
+**Step 1: Sign in to your AI**
+
+Open Terminal. For Claude, type `claude`. For ChatGPT, type `codex login`. Sign in when prompted. (Do this once.)
+
+**Step 2: Get the demo files**
+
+```
+gh repo clone tonydata22au/tonypham-prototypes-deploy
+cd tonypham-prototypes-deploy
+```
+
+**Step 3: Start the chat bridge**
+
+Open the demo's public page and click the **Edit with AI** button (bottom right, black). Copy the command it shows and paste it into Terminal. It looks like:
+
+```
+scripts/acp-bridge demo-name --agent claude
+```
+
+Use `--agent codex` for ChatGPT.
+
+**Step 4: Open your local preview**
+
+Terminal prints: **Preview with chat: http://127.0.0.1:7878/**. Open that address in your browser. This page is only on your computer.
+
+**Step 5: Ask for a change**
+
+Click **Edit with AI** and type a request in plain English:
+
+> Make the heading blue and larger
+
+Press Enter. The AI works and the page reloads with your change.
+
+**Step 6: Keep editing or start over**
+
+Ask for more changes the same way. Click **Stop** to cancel mid-way. If the AI asks permission, you'll see buttons to approve or deny. To start over: close Terminal (Ctrl+C) and re-run Step 3.
+
+**Step 7: Publish**
+
+Click **Publish** in the panel. About 1 minute later, the public link shows your version.
+
+**Step 8: Done**
+
+Press Ctrl+C in Terminal to close the bridge.
+
 ## Try a demo on your computer
 
 ```sh
