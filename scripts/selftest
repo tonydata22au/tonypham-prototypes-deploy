@@ -32,6 +32,18 @@ if [[ "$(cat .stage/public/index.html 2>/dev/null)" == built ]]; then ok "build 
 echo '{"output": "../hello-api/public"}' > demos/zz-selftest/demo.json
 expect_exit 1 "stage rejects output outside the demo" scripts/stage zz-selftest
 
+echo '{"acp": true}' > demos/zz-selftest/demo.json
+mkdir -p demos/zz-selftest/public
+echo '<html><BODY>x</BODY></html>' > demos/zz-selftest/public/index.html
+expect_exit 0 "stage with acp on" scripts/stage zz-selftest
+if grep -q 'src="/_acp/panel.js" data-demo="zz-selftest"' .stage/public/index.html && [[ -f .stage/public/_acp/panel.js ]]; then ok "acp panel injected"; else bad "acp panel injected"; fi
+expect_exit 0 "stage hello-static (acp off)" scripts/stage hello-static
+if ! grep -q _acp .stage/public/index.html && [[ ! -e .stage/public/_acp ]]; then ok "no acp panel when off"; else bad "no acp panel when off"; fi
+expect_exit 2 "acp-bridge rejects bad name" scripts/acp-bridge Bad_Name
+expect_exit 2 "acp-bridge rejects unknown agent" scripts/acp-bridge hello-static --agent nope
+expect_exit 1 "acp-bridge refuses a demo with acp off" env ACP_WORKDIR="$root" scripts/acp-bridge hello-static
+expect_exit 0 "acp-bridge chat round trip (fake agent)" node acp/test.js
+
 # check-paths, in a throwaway repo
 repo="$tmp/repo"
 git init -q -b main "$repo"
@@ -73,6 +85,7 @@ echo SECRET=1 > "$site/.env.local"
 expect_exit 1 "publish refuses a folder holding .env files" scripts/publish zz-pub "$site" --dry-run
 rm "$site/.env.local"
 mkdir -p "$tmp/fn"
+expect_exit 0 "publish --dry-run accepts --acp" scripts/publish zz-pub "$site" --acp --dry-run
 expect_exit 0 "publish --dry-run accepts --functions" scripts/publish zz-pub "$site" --functions "$tmp/fn" --dry-run
 
 echo

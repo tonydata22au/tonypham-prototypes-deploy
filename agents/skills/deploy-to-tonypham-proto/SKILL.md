@@ -19,13 +19,13 @@ A request like "Deploy to tonypham proto" is the user's approval to push a branc
    - The folder must contain `index.html` at its top level.
    - Optional serverless code: only if the project already has Cloudflare Pages Functions (a `functions/` folder, for example `functions/api/hello.js`). Pass it with `--functions`.
    - If the project needs a server that stays running, a database, or a login, stop and tell the user: this repo hosts static sites and Pages Functions only.
-4. **Check the account.** Run `gh auth status`. The active account must be `tonydata22au`. If not, run `gh auth switch -u tonydata22au`, and switch back to the previous account when you finish.
+4. **Check the account.** Run `gh auth status`. The active account must be able to push to the repo (`tonydata22au` or a collaborator). If a collaborator updates a demo, it must be one whose PR they opened; CI refuses others.
 5. **Publish from a fresh clone.** Use absolute paths:
    ```sh
    d="$(mktemp -d)" && gh repo clone tonydata22au/tonypham-prototypes-deploy "$d"
    "$d/scripts/publish" <name> <absolute-built-folder> [--functions <absolute-functions-folder>]
    ```
-   Add `--dry-run` first if unsure. It checks the inputs and changes nothing. The script creates or updates `demo/<name>`, pushes, opens or reopens the draft PR, then waits up to 4 minutes and prints `LIVE: <url>`.
+   Add `--acp` if the user wants to edit the demo by chatting with their AI agent (the "Edit with AI" panel), or `--no-acp` to turn it off. Then tell them to run `scripts/acp-bridge <name>` in a clone of the repo (see its README). Add `--dry-run` first if unsure. It checks the inputs and changes nothing. The script creates or updates `demo/<name>`, pushes, opens or reopens the draft PR, then waits up to 4 minutes and prints `LIVE: <url>`.
 6. **Report** the live link, the PR URL, and the demo name. Say it is public to anyone with the link.
 
 ## Updating and taking down

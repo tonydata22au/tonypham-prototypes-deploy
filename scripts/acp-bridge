@@ -1,0 +1,223 @@
+#!/usr/bin/env node
+// Chat with your own ACP agent (Claude Code or Codex, on your subscription) to edit demos/<name>,
+// see the change in a local preview, and publish it to the demo's branch.
+// usage: scripts/acp-bridge <name> [--agent claude|codex]
+"use strict";
+const { spawn, execFileSync, execFile } = require("node:child_process");
+const fs = require("node:fs");
+const http = require("node:http");
+const path = require("node:path");
+const readline = require("node:readline");
+
+const REPO = "tonydata22au/tonypham-prototypes-deploy";
+// Pinned like wrangler: bump only after testing a real chat.
+const AGENTS = {
+  claude: "npx -y @agentclientprotocol/claude-agent-acp@0.107.3",
+  codex: "npx -y @agentclientprotocol/codex-acp@2.7.0",
+};
+const SIGN_IN = { claude: "run `claude` once and sign in", codex: "run `codex login`" };
+
+const die = (msg, code = 1) => { console.error(msg); process.exit(code); };
+const args = process.argv.slice(2);
+const name = args.find((a, i) => !a.startsWith("-") && args[i - 1] !== "--agent") || "";
+const agent = args.includes("--agent") ? args[args.indexOf("--agent") + 1] : "claude";
+if (!/^[a-z][-a-z0-9]{0,22}[a-z0-9]$/.test(name) || !Object.hasOwn(AGENTS, agent)) {
+  die("usage: scripts/acp-bridge <name> [--agent claude|codex]", 2);
+}
+const here = path.resolve(__dirname, "..");
+const port = Number(process.env.ACP_PORT || 7878);
+const origin = `http://127.0.0.1:${port}`;
+const git = (cwd, ...a) => execFileSync("git", a, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
+const run = (cmd, a, opts) => new Promise((ok, fail) =>
+  execFile(cmd, a, { encoding: "utf8", ...opts }, (e, out, err) => (e ? fail(new Error((err || e.message).trim())) : ok(out.trim()))));
+
+// 1. A worktree on demo/<name>, so the edit never touches your current checkout.
+// ACP_WORKDIR (tests) points at a ready folder and skips git and GitHub.
+let wt = process.env.ACP_WORKDIR;
+if (!wt) {
+  let remote = "";
+  try { remote = git(here, "remote", "get-url", "origin"); } catch { /* no origin */ }
+  if (!remote.includes(REPO)) die(`run this inside a clone of ${REPO}`);
+  const branch = `demo/${name}`;
+  try { git(here, "fetch", "-q", "origin", branch); } catch { die(`no branch ${branch} on GitHub: publish the demo first (scripts/publish)`); }
+  wt = path.join(here, ".acp", name);
+  if (!fs.existsSync(wt)) {
+    let local = true;
+    try { git(here, "rev-parse", "--verify", "-q", branch); } catch { local = false; }
+    git(here, "worktree", "add", "-q", ...(local ? [wt, branch] : ["-b", branch, wt, `origin/${branch}`]));
+  }
+  try { git(wt, "merge", "-q", "--ff-only", `origin/${branch}`); } catch { console.error(`note: ${wt} has commits not on GitHub; keeping them`); }
+  // Only the PR author (or the repo owner) may change a demo; CI enforces this too.
+  let me = "", author = "";
+  try {
+    me = execFileSync("gh", ["api", "user", "-q", ".login"], { encoding: "utf8" }).trim();
+    author = execFileSync("gh", ["pr", "view", branch, "--repo", REPO, "--json", "author", "-q", ".author.login"], { encoding: "utf8" }).trim();
+  } catch { console.error("note: could not check the demo's owner with gh; CI checks it when you publish"); }
+  if (me && author && me !== author && me !== REPO.split("/")[0]) die(`demo ${name} belongs to ${author}; you (${me}) can change only your own demos`);
+}
+const demoDir = path.join(wt, "demos", name);
+let cfg = {};
+try { cfg = JSON.parse(fs.readFileSync(path.join(demoDir, "demo.json"), "utf8")); } catch { /* no demo.json */ }
+if (cfg.acp !== true) die(`AI editing is off for ${name}. Turn it on: add "acp": true to demos/${name}/demo.json (or publish with --acp).`);
+const stageDir = path.join(wt, ".stage", "public");
+// shortcut: restages (and rebuilds) the whole demo after every turn; fine for static demos, slow for big builds.
+const stage = () => run(path.join(here, "scripts", "stage"), [name], { env: { ...process.env, STAGE_ROOT: wt } });
+
+// 2. Chat log, replayed to the panel after each reload.
+const history = [];
+const clients = new Set();
+const emit = (m) => {
+  history.push(m);
+  for (const c of clients) c.write(`data: ${JSON.stringify(m)}\n\n`);
+};
+
+// 3. ACP client: JSON-RPC 2.0, one JSON message per line on the agent's stdin/stdout.
+const child = spawn(process.env.ACP_AGENT_CMD || AGENTS[agent], { cwd: demoDir, shell: true, detached: true, stdio: ["pipe", "pipe", "inherit"] });
+const stopAgent = () => { try { process.kill(-child.pid); } catch { /* already gone */ } }; // the whole group: shell, npx, agent
+child.on("exit", (code) => { console.error(`agent stopped (exit ${code})`); process.exit(1); });
+let nextId = 1;
+const waiting = new Map();
+const permissions = new Map(); // rpc id -> history entry
+const send = (m) => child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", ...m })}\n`);
+const request = (method, params) => new Promise((ok, fail) => {
+  const id = nextId++;
+  waiting.set(id, { ok, fail });
+  send({ id, method, params });
+});
+readline.createInterface({ input: child.stdout }).on("line", (line) => {
+  let m;
+  try { m = JSON.parse(line); } catch { return; } // agents may log non-JSON lines
+  if (m.method && m.id !== undefined) return onAgentRequest(m);
+  if (m.method === "session/update") return onUpdate(m.params.update);
+  const w = waiting.get(m.id);
+  if (!w) return;
+  waiting.delete(m.id);
+  if (m.error) w.fail(Object.assign(new Error(m.error.message), { code: m.error.code }));
+  else w.ok(m.result);
+});
+function onAgentRequest(m) {
+  if (m.method === "session/request_permission") {
+    const entry = { type: "permission", id: m.id, title: m.params.toolCall?.title || "a tool call", options: m.params.options };
+    permissions.set(m.id, entry);
+    return emit(entry);
+  }
+  // We offer no fs or terminal methods, so the agent uses its own tools.
+  send({ id: m.id, error: { code: -32601, message: `not supported: ${m.method}` } });
+}
+function answer(id, outcome) {
+  const entry = permissions.get(id);
+  if (!entry) return;
+  entry.answered = true;
+  permissions.delete(id);
+  send({ id, result: { outcome } });
+}
+function onUpdate(u) {
+  if (u.sessionUpdate === "agent_message_chunk" && u.content?.type === "text") emit({ type: "text", text: u.content.text });
+  else if (u.sessionUpdate === "tool_call") emit({ type: "info", text: u.title || "tool call" });
+  else if (u.sessionUpdate === "tool_call_update" && u.status === "failed") emit({ type: "error", text: `failed: ${u.title || u.toolCallId}` });
+}
+
+let sessionId = null;
+let busy = true;
+let first = true;
+const setBusy = (b) => { busy = b; emit({ type: "busy", busy: b }); };
+async function start() {
+  await stage();
+  await request("initialize", { protocolVersion: 1, clientCapabilities: { fs: { readTextFile: false, writeTextFile: false }, terminal: false } });
+  ({ sessionId } = await request("session/new", { cwd: demoDir, mcpServers: [] }));
+  emit({ type: "info", text: `Connected to ${agent}. Ask for a change; the page reloads when the agent finishes.` });
+  setBusy(false);
+}
+async function prompt(text) {
+  setBusy(true);
+  emit({ type: "you", text });
+  const preface = first
+    ? `You are editing the public demo "${name}" in the folder ${demoDir}. Change files only inside it. ` +
+      `The site is served from its ${cfg.output || "public"}/ folder. Never add secrets or private data: the site is public.\n\n`
+    : "";
+  first = false;
+  try {
+    const { stopReason } = await request("session/prompt", { sessionId, prompt: [{ type: "text", text: preface + text }] });
+    if (stopReason !== "end_turn") emit({ type: "info", text: `stopped: ${stopReason}` });
+    await stage();
+    emit({ type: "reload" });
+  } catch (e) {
+    emit({ type: "error", text: e.message });
+  }
+  setBusy(false);
+}
+async function publish() {
+  setBusy(true);
+  try {
+    if (process.env.ACP_WORKDIR) throw new Error("publish is off in test mode");
+    await run("git", ["add", "-A", `demos/${name}`], { cwd: wt });
+    if (await run("git", ["diff", "--cached", "--name-only"], { cwd: wt })) {
+      await run("git", ["commit", "-q", "-m", `demo: edit ${name} with ${agent} (ACP)`], { cwd: wt });
+    }
+    await run("git", ["fetch", "-q", "origin", "main"], { cwd: wt });
+    await run(path.join(here, "scripts", "check-paths"), [name, "origin/main", "HEAD"], { cwd: wt });
+    await run("git", ["push", "-q", "origin", `HEAD:demo/${name}`], { cwd: wt });
+    const pr = JSON.parse(await run("gh", ["pr", "view", `demo/${name}`, "--repo", REPO, "--json", "url,state"]));
+    emit({ type: "info", text: pr.state === "OPEN"
+      ? `Published. The public link updates in about a minute: ${pr.url}`
+      : `Pushed, but the PR is ${pr.state.toLowerCase()}. Reopen it to bring the demo back: ${pr.url}` });
+  } catch (e) {
+    emit({ type: "error", text: `publish failed: ${e.message}` });
+  }
+  setBusy(false);
+}
+
+// 4. Local server: the preview, the panel and the chat API. 127.0.0.1 only.
+const TYPES = { ".html": "text/html", ".js": "text/javascript", ".mjs": "text/javascript", ".css": "text/css", ".json": "application/json",
+  ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".gif": "image/gif", ".webp": "image/webp",
+  ".ico": "image/x-icon", ".woff2": "font/woff2", ".txt": "text/plain", ".wasm": "application/wasm" };
+const server = http.createServer((req, res) => {
+  const end = (code, body = "") => { res.writeHead(code, { "content-type": "text/plain" }); res.end(body); };
+  // Host blocks DNS rebinding; Origin stops other websites from driving your agent.
+  if (req.headers.host !== `127.0.0.1:${port}`) return end(403, `open ${origin}/`);
+  const url = new URL(req.url, origin);
+  if (req.method === "GET" && url.pathname === "/_acp/events") {
+    res.writeHead(200, { "content-type": "text/event-stream", "cache-control": "no-store" });
+    for (const m of history) res.write(`data: ${JSON.stringify({ ...m, replay: true })}\n\n`);
+    clients.add(res);
+    return req.on("close", () => clients.delete(res));
+  }
+  if (req.method === "POST") {
+    if (req.headers.origin !== origin) return end(403, "bad origin");
+    let body = "";
+    req.on("data", (c) => { body += c; if (body.length > 65536) req.destroy(); });
+    return req.on("end", () => {
+      let data;
+      try { data = JSON.parse(body || "{}"); } catch { return end(400, "bad json"); }
+      if (url.pathname === "/_acp/permission") { answer(data.id, { outcome: "selected", optionId: String(data.optionId) }); return end(204); }
+      if (url.pathname === "/_acp/cancel") {
+        if (sessionId) send({ method: "session/cancel", params: { sessionId } });
+        for (const id of [...permissions.keys()]) answer(id, { outcome: "cancelled" });
+        return end(204);
+      }
+      if (busy) return end(409, "busy");
+      if (url.pathname === "/_acp/prompt" && typeof data.text === "string" && data.text.trim()) { prompt(data.text.trim()); return end(202); }
+      if (url.pathname === "/_acp/publish") { publish(); return end(202); }
+      return end(404);
+    });
+  }
+  if (req.method !== "GET") return end(405);
+  let rel;
+  try { rel = decodeURIComponent(url.pathname); } catch { return end(400); }
+  let file = path.join(stageDir, path.normalize(rel)); // normalize keeps a leading "/" path inside stageDir
+  if (!file.startsWith(stageDir)) return end(403);
+  if (fs.existsSync(file) && fs.statSync(file).isDirectory()) file = path.join(file, "index.html");
+  if (!fs.existsSync(file)) return end(404, "not found");
+  res.writeHead(200, { "content-type": TYPES[path.extname(file).toLowerCase()] || "application/octet-stream", "cache-control": "no-store" });
+  fs.createReadStream(file).pipe(res);
+});
+
+server.listen(port, "127.0.0.1", () => {
+  console.log(`Preview with chat: ${origin}/  (agent: ${agent}; Ctrl+C to stop)`);
+  start().catch((e) => {
+    const hint = e.code === -32000 ? ` Sign in first: ${SIGN_IN[agent]}.` : "";
+    emit({ type: "error", text: `could not start ${agent}: ${e.message}.${hint}` });
+    console.error(`could not start ${agent}: ${e.message}.${hint}`);
+  });
+});
+for (const sig of ["SIGINT", "SIGTERM"]) process.on(sig, () => { stopAgent(); process.exit(0); });
