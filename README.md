@@ -33,7 +33,28 @@ List your live demos with `gh pr list --search "head:demo/"`.
 
 From any project, tell Claude Code or Codex: **"Deploy to tonypham proto"**. The agent builds the project, runs `scripts/publish` from a fresh clone of this repo, and gives you the live link. Say "update my demo" to redeploy, or "take down my demo" to close its PR.
 
-This works because of a skill (`agents/skills/deploy-to-tonypham-proto/SKILL.md`) linked into `~/.agents/skills/` and `~/.claude/skills/`, plus short notes in `~/.claude/CLAUDE.md` and `~/.codex/AGENTS.md`. The skill is linked, not copied, so it follows this folder: if you move or delete the clone, link it again with `ln -s <this-folder>/agents/skills/deploy-to-tonypham-proto ~/.agents/skills/`. Chat-only apps (the ChatGPT website or app) cannot run commands on your computer, so use Codex, or run `scripts/publish` yourself.
+### Install the skill (once per computer)
+
+The "Deploy to tonypham proto" phrase works because of a skill, a small instruction file in this repo (`agents/skills/deploy-to-tonypham-proto/SKILL.md`). Your AI tool does not know about it until you link it. After you clone this repo:
+
+1. Open Terminal and go into the clone: `cd tonypham-prototypes-deploy`.
+2. Run these three lines. They link the skill, so you do not copy any files:
+
+   ```sh
+   mkdir -p ~/.claude/skills ~/.agents/skills
+   ln -sfn "$PWD/agents/skills/deploy-to-tonypham-proto" ~/.claude/skills/deploy-to-tonypham-proto
+   ln -sfn "$PWD/agents/skills/deploy-to-tonypham-proto" ~/.agents/skills/deploy-to-tonypham-proto
+   ```
+
+   `~/.claude/skills` is where Claude Code looks. `~/.agents/skills` is where Codex looks. It is safe to run them again.
+3. Close and reopen your AI tool, so it picks up the new skill.
+4. Check it: type `/deploy-to-tonypham-proto` in Claude Code (it should appear in the list), or just say **"Deploy to tonypham proto"** from any project.
+
+Also needed:
+- `gh auth login`, signed in to a GitHub account that can push to this repo. Ask the owner to add you as a collaborator first. You can change only demos you published yourself.
+- Optional: add one line to `~/.claude/CLAUDE.md` (Claude Code) or `~/.codex/AGENTS.md` (Codex), so the agent never asks where to deploy: *When I say "deploy to tonypham proto", use the `deploy-to-tonypham-proto` skill. The target is always `tonydata22au/tonypham-prototypes-deploy`.*
+
+Because the skill is linked, not copied, it follows the clone: `git pull` updates it. If you move or delete the clone, run the `ln` lines again from the new place. Chat-only apps (the ChatGPT website or app) cannot run commands on your computer, so use Codex or Claude Code, or run `scripts/publish` yourself.
 
 You can also run it by hand from a fresh clone: `scripts/publish my-demo /path/to/dist` (add `--functions /path/to/functions` for Pages Functions, or `--dry-run` to check first).
 
