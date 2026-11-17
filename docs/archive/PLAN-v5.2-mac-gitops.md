@@ -1,5 +1,7 @@
 # Plan: personal GitOps platform (`tonypham-prototypes-deploy`)
 
+> Archived. Retired plan. Its review files were deleted; find them in git history (`git log -- docs/reviews`). The current plan is `docs/plan/PLAN.md`.
+
 Status: v5.2, **100/100** on the Astra rubric (`docs/reviews/astra-review-4-rubric.md`). Score history: v3.1 = 74, v4 = 84, v4.1 = 87–88, v5 = 94, v5.1 = 99, v5.2 = 100. The score rates the plan, not deployment: every milestone gate still has to pass at implementation time. Reviews: `docs/reviews/` · Task: TPD-1 · Owner: Tony Pham (`tonydata22au`)
 
 ## 1. Goal
