@@ -34,20 +34,20 @@ expect_exit 1 "stage rejects missing demo" scripts/stage no-such-demo
 mkdir -p demos/zz-selftest
 echo '{"build": "mkdir -p dist && echo built > dist/index.html", "output": "dist"}' > demos/zz-selftest/demo.json
 expect_exit 0 "stage runs demo.json build" scripts/stage zz-selftest
-if [[ "$(cat .stage/public/index.html 2>/dev/null)" == built ]]; then ok "build output staged"; else bad "build output staged"; fi
+if [[ "$(head -1 .stage/public/index.html 2>/dev/null)" == built ]]; then ok "build output staged"; else bad "build output staged"; fi
 echo '{"output": "../zz-api/public"}' > demos/zz-selftest/demo.json
 expect_exit 1 "stage rejects output outside the demo" scripts/stage zz-selftest
 
-echo '{"acp": true}' > demos/zz-selftest/demo.json
+rm demos/zz-selftest/demo.json
 mkdir -p demos/zz-selftest/public
 echo '<html><BODY>x</BODY></html>' > demos/zz-selftest/public/index.html
-expect_exit 0 "stage with acp on" scripts/stage zz-selftest
+expect_exit 0 "stage with no demo.json" scripts/stage zz-selftest
 if grep -q "src=\"/_acp/panel.js\" data-demo=\"zz-selftest\" data-repo=\"$(sed -n 's/^REPO=//p' deploy.config)\"" .stage/public/index.html && [[ -f .stage/public/_acp/panel.js ]]; then ok "acp panel injected"; else bad "acp panel injected"; fi
-expect_exit 0 "stage zz-static (acp off)" scripts/stage zz-static
-if ! grep -q _acp .stage/public/index.html && [[ ! -e .stage/public/_acp ]]; then ok "no acp panel when off"; else bad "no acp panel when off"; fi
+echo '{"acp": false}' > demos/zz-selftest/demo.json
+expect_exit 0 "stage with acp false" scripts/stage zz-selftest
+if grep -q _acp/panel.js .stage/public/index.html; then ok "acp panel forced on"; else bad "acp panel forced on"; fi
 expect_exit 2 "acp-bridge rejects bad name" scripts/acp-bridge Bad_Name
 expect_exit 2 "acp-bridge rejects unknown agent" scripts/acp-bridge zz-static --agent nope
-expect_exit 1 "acp-bridge refuses a demo with acp off" env ACP_WORKDIR="$root" scripts/acp-bridge zz-static
 expect_exit 0 "acp-bridge chat round trip (fake agent)" node acp/test.js
 
 # check-paths, in a throwaway repo

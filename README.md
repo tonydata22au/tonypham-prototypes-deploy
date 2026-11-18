@@ -123,23 +123,22 @@ Run `scripts/new-demo my-app --dry-run` to see what will happen, then `scripts/n
 
 ## How do I edit a demo by chatting with AI?
 
-This part is optional. A demo can show an **Edit with AI** button. You chat with your own AI agent (Claude Code or Codex, on your own paid plan), it changes the demo, and you see the result right away. When you like it, you click **Publish** and the public link updates.
+Every demo shows an **Edit with AI** button. You chat with your own AI agent (Claude Code or Codex, on your own paid plan), it changes the demo, and you see the result right away. When you like it, you click **Publish** and the public link updates.
 
 The agent runs only on your computer. It talks to the page through the Agent Client Protocol (ACP), a standard way for apps to chat with coding agents.
 
-1. **Turn it on** for the demo: publish with `--acp`, or add `"acp": true` to `demos/<name>/demo.json`. Use `--no-acp` to turn it off.
-2. **Sign in to your agent** once: run `claude` and log in, or run `codex login`.
-3. **Start the bridge** in your copy of the repo. The public demo's **Edit with AI** button shows the exact command. It looks like this:
+1. **Sign in to your agent** once: run `claude` and log in, or run `codex login`.
+2. **Start the bridge** in your copy of the repo. The public demo's **Edit with AI** button shows the exact command. It looks like this:
 
    ```sh
    scripts/acp-bridge my-app --agent claude
    ```
 
    Use `--agent codex` for Codex.
-4. **Open the preview.** After about 10 seconds, the terminal shows **READY!** and the link `http://127.0.0.1:7878/`. Your browser usually opens it by itself. This page exists only on your computer. If something goes wrong, the terminal says **Something needs fixing** and tells you what to do.
-5. **Ask for a change.** Click **Edit with AI** and type a request, such as *Make the heading blue and larger*. The page reloads with the change. Click **Stop** to cancel. If the agent asks for permission, click approve or deny.
-6. **Publish.** Click **Publish**. About a minute later, the public link shows the new version.
-7. **Finish.** Press Ctrl+C in the terminal to stop the bridge.
+3. **Open the preview.** After about 10 seconds, the terminal shows **READY!** and the link `http://127.0.0.1:7878/`. Your browser usually opens it by itself. This page exists only on your computer. If something goes wrong, the terminal says **Something needs fixing** and tells you what to do.
+4. **Ask for a change.** Click **Edit with AI** and type a request, such as *Make the heading blue and larger*. The page reloads with the change. Click **Stop** to cancel. If the agent asks for permission, click approve or deny.
+5. **Publish.** Click **Publish**. About a minute later, the public link shows the new version.
+6. **Finish.** Press Ctrl+C in the terminal to stop the bridge.
 
 The bridge works in a separate folder, `.acp/<name>/`, so your own files stay untouched.
 

@@ -63,7 +63,6 @@ if (!wt) {
 const demoDir = path.join(wt, "demos", name);
 let cfg = {};
 try { cfg = JSON.parse(fs.readFileSync(path.join(demoDir, "demo.json"), "utf8")); } catch { /* no demo.json */ }
-if (cfg.acp !== true) die(`"Edit with AI" is turned off for "${name}". Ask the demo's owner to turn it on.`);
 const stageDir = path.join(wt, ".stage", "public");
 // shortcut: restages (and rebuilds) the whole demo after every turn; fine for static demos, slow for big builds.
 const stage = () => run(path.join(here, "scripts", "stage"), [name], { env: { ...process.env, STAGE_ROOT: wt } });

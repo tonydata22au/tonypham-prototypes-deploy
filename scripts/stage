@@ -14,11 +14,10 @@ demo="$root/demos/$name"
 stage="$root/.stage"
 [[ -d "$demo" ]] || { echo "no such demo: demos/$name" >&2; exit 1; }
 
-out=public acp=false
+out=public
 if [[ -f "$demo/demo.json" ]]; then
   build="$(jq -r '.build // empty' "$demo/demo.json")"
   out="$(jq -r '.output // "public"' "$demo/demo.json")"
-  acp="$(jq -r '.acp == true' "$demo/demo.json")"
   if [[ "$out" == /* || "$out" == *..* ]]; then
     echo "demo.json output must be a path inside demos/$name: $out" >&2
     exit 1
@@ -40,8 +39,8 @@ cp -R "$demo/$out" "$stage/public"
 if [[ -d "$demo/functions" ]]; then
   cp -R "$demo/functions" "$stage/functions"
 fi
-if [[ "$acp" == true ]]; then
-  # The AI-edit panel (acp/panel.js) goes into index.html only.
+# Every demo gets the "Edit with AI" panel (acp/panel.js), in index.html only.
+{
   mkdir -p "$stage/public/_acp"
   cp "$here/acp/panel.js" "$stage/public/_acp/panel.js"
   repo="$(sed -n 's/^REPO=//p' "$here/deploy.config")"
@@ -52,5 +51,5 @@ if [[ "$acp" == true ]]; then
   elif [[ -f "$index" ]]; then
     echo "$tag" >> "$index"
   fi
-fi
+}
 echo "staged demos/$name -> .stage/"

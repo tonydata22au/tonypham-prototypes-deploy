@@ -5,14 +5,13 @@ set -euo pipefail
 
 repo="$(sed -n 's/^REPO=//p' "$(dirname "$0")/../deploy.config")"
 [[ "$repo" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]] || { echo "deploy.config: set REPO=owner/name" >&2; exit 1; }
-usage() { echo "usage: scripts/publish <name> <built-folder> [--functions <dir>] [--acp | --no-acp] [--dry-run]" >&2; exit 2; }
+usage() { echo "usage: scripts/publish <name> <built-folder> [--functions <dir>] [--dry-run]" >&2; exit 2; }
 
-name="" folder="" fn="" dry=0 acp=""
+name="" folder="" fn="" dry=0
 while (( $# )); do
   case "$1" in
     --dry-run) dry=1 ;;
-    --acp) acp=true ;;     # turn on the "Edit with AI" panel (scripts/acp-bridge)
-    --no-acp) acp=false ;;
+    --acp|--no-acp) ;;     # ignored: every demo has the "Edit with AI" panel; kept so older commands still work
     --functions) shift; fn="${1:-}"; [[ -n "$fn" ]] || usage ;;
     -*) usage ;;
     *) if [[ -z "$name" ]]; then name="$1"; elif [[ -z "$folder" ]]; then folder="$1"; else usage; fi ;;
@@ -70,11 +69,6 @@ if [[ -n "$fn" ]]; then
   rm -rf "$dir/functions"
   mkdir -p "$dir/functions"
   rsync -a --exclude .git --exclude node_modules "$fn"/ "$dir/functions/"
-fi
-if [[ -n "$acp" ]]; then
-  # demo.json survives updates (only public/ and functions/ are replaced), so the toggle sticks.
-  if [[ -f "$dir/demo.json" ]]; then cfg="$(cat "$dir/demo.json")"; else cfg='{}'; fi
-  jq --argjson on "$acp" '.acp = $on' <<< "$cfg" > "$dir/demo.json"
 fi
 
 git add -A "$dir"

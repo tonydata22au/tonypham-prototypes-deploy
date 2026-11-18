@@ -36,7 +36,7 @@ repo="$(sed -n 's/^REPO=//p' "$cfg")"
    d="$(mktemp -d)" && gh repo clone "$repo" "$d"
    "$d/scripts/publish" <name> <absolute-built-folder> [--functions <absolute-functions-folder>]
    ```
-   Add `--dry-run` first if unsure; it checks the inputs and changes nothing. Add `--acp` if the user wants the "Edit with AI" panel, or `--no-acp` to turn it off; then tell them to run `scripts/acp-bridge <name>` in a clone of the repo. The script creates or updates `demo/<name>`, pushes, opens or reopens the draft PR, waits up to 4 minutes and prints `LIVE: <url>`.
+   Add `--dry-run` first if unsure; it checks the inputs and changes nothing. Every demo gets the "Edit with AI" panel; tell the user they can edit it by running `scripts/acp-bridge <name>` in a clone of the repo. The script creates or updates `demo/<name>`, pushes, opens or reopens the draft PR, waits up to 4 minutes and prints `LIVE: <url>`.
 6. **Report** the live link, the PR link and the demo name. Say the link is public to anyone who has it.
 
 ## Updating and taking down
