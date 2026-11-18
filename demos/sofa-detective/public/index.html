@@ -1,0 +1,1146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Sofa Detective · who looked but didn't buy?</title>
+<meta name="description" content="A playful, animated data-lineage demo: find shoppers who looked at a sofa online but did not buy it, online or in a shop. Made-up data.">
+<meta name="robots" content="noindex, nofollow">
+<style>
+:root{
+  --bg:#FBF7F0;--ink:#26213A;--muted:#5E5873;--line:#ECE4D8;--card:#FFFDF8;
+  --look:#2F6FEB;--look-s:#E3EDFF;
+  --buy:#E07A00;--buy-ink:#A35400;--buy-s:#FFF0DB;
+  --tag:#7C3AED;--tag-s:#F0E8FF;
+  --done:#16A34A;--done-ink:#15803D;--done-s:#E4F7EA;
+  --remind:#E5397B;--remind-ink:#BE185D;--remind-s:#FDE7F0;
+  --grey:#A8A3B5;--grey-ink:#6B6580;--grey-s:#F1EFF4;
+  --oops:#DC2626;
+  --round:ui-rounded,"SF Pro Rounded","Nunito","Segoe UI",system-ui,-apple-system,Roboto,"Noto Sans",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{display:flex;flex-direction:column;background:var(--bg);color:var(--ink);font:15px/1.5 var(--round)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid #8C6CFF;outline-offset:2px;border-radius:8px}
+h2[tabindex="-1"]:focus{outline:none}
+b{font-weight:750}
+
+/* header */
+header{display:flex;align-items:center;gap:14px 18px;flex-wrap:wrap;padding:10px 18px;background:var(--card);border-bottom:2px solid var(--line)}
+.brand{display:flex;align-items:center;gap:12px;flex:1;min-width:280px}
+.logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#2F6FEB,#7C3AED 55%,#E5397B);display:grid;place-items:center;flex:none;box-shadow:0 4px 14px rgba(124,58,237,.3)}
+.brand h1{margin:0;font-size:22px;letter-spacing:-.01em;display:flex;align-items:center;gap:10px;flex-wrap:wrap;line-height:1.2}
+.brand p{margin:0;font-size:13.5px;color:var(--muted)}
+.tag{font:700 11px var(--round);background:var(--tag-s);color:var(--tag);padding:2px 9px;border-radius:999px}
+.ctrls{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap}
+.ctl{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--muted)}
+.seg{display:inline-flex;background:var(--grey-s);border-radius:12px;padding:3px}
+.seg button{border:0;background:none;padding:5px 11px;border-radius:9px;font-size:13.5px;color:var(--muted)}
+.seg button[aria-checked="true"]{background:#fff;color:var(--ink);font-weight:750;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.tog{display:flex;align-items:center;gap:8px;font-size:13.5px;cursor:pointer;position:relative;user-select:none}
+.tog input{position:absolute;opacity:0;width:1px;height:1px}
+.tog .sw{width:40px;height:24px;border-radius:12px;background:#D9D3E3;position:relative;transition:background .2s;flex:none}
+.tog .sw::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+.tog input:checked + .sw{background:var(--tag)}
+.tog.oops input:checked + .sw{background:var(--oops)}
+.tog input:checked + .sw::after{transform:translateX(16px)}
+.tog input:focus-visible + .sw{outline:3px solid #8C6CFF;outline-offset:2px}
+.big{border:0;border-radius:14px;padding:9px 16px;font-weight:800;font-size:14.5px;display:inline-flex;align-items:center;gap:8px}
+.big.play{background:var(--ink);color:#fff;animation:invite 2.2s ease-in-out infinite}
+.big.play[disabled]{animation:none;opacity:.55;cursor:default}
+.big.ghost{background:var(--grey-s);color:var(--ink)}
+@keyframes invite{0%,100%{box-shadow:0 0 0 0 rgba(124,58,237,.45)}50%{box-shadow:0 0 0 9px rgba(124,58,237,0)}}
+.grownlink{font-size:13px;color:var(--tag);font-weight:700;text-decoration:none}
+.grownlink:hover{text-decoration:underline}
+
+/* layout */
+main{flex:1;min-height:0;padding:12px}
+main.view{display:none}
+main.view.on{display:grid}
+main.story{grid-template-columns:minmax(0,1fr) 370px;gap:12px}
+.views{display:flex;gap:4px;background:var(--grey-s);padding:4px;border-radius:14px;flex-wrap:wrap}
+.views button{border:0;background:none;padding:7px 14px;border-radius:10px;font-weight:800;font-size:14px;color:var(--muted)}
+.views button[aria-current="page"]{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(38,33,58,.14)}
+.toolbar{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;padding:9px 14px;border-bottom:2px dashed var(--line)}
+.toolbar .spacer{flex:1}
+main.value,main.made{gap:12px;overflow:auto;align-content:start}
+.vhead h2{margin:0;font-size:24px;letter-spacing:-.01em;line-height:1.2}
+.lead{margin:4px 0 0;font-size:15px;color:var(--muted);max-width:120ch}
+.lead b{color:var(--ink)}
+.box{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:13px 15px;min-width:0}
+.box h3{margin:0 0 9px;font-size:16px}
+.box h3 small{font-weight:600;color:var(--muted);font-size:12.5px;margin-left:6px}
+.chainwrap{position:relative;padding-top:8px}
+.runner{position:absolute;top:0;left:0;width:12px;height:12px;border-radius:50%;background:var(--tag);box-shadow:0 0 10px var(--tag);animation:run 7s linear infinite}
+@keyframes run{from{left:0}to{left:calc(100% - 12px)}}
+.chainlist{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
+.chainlist li{position:relative;background:#fff;border:2px solid var(--line);border-radius:16px;padding:8px 11px;display:flex;flex-direction:column;gap:2px;font-size:13px;line-height:1.4}
+.chainlist li:not(:last-child)::after{content:"→";position:absolute;right:-14px;top:calc(50% - 12px);color:var(--tag);font-weight:900}
+.chainlist b{font-size:14px}
+.chainlist span{color:var(--muted)}
+.chainlist em{font-style:normal;font-weight:800;font-size:12px;margin-top:3px;align-self:flex-start;padding:2px 8px;border-radius:999px;background:var(--tag-s);color:var(--tag)}
+.chainlist li.goal{background:var(--done-s);border-color:#9ED9B0}
+.chainlist li.goal em{background:#fff;color:var(--done-ink)}
+.decide{margin:9px 0 0;font-size:13.5px}
+.note{font-size:12.5px;color:var(--muted);margin:6px 0 0;line-height:1.45}
+.skh .wtype{margin-left:auto}
+
+.people{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sk{background:#fff;border:2px solid var(--line);border-radius:14px;padding:8px 10px;display:flex;flex-direction:column;gap:4px;transition:transform .2s}
+.sk:hover{transform:translateY(-2px)}
+.skh{display:flex;align-items:center;gap:8px;font-size:14px}
+.ski,.bi{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;flex:none}
+.sk p{margin:0;font-size:13px;line-height:1.4}
+.skm{font-size:12px;font-weight:750;color:#5B2BC4}
+.skm span{color:var(--muted);font-weight:600}
+.wtype{font:800 11px var(--round);background:var(--grey-s);color:var(--grey-ink);border-radius:999px;padding:1px 8px;align-self:flex-start}
+.calc{display:flex;flex-direction:column;gap:7px}
+.calc .row{display:grid;grid-template-columns:1fr auto;gap:1px 8px;font-size:13px;font-weight:650;align-items:center}
+.calc output{font:800 13.5px var(--round);color:#5B2BC4}
+.calc input{grid-column:1/-1;width:100%;accent-color:var(--tag);margin:0}
+.results{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.res{border-radius:14px;padding:8px 10px}
+.res b{display:block;font:900 23px/1.15 var(--round)}
+.res span{font-size:12px;font-weight:700}
+.res.g{background:var(--done-s);color:var(--done-ink)}
+.res.w{background:var(--remind-s);color:var(--remind-ink)}
+.hold{margin-top:10px;font-size:13px;line-height:1.45}
+.bar{display:grid;grid-template-columns:104px 1fr 44px;align-items:center;gap:8px;margin:5px 0}
+.bar .tr{background:var(--grey-s);border-radius:7px;height:14px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:7px;transition:width .4s}
+.bar b{font-size:13px;text-align:right}
+.tn{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--tag);color:#fff;font:900 13px var(--round)}
+.jump{border:2px solid var(--line);background:var(--grey-s);border-radius:10px;padding:3px 9px;font-size:12px;font-weight:800;white-space:nowrap}
+.jump:hover{background:var(--tag-s)}
+.pitch{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.say{border-radius:14px;padding:7px 10px;font-size:13px;line-height:1.4}
+.say span{display:block;font-size:11px;font-weight:900;letter-spacing:.04em;margin-bottom:2px}
+.say q{quotes:"\201C" "\201D"}
+.say.tech{background:var(--grey-s);color:var(--grey-ink)}
+.say.biz{background:var(--tag-s);color:#3B1F7A}
+.flash{animation:flash 1.2s ease-out}
+@keyframes flash{0%{box-shadow:0 0 0 0 rgba(124,58,237,.6)}100%{box-shadow:0 0 0 14px rgba(124,58,237,0)}}
+.timeline{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.timeline li{background:#fff;border:2px solid var(--line);border-radius:14px;padding:8px 10px;font-size:12.5px;line-height:1.4;color:var(--muted)}
+.timeline li b{display:block;font-size:13.5px;margin-bottom:2px;color:var(--ink)}
+.timeline .num{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;font:900 11px var(--round);margin-bottom:4px}
+.timeline li.now{border-color:var(--tag);background:var(--tag-s);color:#3B1F7A}
+.timeline a{color:#5B2BC4;font-weight:800}
+.build{display:flex;flex-direction:column;gap:6px}
+.bstep{display:grid;grid-template-columns:32px 1fr;gap:8px;align-items:start;background:#fff;border:2px solid var(--line);border-radius:14px;padding:7px 10px;font-size:12.5px;line-height:1.4;color:var(--muted)}
+.bstep b{display:block;font-size:13.5px;color:var(--ink)}
+.tools{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.tools li{display:flex;flex-wrap:wrap;gap:0 8px;align-items:baseline;font-size:12.5px;line-height:1.4;background:#fff;border:2px solid var(--line);border-radius:12px;padding:6px 10px}
+.tools b{font-size:13.5px}
+.tools .tm{color:#5B2BC4;font-weight:700}
+.tools .tw{flex-basis:100%;color:var(--muted)}
+.split{margin:8px 0 0;font-size:12.5px;background:var(--buy-s);border-radius:12px;padding:7px 10px;line-height:1.45}
+.matrix{display:grid;grid-template-columns:190px 1fr;gap:10px;align-items:start}
+.matrix svg{width:100%}
+.mlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:12.5px;line-height:1.35}
+.mlist li{display:grid;grid-template-columns:20px 1fr;gap:6px}
+.mlist i{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font:900 10px var(--round);color:#fff;font-style:normal}
+.limits{margin:4px 0 0;padding-left:18px;font-size:12.5px;color:var(--muted);line-height:1.45}
+.score100{display:flex;align-items:center;gap:10px;margin-top:9px;background:var(--done-s);border-radius:14px;padding:8px 11px;font-size:13px;color:var(--done-ink)}
+.score100 b{font:900 24px var(--round)}
+.stagecard{background:var(--card);border:2px solid var(--line);border-radius:24px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+#g{flex:1;min-height:0;width:100%;display:block}
+.legend{display:flex;gap:6px 16px;flex-wrap:wrap;align-items:center;padding:8px 16px;border-top:2px dashed var(--line);font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:11px;height:11px;border-radius:50%;display:inline-block;box-shadow:0 0 6px currentColor}
+.legend .hint{margin-left:auto;font-weight:700;color:var(--ink)}
+.panel{background:var(--card);border:2px solid var(--line);border-radius:24px;padding:14px;display:flex;flex-direction:column;gap:10px;min-height:0;overflow:auto}
+
+/* svg text and motion */
+#g text{font-family:var(--round)}
+.cap{font:800 12px var(--round);fill:#6F6785;letter-spacing:.06em}
+.lb{font:800 15px var(--round);fill:var(--ink)}
+.lb.mono{font:700 13px var(--mono)}
+.sb{font:600 12px var(--round);fill:var(--muted)}
+.ini{font:800 15px var(--round);fill:var(--ink)}
+.sname{font:700 13.5px var(--round);fill:var(--ink)}
+.cnt{font:900 24px var(--round)}
+.cname{font:700 10.5px var(--round);fill:var(--ink)}
+.node{cursor:pointer;outline:none}
+.node .body{transform-box:fill-box;transform-origin:center;transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+.node:hover .body,.node:focus-visible .body{transform:scale(1.07)}
+.node:focus-visible .body{filter:drop-shadow(0 0 6px #8C6CFF)}
+.node.pop .body{animation:pop .55s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.22)}100%{transform:scale(1)}}
+.sedge{transition:opacity .3s,stroke .3s,stroke-width .3s}
+.focus .sedge:not(.hl){opacity:.18}
+.focus .pedge:not(.hl){opacity:.35}
+.hl{stroke-width:3.5 !important}
+.flow{stroke-dasharray:2 10;stroke-linecap:round;animation:dash 1.1s linear infinite;pointer-events:none}
+@keyframes dash{to{stroke-dashoffset:-12}}
+.broken{stroke:var(--oops) !important;stroke-dasharray:7 7;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:.35}}
+.forgot{opacity:.45}
+.gear{transform-box:fill-box;transform-origin:center;animation:spin 7s linear infinite}
+.spinfast .gear{animation-duration:1s}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ripple{transform-box:fill-box;transform-origin:center;animation:ripple .85s ease-out forwards;fill:none;stroke-width:3;pointer-events:none}
+@keyframes ripple{from{transform:scale(1);opacity:.9}to{transform:scale(2.6);opacity:0}}
+.float{font:800 13.5px var(--round);paint-order:stroke;stroke:#FFFDF8;stroke-width:5px;stroke-linejoin:round;animation:floatup 1.9s ease-out forwards;pointer-events:none}
+@keyframes floatup{0%{opacity:0;transform:translateY(8px)}12%{opacity:1}75%{opacity:1}100%{opacity:0;transform:translateY(-22px)}}
+.chip{transform-box:fill-box;transform-origin:center;animation:chipin .6s cubic-bezier(.34,1.56,.64,1)}
+@keyframes chipin{from{transform:scale(0)}to{transform:scale(1)}}
+
+/* panel */
+.counters{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ct{border-radius:16px;padding:8px 10px;display:flex;flex-direction:column;align-items:flex-start}
+.ct b{font:900 28px/1 var(--round)}
+.ct span{font-size:12px;font-weight:700}
+.ct.look{background:var(--look-s);color:#1D4FB8}
+.ct.buy{background:var(--done-s);color:var(--done-ink)}
+.ct.remind{background:var(--remind-s);color:var(--remind-ink)}
+.tabs{display:flex;gap:6px}
+.tabs button{flex:1;border:2px solid var(--line);background:#fff;border-radius:12px;padding:6px 8px;font-weight:750;font-size:13.5px;color:var(--muted)}
+.tabs button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.pane h2{margin:0;font-size:21px;line-height:1.2}
+.pane h3{margin:12px 0 6px;font-size:13px;color:var(--muted);font-weight:800}
+.kid{font-size:15.5px;line-height:1.55;margin:8px 0 0}
+.who{display:flex;gap:12px;align-items:center}
+.bigav{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font:900 22px var(--round);flex:none;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.bigicon{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;flex:none}
+.badge{display:inline-block;margin-top:3px;font-size:12.5px;font-weight:800;padding:2px 10px;border-radius:999px}
+.badge.done{background:var(--done-s);color:var(--done-ink)}
+.badge.remind{background:var(--remind-s);color:var(--remind-ink)}
+.badge.skip{background:var(--grey-s);color:var(--grey-ink)}
+.badge.wrong{background:#FEE2E2;color:#B91C1C}
+.clues{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+.clues li{display:flex;gap:8px;align-items:center;font-size:13.5px;background:#fff;border:2px solid var(--line);border-radius:12px;padding:5px 9px}
+.clues i{width:10px;height:10px;border-radius:50%;flex:none}
+.grown{margin-top:10px;background:#F6F3FB;border:2px dashed #D8CCF2;border-radius:14px;padding:8px 11px;font-size:13px}
+.grown h3{margin:0 0 4px;color:var(--tag)}
+.grown ul{margin:0;padding-left:18px}
+.grown code{font:12px var(--mono);background:#fff;border-radius:5px;padding:0 4px}
+pre.sql{margin:6px 0 0;background:#1F1B2E;color:#EDE9F6;border-radius:10px;padding:8px 10px;font:11.5px/1.5 var(--mono);overflow:auto;white-space:pre}
+pre.sql .k{color:#C4B5FD}pre.sql .s{color:#FDBA74}
+.steps{margin:8px 0 0;padding-left:20px;font-size:14.5px}
+.steps li{margin:3px 0}
+.eq{display:flex;align-items:center;justify-content:center;gap:8px;margin:12px 0 4px;flex-wrap:wrap}
+.eq .box{border-radius:14px;padding:6px 12px;text-align:center;font-size:12px;font-weight:800;min-width:76px}
+.eq .box b{display:block;font:900 26px/1.1 var(--round)}
+.eq .op{font:900 24px var(--round);color:var(--muted)}
+.eq .l{background:var(--look-s);color:#1D4FB8}.eq .bo{background:var(--done-s);color:var(--done-ink)}.eq .r{background:var(--remind-s);color:var(--remind-ink)}
+.tip{margin-top:10px;background:var(--buy-s);border-radius:14px;padding:8px 11px;font-size:13.5px}
+.tip.bad{background:#FEE2E2;color:#7F1D1D}
+.mini{margin-top:10px;border:2px solid var(--line);background:#fff;border-radius:12px;padding:6px 12px;font-weight:750;font-size:13.5px}
+.q{border:2px solid var(--line);border-radius:16px;padding:9px 11px;background:#fff;margin-top:8px}
+.q p{margin:0 0 7px;font-size:14px;font-weight:650}
+.q .opts{display:flex;gap:6px}
+.q .opts button{flex:1;border:2px solid var(--line);background:var(--grey-s);border-radius:11px;padding:5px 8px;font-weight:800;font-size:13.5px}
+.q .opts button.right{background:var(--done-s);border-color:var(--done);color:var(--done-ink)}
+.q .opts button.wrongpick{background:#FEE2E2;border-color:var(--oops);color:#B91C1C}
+.q .why{margin:7px 0 0;font-size:13px;color:var(--muted)}
+.score{display:flex;justify-content:space-between;align-items:center}
+.score b{font:900 20px var(--round);color:var(--tag)}
+
+.vtop{display:flex;align-items:center;justify-content:space-between;gap:8px 16px;flex-wrap:wrap}
+.subtabs{display:flex;gap:6px;flex-wrap:wrap}
+.subtabs button{border:2px solid var(--line);background:#fff;border-radius:12px;padding:5px 12px;font-weight:800;font-size:13.5px;color:var(--muted)}
+.subtabs button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.sub{display:none;gap:12px;min-height:0}
+.sub.on{display:grid;align-content:start}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.types4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.tth{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.tth h3{margin:0;flex:1}
+.types4 p{margin:4px 0 0;font-size:13.5px;line-height:1.45}
+.tq{font-weight:750;color:#3B1F7A}
+.loop{margin:6px 0 0;padding-left:20px;font-size:13.5px;line-height:1.45;display:flex;flex-direction:column;gap:3px}
+.tsteps{margin:0;padding-left:20px;font-size:13px;line-height:1.45;display:flex;flex-direction:column;gap:3px}
+.rule{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px;font-size:13px;line-height:1.4}
+.rule li{border:2px solid var(--line);border-radius:12px;padding:5px 9px;background:#fff;transition:background .3s,border-color .3s}
+.fcst{margin:6px 0 0;font-size:13px;background:var(--tag-s);border-radius:12px;padding:6px 10px;color:#3B1F7A;font-weight:650}
+.results{grid-template-columns:repeat(3,minmax(0,1fr))}
+.res.m{background:var(--tag-s);color:#3B1F7A}
+.skd{font-size:12px;font-weight:650;color:var(--ink)}
+.skd span{color:var(--muted);font-weight:600}
+.people{grid-template-columns:repeat(3,minmax(0,1fr))}
+.aud{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;line-height:1.45}
+.aud ul{margin:4px 0 0;padding-left:18px}
+.rt{border-collapse:collapse;width:100%;font-size:12.5px}
+.rt th{text-align:left;color:var(--muted);font-weight:700;border-bottom:2px solid var(--line);padding:3px 5px}
+.rt td{border-bottom:1px solid var(--line);padding:4px 5px;vertical-align:top}
+.rt td:nth-child(2){font-weight:800;white-space:nowrap}
+.plain{margin:0 0 6px;font-size:13.5px;line-height:1.45}
+.rulebox{margin-top:8px;background:var(--tag-s);border-radius:14px;padding:8px 11px;font-size:14.5px;line-height:1.5;color:#2C1A5C}
+.pause{border:2px solid var(--line);background:#fff;border-radius:12px;padding:6px 12px;font-weight:800;font-size:13px;color:var(--muted)}
+.pause[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.still *,.still *::before,.still *::after{animation:none !important;transition:none !important}
+.still .runner{display:none}
+@media (max-height:900px) and (min-width:1001px){
+  .types4 p,.loop,.tsteps,.rule,.aud,.plain,.rt,.skd{font-size:12px}
+  .rulebox{font-size:13.5px}
+  .rule{gap:3px}
+  .rule li{padding:3px 8px}
+  .tsteps{gap:1px}
+  .fcst{padding:4px 9px}
+
+  main.value,main.made{gap:10px}
+  .box{padding:10px 13px}
+  .box h3{margin-bottom:7px;font-size:15px}
+  .vhead h2{font-size:21px}
+  .lead{font-size:14px}
+  .lead .more{display:none}
+  .decide{margin-top:6px;font-size:12.5px}
+  .chainwrap{padding-top:6px}
+  .chainlist li{padding:6px 10px;font-size:12.5px}
+  .sk{padding:6px 9px;gap:3px}
+  .sk p,.timeline li,.bstep,.tools li,.mlist{font-size:12px}
+  .calc{gap:5px}
+  .res b{font-size:20px}
+  .hold{margin-top:7px;font-size:12.5px}
+  .bar{margin:3px 0}
+}
+@media (max-width:1000px){
+  html,body{height:auto}
+  body{display:block}
+  main.story,.chainlist,.timeline,.matrix,.two,.three,.types4,.people,.aud,.results{grid-template-columns:1fr}
+  .chainlist li::after{display:none}
+  .stagecard{overflow:visible}
+  #g{height:auto}
+  .legend .hint{margin-left:0}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none !important;transition:none !important}}
+@media print{.ctrls,.legend .hint{display:none}html,body{height:auto}body{display:block}main{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6"/></svg></div>
+    <div><h1>The Sofa Detective <span class="tag">Made-up data</span></h1>
+      <p>Who looked at the sofa but didn't buy it? Follow the clues and find out!</p></div>
+  </div>
+  <nav class="views" aria-label="Sections">
+    <button type="button" data-view="story" aria-current="page">The story</button>
+    <button type="button" data-view="value">Why it matters</button>
+    <button type="button" data-view="made">How I made this</button>
+  </nav>
+  <button type="button" class="pause" id="pause" aria-pressed="false">Turn off motion</button>
+  <a class="grownlink" href="technical.html">Technical version →</a>
+</header>
+
+<main class="view story on" id="v-story" aria-label="The story">
+  <section class="stagecard" aria-label="Clue map">
+    <div class="toolbar ctrls">
+    <div class="ctl"><span id="dl">Look back</span>
+      <div class="seg" role="radiogroup" aria-labelledby="dl" id="winseg">
+        <button type="button" role="radio" data-win="7">7 days</button>
+        <button type="button" role="radio" data-win="14">14</button>
+        <button type="button" role="radio" data-win="30">30</button>
+      </div></div>
+    <label class="tog oops"><input type="checkbox" id="oops"><span class="sw" aria-hidden="true"></span>Oops! Forget the shop tills</label>
+    <label class="tog"><input type="checkbox" id="grown"><span class="sw" aria-hidden="true"></span>Grown-up words</label>
+    <span class="spacer"></span>
+    <button type="button" class="big play" id="play"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l14 8-14 8z" fill="#fff"/></svg>Play the story</button>
+    <button type="button" class="big ghost" id="reset">Reset</button>
+  </div>
+    <svg id="g" viewBox="0 0 1220 640" role="group" aria-label="Clue map. 12 shoppers send clues to the website, the online shop and the shop tills. The clues go to a name-tag matcher, then a Looked list and a Bought list, then a sorting machine that puts each person in Already bought, Send a reminder or Skipped. Select a person or a machine."></svg>
+    <div class="legend">
+      <span><i style="background:#2F6FEB;color:#2F6FEB"></i>a look</span>
+      <span><i style="background:#E07A00;color:#E07A00"></i>a buy</span>
+      <span><i style="background:#A8A3B5;color:#A8A3B5"></i>doesn't count</span>
+      <span><i style="background:#16A34A;color:#16A34A"></i>already bought</span>
+      <span><i style="background:#E5397B;color:#E5397B"></i>reminder</span>
+      <span class="hint">Click any person or machine</span>
+    </div>
+  </section>
+  <aside class="panel" aria-label="Story">
+    <div class="counters" aria-live="polite">
+      <div class="ct look"><b id="c-look">0</b><span>looked</span></div>
+      <div class="ct buy"><b id="c-buy">0</b><span>already bought</span></div>
+      <div class="ct remind"><b id="c-remind">0</b><span>get a reminder</span></div>
+    </div>
+    <div class="tabs" role="group" aria-label="Panel">
+      <button type="button" data-tab="story" aria-pressed="true">Story</button>
+      <button type="button" data-tab="quiz" aria-pressed="false">Quiz: your turn</button>
+    </div>
+    <div class="pane" id="story" aria-live="polite"></div>
+    <div class="pane" id="quiz" hidden></div>
+  </aside>
+</main>
+
+<main class="view value" id="v-value" aria-labelledby="vh">
+  <div class="vhead"><div class="vtop"><h2 id="vh" tabindex="-1">What does the business get from this?</h2>
+    <div class="subtabs" role="group" aria-label="Part of this page"><button type="button" data-sub="v1" aria-pressed="true">Business result</button><button type="button" data-sub="v2" aria-pressed="false">Who gets what</button><button type="button" data-sub="v3" aria-pressed="false">Four kinds of data work</button></div></div>
+    <p class="lead"><b>A daily list that helps turn "just looking" into sales, and stops most reminders to people who already bought.</b> The CRM manager (who runs customer messages) uses it to pick tomorrow's reminders.</p></div>
+
+  <div class="sub on" id="v1">
+    <section class="box" aria-labelledby="ch-h"><h3 id="ch-h">From data work to business result</h3>
+      <div class="chainwrap"><span class="runner" aria-hidden="true"></span>
+        <ol class="chainlist">
+          <li><b>1 · Join the clues</b><span>Web views + shop sales, one name tag.</span><em id="k-match">75% of shop sales linked</em></li>
+          <li><b>2 · Build the right list</b><span>Looked, minus bought.</span><em id="k-tests">5 of 5 tests pass</em></li>
+          <li><b>3 · Send a reminder</b><span>A friendly message at 07:00.</span><em id="k-list">6 people today</em></li>
+          <li><b>4 · Customer comes back</b><span>Some buy the sofa.</span><em>To be checked by a fair test</em></li>
+          <li class="goal"><b>5 · Business result</b><span>Expected: extra sales, less waste, fewer complaints.</span><em>See the forecast</em></li>
+        </ol></div>
+      <p class="decide"><b>Decisions it improves:</b> who to message tomorrow · whether reminders are worth their cost · what to fix at the till · which product pages need a better price, photo or stock.</p>
+    </section>
+    <div class="two">
+      <section class="box" id="worth" aria-labelledby="worth-h"><h3 id="worth-h">What could it be worth? <small>a forecast from made-up inputs</small></h3>
+        <div class="calc">
+          <div class="row"><label for="i-n">People on the old, online-only list each month</label><output id="o-n" for="i-n"></output><input type="range" id="i-n" min="2000" max="100000" step="1000" value="20000"></div>
+          <div class="row"><label for="i-s">Of them, already bought in a shop (from this demo)</label><output id="o-s" for="i-s"></output><input type="range" id="i-s" min="0" max="50" step="1" value="25"></div>
+          <div class="row"><label for="i-r">Extra buyers per 100 reminders (the test measures this)</label><output id="o-r" for="i-r"></output><input type="range" id="i-r" min="0" max="10" step="0.5" value="2"></div>
+          <div class="row"><label for="i-a">Average order value (USD)</label><output id="o-a" for="i-a"></output><input type="range" id="i-a" min="50" max="2000" step="50" value="400"></div>
+          <div class="row"><label for="i-g">Gross margin on a sale</label><output id="o-g" for="i-g"></output><input type="range" id="i-g" min="5" max="80" step="5" value="35"></div>
+          <div class="row"><label for="i-c">Cost to send one reminder (USD)</label><output id="o-c" for="i-c"></output><input type="range" id="i-c" min="0" max="0.5" step="0.01" value="0.02"></div>
+        </div>
+        <div class="results" aria-live="polite">
+          <div class="res g"><b id="r-rev">$0</b><span>forecast extra revenue a month</span></div>
+          <div class="res m"><b id="r-mar">$0</b><span>forecast extra margin, after reminder costs</span></div>
+          <div class="res w"><b id="r-waste">0</b><span>wrong reminders avoided a month</span></div>
+        </div>
+        <p class="note">Full rollout, per month, in USD. Revenue is not profit: margin takes off the cost of goods and the cost of sending. Only the 25% comes from this demo; every other input is an assumption.</p>
+      </section>
+      <section class="box" aria-labelledby="test-h"><h3 id="test-h">How we'd prove it, then decide</h3>
+        <ol class="tsteps">
+          <li><b>Split once, at random.</b> When someone joins the list, a coin flip puts them in the reminder group (9 in 10) or the holdout (1 in 10) for the whole test.</li>
+          <li><b>One reminder each</b> per product during the test.</li>
+          <li><b>Same 14 days.</b> Count each person's purchases of that product, online and at the tills, in the 14 days after joining.</li>
+        </ol>
+        <div class="hold"><b>Example result:</b> the gap is the extra buyers per 100 reminders <small>(made-up rates)</small>
+          <div class="bar"><span>Got a reminder</span><span class="tr"><i id="b-t" style="background:var(--tag)"></i></span><b id="v-t"></b></div>
+          <div class="bar"><span>No reminder</span><span class="tr"><i id="b-c" style="background:#9C94AE"></i></span><b id="v-c"></b></div></div>
+        <p class="fcst" id="fcst" aria-live="polite"></p>
+        <h3 style="margin:7px 0 4px">After the test <small>thresholds are assumptions</small></h3>
+        <ul class="rule">
+          <li><b>Expand</b> if margin after costs is above $0, the gap's 90% range is above 0, and unsubscribes rise under 0.2 points.</li>
+          <li><b>Keep testing</b> if the gap looks positive but its 90% range still includes 0.</li>
+          <li><b>Change the message</b> if more people buy but margin after costs is $0 or less.</li>
+          <li><b>Stop</b> if the gap is about 0 or below, or unsubscribes rise 0.2 points or more.</li>
+        </ul>
+      </section>
+    </div>
+  </div>
+
+  <div class="sub" id="v2">
+    <div class="people" id="people"></div>
+    <div class="two">
+      <section class="box" aria-labelledby="aud-h"><h3 id="aud-h">Different people need different answers</h3>
+        <div class="aud"><div><b>People who run it every day</b> (CRM, stores)<ul><li>Is today's list ready, and did the checks pass?</li><li>What do I do when a check fails?</li></ul></div>
+        <div><b>Leaders</b> (marketing, finance)<ul><li>Is it working? The fair test answers.</li><li>What do the numbers mean in money?</li><li>Where do we go next?</li></ul></div></div>
+      </section>
+      <section class="box" aria-labelledby="say-h"><h3 id="say-h">Say it in business words</h3>
+        <div class="pitch">
+          <div class="say tech"><span>TECH TALK</span><q>I built a NOT EXISTS anti-join on a deterministic identity map, refreshed daily.</q></div>
+          <div class="say biz"><span>BUSINESS TALK</span><q>Every morning, CRM gets the people who looked but didn't buy. We no longer remind most people who bought in our shops. We expect each reminder to earn more and annoy fewer people; the fair test will show if it does.</q></div>
+        </div></section>
+    </div>
+  </div>
+
+  <div class="sub" id="v3">
+    <div class="types4">
+      <section class="box"><div class="tth"><span class="tn">1</span><h3>Reporting</h3><button type="button" class="jump" data-jump="remind">See it</button></div>
+        <p class="tq">Who should get tomorrow's reminder, and how many people is that?</p>
+        <p>The daily list, plus one shared count, "viewed but not bought": <b id="k-list2">6</b> people today. Everyone reads the same number.</p></section>
+      <section class="box"><div class="tth"><span class="tn">2</span><h3>Process modelling</h3><button type="button" class="jump" data-jump="match">See it</button></div>
+        <p class="tq">How do we measure "look, then buy" when people switch between the website and the shops?</p>
+        <p>Model: written rules, one name tag per person, and a 7-day look-back. Measures: the look-to-buy rate, and the share of shop sales linked to a person (<b id="k-match2">75%</b>).</p></section>
+      <section class="box"><div class="tth"><span class="tn">3</span><h3>Diagnosis</h3><button type="button" class="jump" data-jump="till">See it</button></div>
+        <p class="tq">Why do people look but not buy?</p>
+        <ol class="loop">
+          <li><b>Look:</b> 8 people looked and had no online purchase.</li>
+          <li><b>Guess:</b> some bought in a shop. <b>Test:</b> add the till sales. <b>Found:</b> 2 of 8 did, so 6 are left.</li>
+          <li><b>New guess:</b> for those 6, the price puts them off. <b>Test (proposed):</b> show half of them a 5% offer and compare with the other half.</li>
+          <li><b>Act:</b> 3 people per group is far too few, so test on a large, similar audience. Keep the offer only if its extra margin, after the discount, beats no offer. A win shows the offer changes buying; it does not prove price was the first reason. If not, check stock and photos.</li>
+        </ol></section>
+      <section class="box"><div class="tth"><span class="tn">4</span><h3>Prediction</h3><button type="button" class="jump" data-jump="worth">See it</button></div>
+        <p class="tq">Will reminders earn more than they cost?</p>
+        <ol class="loop">
+          <li><b>Forecast:</b> <span id="k-fc">2 extra buyers per 100 reminders → $41,700 extra margin a month</span> (assumed inputs).</li>
+          <li><b>Test:</b> the 14-day random split.</li>
+          <li><b>Decide:</b> expand, keep testing, change or stop, using the rule after the test.</li>
+          <li><b>Learn:</b> put the measured gap back into the calculator, so the next forecast is better.</li>
+        </ol></section>
+    </div>
+  </div>
+</main>
+
+<main class="view made" id="v-made" aria-labelledby="mh">
+  <div class="vhead"><div class="vtop"><h2 id="mh" tabindex="-1">How I made this</h2>
+    <div class="subtabs" role="group" aria-label="Part of this page"><button type="button" data-sub="m1" aria-pressed="true">Idea to demo</button><button type="button" data-sub="m2" aria-pressed="false">How it's built</button><button type="button" data-sub="m3" aria-pressed="false">Choices and limits</button></div></div>
+    <p class="lead"><b>Purpose:</b> show that a simple question, "who looked but didn't buy?", hides a hard part: knowing that the web shopper and the shop buyer are the same person. And explain it so anyone can follow in two minutes.</p></div>
+
+  <div class="sub on" id="m1">
+    <section class="box" aria-labelledby="tl-h"><h3 id="tl-h">From idea to demo</h3>
+      <ol class="timeline">
+        <li><span class="num">1</span><b>The question</b>Find logged-in shoppers who viewed a product but didn't buy, online or in a real shop.</li>
+        <li><span class="num">2</span><b>Frame it</b>Who uses the answer, what counts as "bought", one hard decision, and how to check it.</li>
+        <li><span class="num">3</span><b>Model it</b>4 source tables, 1 name-tag map, SQL with NOT EXISTS, 1 shared metric.</li>
+        <li><span class="num">4</span><b>Technical demo</b>7 steps with live SQL, YAML and tests. <a href="technical.html">Open it</a></li>
+        <li><span class="num">5</span><b>Story version</b>A clue map with flowing sparks, for non-technical readers.</li>
+        <li><span class="num">6</span><b>Business lens</b>Checked against 6 questions on value for business users.</li>
+        <li class="now"><span class="num">7</span><b>Independent review</b>A second AI wrote a 100-point rubric. Scores: 81, 89, 97, then 100.</li>
+      </ol></section>
+    <div class="three">
+      <section class="box" aria-labelledby="wd-h"><h3 id="wd-h">Who did what</h3>
+        <p class="plain"><b>Me:</b> chose the question and the framing, set the quality bar, and reviewed every preview.</p>
+        <p class="plain"><b>Claude Code:</b> wrote the code from my brief and ran the browser tests.</p>
+        <p class="plain"><b>GPT-6-Astra:</b> wrote the rubric and scored the work. It could read the files but not change them.</p></section>
+      <section class="box" aria-labelledby="rv-h"><h3 id="rv-h">Review rounds</h3>
+        <table class="rt"><thead><tr><th>Round</th><th>Score</th><th>What changed after it</th></tr></thead><tbody id="rounds">
+          <tr><td>1</td><td>81/100</td><td>SQL and YAML aligned with the page, honest wording, full diagnosis and test loops, rollout rule, layout fixes, keyboard fixes.</td></tr>
+          <tr><td>2</td><td>89/100</td><td>One key rule everywhere, same-day timing, 10 edge cases on list and metric, one-time test groups, full motion-off, darker markers.</td></tr>
+          <tr><td>3</td><td>97/100</td><td>Clear labels for the list, the independent check and the YAML concept; motion off now stops sparks already moving.</td></tr>
+          <tr><td>4</td><td>100/100</td><td>Nothing left to fix under the locked rubric.</td></tr>
+        </tbody></table></section>
+      <section class="box" aria-labelledby="fr-h"><h3 id="fr-h">Fresh-reader test</h3>
+        <p class="plain" id="fresh">A separate AI (Claude Haiku) with no background read only the story text and sorted Bình, Dũng, Hà and Ngọc. It got all 4 right and spotted that Ngọc's reminder is a mistake.</p><p class="plain">Its one stumble: does a cancelled order count? The rule now says it doesn't.</p></section>
+    </div>
+  </div>
+
+  <div class="sub" id="m2">
+    <div class="two">
+      <section class="box" aria-labelledby="bu-h"><h3 id="bu-h">How it's built</h3>
+        <div class="build">
+          <div class="bstep"><span class="bi" data-icon="monitor" data-c="#2F6FEB" style="background:#E3EDFF"></span><div><b>Made-up data</b><span id="b-data"></span></div></div>
+          <div class="bstep"><span class="bi" data-icon="tag" data-c="#7C3AED" style="background:#F0E8FF"></span><div><b>The same rules as the SQL</b>JavaScript repeats the SQL steps: views, purchases, eligible people, then NOT EXISTS. Built-in checks confirm the list sizes (6, 8, 7 and 10) and <span id="b-edge">6</span> edge cases.</div></div>
+          <div class="bstep"><span class="bi" data-icon="gear" data-c="#B45F00" style="background:#FFF0DB"></span><div><b>The moving picture</b>An SVG map. Sparks travel along each line, frame by frame. No libraries, so it works offline.</div></div>
+          <div class="bstep"><span class="bi" data-icon="check" data-c="#16A34A" style="background:#E4F7EA"></span><div><b>Checks</b>Headless Chrome at 1440×900, 1280×800 and phone width; zero console errors; keyboard use; a pause button and a still mode for people who turn motion off.</div></div>
+        </div></section>
+      <section class="box" aria-labelledby="to-h"><h3 id="to-h">Tools I used</h3>
+        <ul class="tools">
+          <li><b>Claude Code</b><span class="tm">Claude Opus 5.5 and Sonnet 5</span><span class="tw">Wrote the code from my brief and ran the browser tests.</span></li>
+          <li><b>Codex</b><span class="tm">GPT-6-Astra, medium effort</span><span class="tw">Independent reviewer: wrote the rubric and scored each round.</span></li>
+          <li><b>BB</b><span class="tm">agent workspace</span><span class="tw">Ran both AI agents side by side on one project.</span></li>
+          <li><b>Chrome DevTools</b><span class="tm">headless browser</span><span class="tw">Screenshots, layout checks and console errors.</span></li>
+          <li><b>HTML, CSS, SVG, JavaScript</b><span class="tm">one file per page</span><span class="tw">No frameworks and no build step.</span></li>
+          <li><b>BigQuery SQL, dbt MetricFlow YAML</b><span class="tm">technical version</span><span class="tw">The logic a data team would ship, shown but not run here.</span></li>
+        </ul></section>
+    </div>
+  </div>
+
+  <div class="sub" id="m3">
+    <div class="two">
+      <section class="box" aria-labelledby="pr-h"><h3 id="pr-h">What I did first, and what I skipped</h3>
+        <div class="matrix"><svg id="mx" viewBox="0 0 200 176" role="img" aria-label="Impact and effort chart for the six items listed beside it"></svg><ol class="mlist" id="mlist"></ol></div>
+        <p class="note">Positions are my judgement. Impact means how much an item changes who gets a reminder, or how sure we are that reminders pay. Effort means rough build time.</p></section>
+      <section class="box" aria-labelledby="li-h"><h3 id="li-h">Honest limits</h3>
+        <ul class="limits">
+          <li>Made-up data: 12 shoppers and 1 sofa.</li>
+          <li>The SQL and YAML were not run on a real warehouse or through dbt. The page's JavaScript follows the same rules, and its counts are what you see. The metric file is a concept: it works on daily rows, so its match with the list is not verified.</li>
+          <li>The list is a candidate list. Opt-outs, staff and bots are removed by an eligibility check; the made-up data has none of them.</li>
+          <li>Exact keys can still be wrong, for example a family sharing one phone. Keys shared by two people are left unlinked.</li>
+          <li>The money numbers are forecasts from assumed inputs, not results.</li>
+          <li>The review score is one AI's judgement against its own rubric, not a certificate.</li>
+        </ul></section>
+    </div>
+  </div>
+</main>
+
+<script>
+"use strict";
+const NS='http://www.w3.org/2000/svg';
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ago=d=>d===0?'today':d===1?'1 day ago':d+' days ago';
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function motionOff(){return RM||document.body.classList.contains('still');}
+const waiters=new Set();
+const wait=ms=>new Promise(r=>{if(motionOff()||!ms){r();return;}const done=()=>{clearTimeout(t);waiters.delete(done);r();};const t=setTimeout(done,ms);waiters.add(done);});
+function settleMotion(){[...waiters].forEach(f=>f());gFx.innerHTML='';gSparks.innerHTML='';} // motion turned off: finish every delay now
+
+/* ---------- made-up data, same as the grown-up version ("today" = 18 Nov 2026) ---------- */
+const SHOPPERS=[
+  {cid:'C01',name:'An',user:'u_an'},{cid:'C02',name:'Bình',user:'u_binh'},{cid:'C03',name:'Chi',user:'u_chi'},
+  {cid:'C04',name:'Dũng',user:'u_dung'},{cid:'C05',name:'Hà',user:'u_ha'},{cid:null,name:'Unknown',user:null,anon:'a_91f'},
+  {cid:'C06',name:'Linh',user:'u_linh'},{cid:'C07',name:'Minh',user:'u_minh'},{cid:'C08',name:'Ngọc',user:'u_ngoc',cashReceipt:'R-8814'},
+  {cid:'C09',name:'Phúc',user:'u_phuc'},{cid:'C10',name:'Quân',user:'u_quan'},{cid:'C11',name:'Trang',user:'u_trang'},
+];
+const WEB=[
+  {user:'u_an',anon:'a_11',sku:'SOFA-01',ago:3,device:'laptop'},{user:'u_an',anon:'a_12',sku:'SOFA-01',ago:2,device:'phone'},
+  {user:'u_binh',anon:'a_21',sku:'SOFA-01',ago:3,device:'phone'},{user:'u_chi',anon:'a_31',sku:'SOFA-01',ago:1,device:'phone'},
+  {user:'u_dung',anon:'a_41',sku:'SOFA-01',ago:5,device:'laptop'},{user:'u_ha',anon:'a_51',sku:'SOFA-01',ago:2,device:'phone'},
+  {user:null,anon:'a_91f',sku:'SOFA-01',ago:2,device:'phone'},{user:'u_linh',anon:'a_71',sku:'SOFA-01',ago:12,device:'laptop'},
+  {user:'u_minh',anon:'a_81',sku:'SOFA-01',ago:4,device:'phone'},{user:'u_minh',anon:'a_81',sku:'SOFA-01',ago:4,device:'phone'},
+  {user:'u_minh',anon:'a_82',sku:'SOFA-01',ago:3,device:'laptop'},{user:'u_ngoc',anon:'a_61',sku:'SOFA-01',ago:6,device:'phone'},
+  {user:'u_phuc',anon:'a_A1',sku:'SOFA-01',ago:2,device:'laptop'},{user:'u_quan',anon:'a_B1',sku:'SOFA-01',ago:2,device:'phone'},
+  {user:'u_quan',anon:'a_B2',sku:'SOFA-01',ago:2,device:'laptop'},{user:'u_trang',anon:'a_C1',sku:'SOFA-01',ago:26,device:'phone'},
+];
+const ORDERS=[
+  {id:'O-501',user:'u_an',sku:'SOFA-01',status:'completed',ago:1},
+  {id:'O-502',user:'u_dung',sku:'LAMP-07',status:'completed',ago:4},
+  {id:'O-503',user:'u_ha',sku:'SOFA-01',status:'cancelled',ago:1},
+];
+const POS=[
+  {id:'R-8790',store:'District 1',member:'L-3310',mtype:'loyalty',sku:'SOFA-01',ago:24},
+  {id:'R-8812',store:'District 1',member:'L-2041',mtype:'loyalty',sku:'SOFA-01',ago:2},
+  {id:'R-8813',store:'Thu Duc',member:'0903 555 118',mtype:'phone',sku:'SOFA-01',ago:1},
+  {id:'R-8814',store:'District 7',member:null,sku:'SOFA-01',ago:5},
+];
+const IDMAP=[
+  ...SHOPPERS.filter(s=>s.user).map(s=>({src:'web_login',key:s.user,cid:s.cid})),
+  {src:'loyalty',key:'L-2041',cid:'C02'},{src:'phone',key:'0912 340 204',cid:'C02'},
+  {src:'phone',key:'0903 555 118',cid:'C09'},{src:'loyalty',key:'L-3310',cid:'C11'},
+];
+// Rules: run date 18 Nov 2026 (Asia/Ho_Chi_Minh). ago = whole days before the run date; h = hour of the day (12 when not recorded).
+// A view counts if ago <= N. A purchase counts if it is completed, the same person and product, at or after the first counted view, and by the end of the run date.
+// A key (source + value) that points to two different people links no one. EXCL = customers who fail the eligibility check (opted out, staff, bot); none in this made-up data.
+const DATA={WEB,ORDERS,POS,IDMAP,EXCL:[]};
+const hrs=r=>(r.h??12)-24*r.ago; // hours after the run date's midnight; bigger = later
+const keyOwner=(src,key,D)=>{const m=D.IDMAP.filter(x=>x.src===src&&x.key===key);return m.length&&new Set(m.map(x=>x.cid)).size===1?m[0]:null;};
+const linkWeb=(u,D=DATA)=>{const m=u?keyOwner('web_login',u,D):null;return m?m.cid:null;};
+const storeKey=(p,D=DATA)=>p.member?keyOwner(p.mtype,p.member,D):null;
+function purchasesAll(D=DATA){
+  return [
+    ...D.ORDERS.map(o=>({line:o.id,cid:linkWeb(o.user,D),sku:o.sku,ago:o.ago,t:hrs(o),channel:'online',status:o.status})),
+    ...D.POS.map(p=>{const m=storeKey(p,D);return {line:p.id,cid:m?m.cid:null,sku:p.sku,ago:p.ago,t:hrs(p),channel:'store',status:'completed',via:m?m.src:'cash'};}),
+  ];
+}
+function compute(win,store,D=DATA){
+  const vm=new Map();
+  for(const e of D.WEB){
+    if(!e.user||e.ago>win) continue;              // logged in, inside the window
+    const cid=linkWeb(e.user,D); if(!cid) continue;
+    const k=cid+'|'+e.sku, v=vm.get(k)||{cid,sku:e.sku,first:e.ago,ft:Infinity,count:0};
+    v.first=Math.max(v.first,e.ago); v.ft=Math.min(v.ft,hrs(e)); v.count++; vm.set(k,v); // one row per person × product
+  }
+  const views=[...vm.values()];
+  const all=purchasesAll(D);
+  const counted=all.filter(p=>p.status==='completed'&&(store||p.channel==='online'));
+  const list=[],bought=[],excluded=[];
+  for(const v of views){
+    if(D.EXCL.includes(v.cid)){excluded.push(v);continue;}  // eligibility check
+    const p=counted.find(p=>p.cid&&p.cid===v.cid&&p.sku===v.sku&&p.t>=v.ft&&p.ago>=0); // NOT EXISTS
+    if(p) bought.push({...v,p}); else list.push(v);
+  }
+  return {views,all,counted,list,bought,excluded};
+}
+// a second count, written separately: eligible viewer rows minus those with a matching purchase (always counts store sales)
+function metricCount(win,D=DATA){
+  const first=new Map();
+  D.WEB.forEach(e=>{if(!e.user||e.ago>win)return;const c=linkWeb(e.user,D);if(!c||D.EXCL.includes(c))return;const k=c+'|'+e.sku;first.set(k,Math.min(first.has(k)?first.get(k):Infinity,hrs(e)));});
+  let conv=0;
+  first.forEach((f,k)=>{const [c,sku]=k.split('|');
+    const web=D.ORDERS.some(o=>o.status==='completed'&&o.sku===sku&&hrs(o)>=f&&o.ago>=0&&linkWeb(o.user,D)===c);
+    const till=D.POS.some(p=>{const m=storeKey(p,D);return m&&m.cid===c&&p.sku===sku&&hrs(p)>=f&&p.ago>=0;});
+    if(web||till) conv++;});
+  return first.size-conv;
+}
+function edgeTests(){
+  const L=o=>({WEB:[],ORDERS:[],POS:[],IDMAP:[{src:'web_login',key:'u1',cid:'K1'},{src:'web_login',key:'u2',cid:'K2'}],EXCL:[],...o});
+  const W=(user,sku,ago,h)=>({user,anon:'x',sku,ago,h,device:'phone'});
+  const O=(id,sku,ago,h,status='completed')=>({id,user:'u1',sku,status,ago,h});
+  const T=[
+    ['A purchase made before the first view does not count',L({WEB:[W('u1','S',3)],ORDERS:[O('a','S',10)]}),1],
+    ['Same day: a 09:00 purchase before a 15:00 view does not count',L({WEB:[W('u1','S',2,15)],ORDERS:[O('a','S',2,9)]}),1],
+    ['Same day: an 18:00 purchase after a 15:00 view counts',L({WEB:[W('u1','S',2,15)],ORDERS:[O('a','S',2,18)]}),0],
+    ['A view exactly 7 days ago counts; 8 days ago does not',L({WEB:[W('u1','S',7),W('u2','S',8)]}),1],
+    ['A phone number shared by two people links no one',L({WEB:[W('u1','S',3)],POS:[{id:'r',store:'x',member:'P',mtype:'phone',sku:'S',ago:1}],IDMAP:[{src:'web_login',key:'u1',cid:'K1'},{src:'phone',key:'P',cid:'K1'},{src:'phone',key:'P',cid:'K2'}]}),1],
+    ['A login shared by two people links no one',L({WEB:[W('u1','S',3)],IDMAP:[{src:'web_login',key:'u1',cid:'K1'},{src:'web_login',key:'u1',cid:'K2'}]}),0],
+    ['The same login listed twice for one person still links',L({WEB:[W('u1','S',3)],IDMAP:[{src:'web_login',key:'u1',cid:'K1'},{src:'web_login',key:'u1',cid:'K1'}]}),1],
+    ['Repeat views and two sale lines give one row and one decision',L({WEB:[W('u1','S',3),W('u1','S',2)],ORDERS:[O('a','S',1),O('b','S',1)]}),0],
+    ['An opted-out person is removed',L({WEB:[W('u1','S',3)],EXCL:['K1']}),0],
+    ['Buying one product does not cancel another',L({WEB:[W('u1','S',3),W('u1','L',3)],ORDERS:[O('a','L',1)]}),1],
+  ];
+  // the list (compute) and the separate metric count must both give the expected number of rows
+  return T.map(([name,D,want])=>{const r=compute(7,true,D);return {name,pass:r.list.length===want&&metricCount(7,D)===want&&new Set(r.list.map(v=>v.cid+'|'+v.sku)).size===r.list.length};});
+}
+[[7,true,6],[7,false,8],[14,true,7],[30,true,7],[30,false,10]].forEach(([w,s,n])=>console.assert(compute(w,s).list.length===n,`list(${w},${s}) should be ${n}`));
+edgeTests().forEach(t=>console.assert(t.pass,'edge case failed: '+t.name));
+
+/* ---------- state and status ---------- */
+const state={win:7,oops:false,grown:false,sel:null,view:'welcome',played:new Set(),running:new Set(),playing:false,tab:'story',quiz:{},gen:0};
+const C={look:'#2F6FEB',buy:'#E07A00',tag:'#7C3AED',done:'#16A34A',remind:'#E5397B',grey:'#A8A3B5',oops:'#DC2626',ink:'#3D3557'};
+const AV=['#FFD6A5','#CDE7FF','#FFC8DD','#D0F4DE','#E4D7FF','#E6E3EA','#FDF3A7','#BDE0FE','#FFCFD2','#CAFFBF','#A0C4FF','#FFADAD'];
+SHOPPERS.forEach((s,i)=>{s.key=s.cid||s.anon;s.av=AV[i];s.y=62+i*48;});
+const SH=Object.fromEntries(SHOPPERS.map(s=>[s.key,s]));
+const results=()=>({R:compute(state.win,!state.oops),RON:compute(state.win,true)});
+function statusOf(sh,R,RON){
+  if(!sh.user) return {st:'skip',why:'anon'};
+  const v=R.views.find(x=>x.cid===sh.cid);
+  if(!v) return {st:'skip',why:'old'};
+  if(R.excluded.some(x=>x.cid===sh.cid)) return {st:'skip',why:'excl'};
+  const b=R.bought.find(x=>x.cid===sh.cid);
+  if(b) return {st:'done',v,p:b.p};
+  return {st:'remind',v,wrong:state.oops&&RON.bought.some(x=>x.cid===sh.cid),gap:sh.cid==='C08'};
+}
+
+/* ---------- the clue map ---------- */
+const P={web:[340,130],online:[340,320],till:[340,510],match:[545,320],looked:[735,190],bought:[735,450],sort:[915,320],done:[1115,150],remind:[1115,455],skip:[545,588]};
+const NODE={
+  web:{kind:'rect',color:C.look,soft:'#E3EDFF',icon:'monitor',kid:['Website','visitor book'],grown:['web_events','1 row = 1 page view']},
+  online:{kind:'rect',color:C.buy,soft:'#FFF0DB',icon:'cart',kid:['Online shop','web orders'],grown:['online_orders','1 row = 1 order line']},
+  till:{kind:'rect',color:C.buy,soft:'#FFF0DB',icon:'store',kid:['Shop tills','real-shop sales'],grown:['pos_sales','1 row = 1 till line']},
+  match:{kind:'hex',color:C.tag,soft:'#F0E8FF',icon:'tag',kid:['Name-tag','matcher'],grown:['identity_map','exact keys']},
+  looked:{kind:'rect',color:C.look,soft:'#E3EDFF',icon:'eye',kid:['Looked list','who looked'],grown:['views','1 row per person']},
+  bought:{kind:'rect',color:C.buy,soft:'#FFF0DB',icon:'bag',kid:['Bought list','who bought'],grown:['purchases','1 row = 1 sale']},
+  sort:{kind:'circle',color:C.ink,soft:'#EEEAF6',icon:'gear',kid:['Sorting machine','looked − bought'],grown:['NOT EXISTS','anti-join in SQL']},
+};
+const BIN={
+  done:{w:196,h:170,color:C.done,soft:'#E4F7EA',icon:'check',kid:'Already bought',grown:'excluded'},
+  remind:{w:196,h:250,color:C.remind,soft:'#FDE7F0',icon:'mail',kid:'Send a reminder',grown:'segment rows'},
+  skip:{w:240,h:96,color:C.grey,soft:'#F1EFF4',icon:'skip',kid:'Skipped',grown:'filtered out'},
+};
+const PE={ // pipeline edges: from x,y to x,y, colour
+  'web-match':[425,130,495,302,C.look],'online-match':[425,320,485,320,C.buy],'till-match':[425,510,495,338,C.buy],
+  'match-looked':[594,300,650,190,C.look],'match-bought':[594,340,650,450,C.buy],'match-skip':[545,372,545,540,C.grey],
+  'looked-sort':[820,190,870,305,C.look],'bought-sort':[820,450,870,335,C.buy],
+  'sort-done':[961,305,1017,150,C.done],'sort-remind':[961,335,1017,455,C.remind],
+};
+const CAPS=[[118,'1 · PEOPLE','PEOPLE'],[340,'2 · CLUES SAVED','SOURCE TABLES'],[545,'3 · NAME TAGS','IDENTITY'],[735,'4 · LISTS','SQL STEPS'],[915,'5 · SORT','SQL'],[1115,'6 · RESULT','OUTPUTS']];
+const ICON={
+  monitor:'<rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>',
+  cart:'<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2 2h2.5l2.6 12.4a2 2 0 0 0 2 1.6h9.6a2 2 0 0 0 2-1.6L22 7H5.2"/>',
+  store:'<path d="M3 9l1.5-5h15L21 9z"/><path d="M5 9v11h14V9"/><path d="M10 20v-5h4v5"/>',
+  tag:'<path d="M12 2H2v10l9.3 9.3a1 1 0 0 0 1.4 0l8.6-8.6a1 1 0 0 0 0-1.4z"/><circle cx="7" cy="7" r="1.6"/>',
+  eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  bag:'<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>',
+  gear:'<circle cx="12" cy="12" r="3.2"/><path d="M12 1.5v4M12 18.5v4M1.5 12h4M18.5 12h4M4.6 4.6l2.8 2.8M16.6 16.6l2.8 2.8M4.6 19.4l2.8-2.8M16.6 7.4l2.8-2.8"/>',
+  check:'<circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/>',
+  mail:'<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/>',
+  skip:'<circle cx="12" cy="12" r="10"/><path d="M5 5l14 14"/>',
+  megaphone:'<path d="M3 11v2a1 1 0 0 0 1 1h3l7 5V5L7 10H4a1 1 0 0 0-1 1z"/><path d="M17.5 9a4 4 0 0 1 0 6"/>',
+  chart:'<path d="M3 3v18h18"/><path d="M8 16v-3M13 16V9M18 16V6"/>',
+  heart:'<path d="M12 20s-7-4.4-9.2-8.6C1.3 8.5 3 5 6.5 5c2 0 3.4 1.1 4.1 2.3h2.8C14.1 6.1 15.5 5 17.5 5 21 5 22.7 8.5 21.2 11.4 19 15.6 12 20 12 20z"/>',
+};
+const iconSVG=(name,color,size=24)=>`<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[name]}</svg>`;
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+function txt(parent,attrs,t){const e=el('text',attrs,parent);e.textContent=t;return e;}
+function icon(parent,name,cx,cy,size,color,cls){const g=el('g',{transform:`translate(${cx-size/2} ${cy-size/2}) scale(${size/24})`,fill:'none',stroke:color,'stroke-width':2.2,'stroke-linecap':'round','stroke-linejoin':'round'},parent);const inner=el('g',cls?{class:cls}:{},g);inner.innerHTML=ICON[name];return g;}
+const curve=(x1,y1,x2,y2)=>{const dx=(x2-x1)*.5;return `M${x1} ${y1} C${x1+dx} ${y1},${x2-dx} ${y2},${x2} ${y2}`;};
+let gEdges,gNodes,gBins,gSparks,gFx;
+const SEDGES={}; // shopper key -> [edge ids]
+
+function build(){
+  const svg=$('#g');
+  svg.innerHTML=`<defs><pattern id="dots" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.3" fill="#EDE5D8"/></pattern>
+    <filter id="glow" x="-150%" y="-150%" width="400%" height="400%"><feGaussianBlur stdDeviation="3.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+    <rect width="1220" height="640" fill="url(#dots)"/>`;
+  const gCap=el('g',{},svg);
+  CAPS.forEach(([x,k],i)=>txt(gCap,{x,y:28,'text-anchor':'middle',class:'cap',id:'cap'+i},k));
+  gEdges=el('g',{id:'edges'},svg); gNodes=el('g',{},svg); gBins=el('g',{},svg); gSparks=el('g',{},svg); gFx=el('g',{},svg);
+  // shopper -> source edges
+  const ends={web:0,online:0,till:0}, need={web:SHOPPERS.length,online:0,till:0};
+  const buys=sh=>({online:ORDERS.some(o=>sh.user&&o.user===sh.user),till:POS.some(p=>{const m=storeKey(p);return (m&&m.cid===sh.cid)||sh.cashReceipt===p.id;})});
+  SHOPPERS.forEach(sh=>{const b=buys(sh);if(b.online)need.online++;if(b.till)need.till++;});
+  SHOPPERS.forEach(sh=>{
+    SEDGES[sh.key]=[];
+    const b=buys(sh), targets=['web'].concat(b.online?['online']:[],b.till?['till']:[]);
+    targets.forEach(t=>{
+      const n=need[t], k=ends[t]++, spread=t==='web'?56:12*(n-1), y2=P[t][1]-spread/2+(n>1?k*spread/(n-1):0);
+      const id=`s-${sh.key}-${t}`;
+      el('path',{id,d:curve(135,sh.y,255,y2),class:'sedge','data-s':sh.key,fill:'none',stroke:t==='web'?'#C9D8F7':'#F2D6B0','stroke-width':1.6},gEdges);
+      SEDGES[sh.key].push(id);
+    });
+  });
+  // pipeline edges with a flowing overlay
+  for(const id in PE){const [x1,y1,x2,y2,col]=PE[id],d=curve(x1,y1,x2,y2);
+    el('path',{id:'e-'+id,d,class:'pedge',fill:'none',stroke:'#E1D9EA','stroke-width':5,'stroke-linecap':'round'},gEdges);
+    el('path',{id:'f-'+id,d,class:'flow',fill:'none',stroke:col,'stroke-width':3,opacity:.75},gEdges);}
+  // shopper nodes
+  SHOPPERS.forEach(sh=>{
+    const g=el('g',{class:'node shopper',tabindex:0,role:'button','data-id':sh.key,'aria-label':`${sh.name}. Follow the clues.`},gNodes);
+    const b=el('g',{class:'body'},g);
+    el('circle',{class:'ring',cx:118,cy:sh.y,r:21.5,fill:'none','stroke-width':3.5,stroke:'transparent'},b);
+    el('circle',{cx:118,cy:sh.y,r:17,fill:sh.av,stroke:'#fff','stroke-width':2.5},b);
+    txt(b,{x:118,y:sh.y+5.5,'text-anchor':'middle',class:'ini'},sh.user?sh.name[0]:'?');
+    txt(g,{x:90,y:sh.y+5,'text-anchor':'end',class:'sname'},sh.name);
+  });
+  // machine nodes
+  for(const id in NODE){const n=NODE[id],[x,y]=P[id];
+    const g=el('g',{class:'node machine',tabindex:0,role:'button','data-id':id,id:'n-'+id,'aria-label':n.kid.join(' ')},gNodes), b=el('g',{class:'body'},g);
+    if(n.kind==='rect'){el('rect',{x:x-85,y:y-36,width:170,height:72,rx:18,fill:n.soft,stroke:n.color,'stroke-width':2.5},b);
+      icon(b,n.icon,x-58,y,26,n.color);
+      txt(b,{x:x-38,y:y-3,class:'lb',id:'lb-'+id},''); txt(b,{x:x-38,y:y+16,class:'sb',id:'sb-'+id},'');}
+    else if(n.kind==='hex'){const r=60,pts=[0,60,120,180,240,300].map(a=>{const t=a*Math.PI/180;return `${x+r*Math.cos(t)},${y+r*Math.sin(t)}`;}).join(' ');
+      el('polygon',{points:pts,fill:n.soft,stroke:n.color,'stroke-width':2.5,'stroke-linejoin':'round'},b);
+      icon(b,n.icon,x,y-22,26,n.color);
+      txt(b,{x,y:y+10,'text-anchor':'middle',class:'lb',id:'lb-'+id},''); txt(b,{x,y:y+28,'text-anchor':'middle',class:'sb',id:'sb-'+id},'');}
+    else {el('circle',{cx:x,cy:y,r:48,fill:n.soft,stroke:n.color,'stroke-width':2.5},b);
+      icon(b,n.icon,x,y,40,n.color,'gear');
+      txt(g,{x,y:y+70,'text-anchor':'middle',class:'lb',id:'lb-'+id},''); txt(g,{x,y:y+88,'text-anchor':'middle',class:'sb',id:'sb-'+id},'');}
+  }
+  // result bins
+  for(const id in BIN){const B=BIN[id],[x,y]=P[id],L=x-B.w/2,T=y-B.h/2;
+    const g=el('g',{class:'node bin',tabindex:0,role:'button','data-id':id,id:'n-'+id,'aria-label':B.kid},gBins);
+    el('rect',{x:L,y:T,width:B.w,height:B.h,rx:20,fill:B.soft,stroke:B.color,'stroke-width':2.5,'stroke-dasharray':id==='skip'?'6 5':''},g);
+    if(id==='skip'){icon(g,B.icon,L+22,T+24,18,'#6B6580');txt(g,{x:L+38,y:T+29,class:'lb',id:'lb-'+id,style:'font-size:14px'},'');txt(g,{x:L+16,y:T+74,class:'cnt',id:'cnt-'+id,fill:'#6B6580'},'0');}
+    else {icon(g,B.icon,L+24,T+27,22,B.color);txt(g,{x:L+42,y:T+32,class:'lb',id:'lb-'+id,style:'font-size:14px'},'');txt(g,{x:L+B.w-14,y:T+35,'text-anchor':'end',class:'cnt',id:'cnt-'+id,fill:B.color},'0');}
+    el('g',{id:'chips-'+id},g);
+  }
+}
+
+/* ---------- motion helpers ---------- */
+function spark(id,{color=C.look,dur=650,delay=0,r=6,fizzle=false,stopAt=1}={}){
+  const path=document.getElementById(id.startsWith('s-')?id:'e-'+id);
+  if(motionOff()||!path) return Promise.resolve();
+  return new Promise(res=>{
+    const len=path.getTotalLength();
+    const g=el('g',{opacity:0},gSparks);
+    el('circle',{r:r*2.1,fill:color,opacity:.22},g);
+    el('circle',{r,fill:color,filter:'url(#glow)'},g);
+    el('circle',{r:r*.38,fill:'#fff',opacity:.85},g);
+    const t0=performance.now()+delay, g0=state.gen;
+    const step=now=>{
+      const t=(now-t0)/dur;
+      if(g0!==state.gen||motionOff()){g.remove();res();return;}
+      if(t<0){requestAnimationFrame(step);return;}
+      const u=Math.min(1,t), e=u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2, end=fizzle?.82:stopAt;
+      const p=path.getPointAtLength(len*e*end);
+      g.setAttribute('transform',`translate(${p.x} ${p.y})`);
+      g.setAttribute('opacity',fizzle&&u>.7?Math.max(0,(1-u)/.3):1);
+      if(u<1) requestAnimationFrame(step);
+      else{ if(stopAt<1) ripple(p.x,p.y,C.oops); g.remove(); res(); }
+    };
+    requestAnimationFrame(step);
+  });
+}
+const slots=new Map();
+function floatText(x,y,t,color,force){if(motionOff()||(state.playing&&!force))return;const k=x+','+y,n=slots.get(k)||0;slots.set(k,n+1);const e=txt(gFx,{x,y:y-n*18,'text-anchor':'middle',class:'float',fill:color},t);setTimeout(()=>{e.remove();slots.set(k,Math.max(0,(slots.get(k)||1)-1));},2000);}
+function ripple(x,y,color,r=20){if(motionOff())return;const c=el('circle',{cx:x,cy:y,r,class:'ripple',stroke:color},gFx);setTimeout(()=>c.remove(),900);}
+function pop(id){const g=document.querySelector(`#g [data-id="${id}"]`);if(!g||motionOff())return;g.classList.remove('pop');void g.getBBox();g.classList.add('pop');}
+function midOf(id){const p=document.getElementById('e-'+id),l=p.getTotalLength(),pt=p.getPointAtLength(l/2);return [pt.x,pt.y];}
+
+/* ---------- one shopper's journey ---------- */
+async function journey(sh,sp=1){
+  if(state.running.has(sh.key)) return;
+  state.running.add(sh.key);
+  const gen=state.gen, live=()=>gen===state.gen; // a reset or a settings change cancels this journey
+  const D=620*sp, {R,RON}=results(), s=statusOf(sh,R,RON);
+  pop(sh.key); ripple(118,sh.y,s.st==='done'?C.done:s.st==='remind'?C.remind:C.grey);
+  const views=WEB.filter(e=>sh.user?e.user===sh.user:e.anon===sh.anon);
+  const orders=ORDERS.filter(o=>sh.user&&o.user===sh.user);
+  const sales=POS.filter(p=>{const m=storeKey(p);return (m&&m.cid===sh.cid)||sh.cashReceipt===p.id;});
+  const inWin=e=>sh.user&&e.ago<=state.win;
+  // 1. clues travel from the person to where they are saved
+  await Promise.all([
+    ...views.map((e,i)=>spark(`s-${sh.key}-web`,{color:inWin(e)?C.look:C.grey,dur:D,delay:i*170*sp})),
+    ...orders.map((o,i)=>spark(`s-${sh.key}-online`,{color:o.sku==='SOFA-01'?C.buy:C.grey,dur:D,delay:i*170*sp})),
+    ...sales.map((p,i)=>spark(`s-${sh.key}-till`,{color:C.buy,dur:D,delay:i*170*sp})),
+  ]);
+  if(!live()) return;
+  if(views.length>1) floatText(P.web[0],P.web[1]-46,`${views.length} looks!`,C.look);
+  orders.forEach(o=>{if(o.status==='cancelled')floatText(P.online[0],P.online[1]-46,'cancelled ✕',C.oops);else if(o.sku!=='SOFA-01')floatText(P.online[0],P.online[1]-46,'a lamp, not a sofa',C.grey);});
+  // 2. clues go to the name-tag matcher
+  const viewOk=views.some(inWin), oopsStore=state.oops&&sales.length;
+  await Promise.all([
+    spark('web-match',{color:viewOk?C.look:C.grey,dur:D,fizzle:!viewOk}),
+    ...orders.filter(o=>o.status==='completed').map(o=>spark('online-match',{color:o.sku==='SOFA-01'?C.buy:C.grey,dur:D})),
+    ...sales.map(p=>spark('till-match',{color:C.buy,dur:D,stopAt:state.oops?.5:1,fizzle:!state.oops&&!storeKey(p)})),
+  ]);
+  if(!live()) return;
+  pop('match');
+  const [mx,my]=P.match;
+  if(oopsStore){const [x,y]=midOf('till-match');floatText(x,y-14,'we forgot the tills!',C.oops);}
+  if(!sh.user) floatText(mx,my-74,'no name tag: who?',C.grey);
+  else if(!viewOk) floatText(mx,my-74,'too long ago',C.grey);
+  else if(sales.some(p=>!storeKey(p))&&!state.oops) floatText(mx,my-74,'paid cash: who was it?',C.grey);
+  else if(new Set(views.map(e=>e.device)).size>1) floatText(mx,my-74,`phone + laptop = 1 ${sh.name}`,C.tag);
+  else floatText(mx,my-74,`it's ${sh.name}!`,C.tag);
+  if(s.st==='skip'){await spark('match-skip',{color:C.grey,dur:D});if(live())finish(sh);return;}
+  // 3. into the two lists
+  const mine=R.counted.filter(p=>p.cid===sh.cid);
+  await Promise.all([spark('match-looked',{color:C.look,dur:D}),...mine.map(p=>spark('match-bought',{color:p.sku==='SOFA-01'?C.buy:C.grey,dur:D}))]);
+  if(!live()) return;
+  if(s.v.count>1) floatText(P.looked[0],P.looked[1]-46,`${s.v.count} looks → 1 line`,C.look);
+  // 4. the sorting machine compares them
+  await Promise.all([spark('looked-sort',{color:C.look,dur:D}),...mine.map(p=>spark('bought-sort',{color:p.sku==='SOFA-01'?C.buy:C.grey,dur:D}))]);
+  if(!live()) return;
+  const sg=$('#n-sort'); sg.classList.add('spinfast'); pop('sort'); await wait(320*sp); sg.classList.remove('spinfast');
+  if(!live()) return;
+  floatText(P.sort[0],P.sort[1]-62,s.st==='done'?'bought it ✓':s.wrong?'oops, wrong!':'no sofa bought',s.st==='done'?C.done:s.wrong?C.oops:C.remind);
+  // 5. into a result bin
+  await spark(s.st==='done'?'sort-done':'sort-remind',{color:s.st==='done'?C.done:C.remind,dur:D,r:7});
+  if(live()) finish(sh);
+}
+function finish(sh){
+  state.running.delete(sh.key); state.played.add(sh.key);
+  renderBins(); renderRings(); renderCounters();
+  const {R,RON}=results(); pop(statusOf(sh,R,RON).st);
+  if(!state.playing&&state.view==='shopper'&&state.sel===sh.key) renderStory();
+}
+async function playAll(){
+  if(state.playing) return;
+  const gen=++state.gen; state.running.clear(); gSparks.innerHTML='';
+  state.playing=true; lockCtrls(true); state.played.clear(); state.sel=null; state.view='playing';
+  focusEdges(null); renderBins(); renderRings(); renderCounters(); renderStory(); setTab('story');
+  if(state.oops){const [x,y]=midOf('till-match');floatText(x,y-14,'we forgot the tills!',C.oops,true);}
+  await Promise.all(SHOPPERS.map((sh,i)=>wait(i*480).then(()=>gen===state.gen?journey(sh,.6):null)));
+  if(gen!==state.gen) return;
+  state.playing=false; lockCtrls(false); state.view='summary'; renderStory();
+}
+function lockCtrls(on){$('#play').disabled=on;$$('#winseg button').forEach(b=>b.disabled=on);$('#oops').disabled=on;}
+function stopAll(){state.gen++;state.running.clear();gSparks.innerHTML='';if(state.playing){state.playing=false;lockCtrls(false);}}
+
+/* ---------- rendering ---------- */
+function renderLabels(){
+  for(const id in NODE){const [l,s]=state.grown?NODE[id].grown:NODE[id].kid;const lb=$('#lb-'+id);lb.textContent=l;lb.classList.toggle('mono',state.grown);$('#sb-'+id).textContent=s;}
+  for(const id in BIN){$('#lb-'+id).textContent=state.grown?BIN[id].grown:BIN[id].kid;}
+  CAPS.forEach(([,k,g],i)=>$('#cap'+i).textContent=state.grown?g:k);
+}
+function renderTrap(){
+  $('#e-till-match').classList.toggle('broken',state.oops);
+  $('#f-till-match').style.display=state.oops?'none':'';
+  $('#n-till').classList.toggle('forgot',state.oops);
+}
+function renderRings(){
+  const {R,RON}=results();
+  SHOPPERS.forEach(sh=>{const ring=document.querySelector(`#g [data-id="${sh.key}"] .ring`);
+    if(!state.played.has(sh.key)){ring.setAttribute('stroke','transparent');ring.removeAttribute('stroke-dasharray');return;}
+    const s=statusOf(sh,R,RON);ring.setAttribute('stroke',s.wrong?C.oops:s.st==='done'?C.done:s.st==='remind'?C.remind:C.grey);
+    if(s.wrong)ring.setAttribute('stroke-dasharray','4 3');else ring.removeAttribute('stroke-dasharray');});
+}
+const prevBin=new Map();
+function renderBins(){
+  const {R,RON}=results(), groups={done:[],remind:[],skip:[]};
+  SHOPPERS.forEach(sh=>{if(state.played.has(sh.key))groups[statusOf(sh,R,RON).st].push(sh);});
+  for(const id in groups){
+    const g=$('#chips-'+id),B=BIN[id],[x,y]=P[id],L=x-B.w/2,T=y-B.h/2;
+    g.innerHTML='';
+    groups[id].forEach((sh,i)=>{
+      const s=statusOf(sh,R,RON);
+      const cx=id==='skip'?L+118+i*46:L+34+(i%4)*43, cy=id==='skip'?T+54:T+76+Math.floor(i/4)*54;
+      const outer=el('g',{transform:`translate(${cx} ${cy})`},g);
+      const inner=el('g',{class:prevBin.get(sh.key)!==id&&!motionOff()?'chip':''},outer);
+      el('circle',{r:15,fill:sh.av,stroke:s.wrong?C.oops:B.color,'stroke-width':3,'stroke-dasharray':s.wrong?'4 3':''},inner);
+      txt(inner,{y:5,'text-anchor':'middle',class:'ini',style:'font-size:13px'},sh.user?sh.name[0]:'?');
+      txt(inner,{y:28,'text-anchor':'middle',class:'cname'},sh.name);
+      if(s.wrong||s.gap){el('circle',{cx:12,cy:-11,r:7,fill:s.wrong?'#B91C1C':'#B45309'},inner);txt(inner,{x:12,y:-7.5,'text-anchor':'middle',style:'font:900 10px var(--round)',fill:'#fff'},s.wrong?'!':'?');}
+    });
+    $('#cnt-'+id).textContent=groups[id].length;
+  }
+  prevBin.clear(); for(const id in groups) groups[id].forEach(sh=>prevBin.set(sh.key,id));
+}
+function setCount(id,v){const e=$(id),from=+e.textContent||0;if(motionOff()||from===v){e.textContent=v;return;}const t0=performance.now();const step=n=>{if(motionOff()){e.textContent=v;return;}const t=Math.min(1,(n-t0)/450);e.textContent=Math.round(from+(v-from)*t);if(t<1)requestAnimationFrame(step);};requestAnimationFrame(step);}
+function tally(){const {R,RON}=results();let look=0,buy=0,rem=0,skip=0,wrong=0;SHOPPERS.forEach(sh=>{if(!state.played.has(sh.key))return;const s=statusOf(sh,R,RON);if(s.st==='skip'){skip++;return;}look++;if(s.st==='done')buy++;else{rem++;if(s.wrong)wrong++;}});return {look,buy,rem,skip,wrong};}
+function renderCounters(){const t=tally();setCount('#c-look',t.look);setCount('#c-buy',t.buy);setCount('#c-remind',t.rem);}
+function focusEdges(ids){
+  $('#edges').classList.toggle('focus',!!ids);
+  $$('#edges .hl').forEach(e=>{e.classList.remove('hl');if(e.classList.contains('sedge'))e.setAttribute('stroke',e.id.endsWith('-web')?'#C9D8F7':'#F2D6B0');});
+  (ids||[]).forEach(id=>{const e=document.getElementById(id);if(!e)return;e.classList.add('hl');if(e.classList.contains('sedge'))e.setAttribute('stroke',e.id.endsWith('-web')?C.look:C.buy);});
+}
+const MEDGES={web:['e-web-match','s-*-web'],online:['e-online-match','s-*-online'],till:['e-till-match','s-*-till'],match:['e-web-match','e-online-match','e-till-match','e-match-looked','e-match-bought','e-match-skip'],looked:['e-match-looked','e-looked-sort'],bought:['e-match-bought','e-bought-sort'],sort:['e-looked-sort','e-bought-sort','e-sort-done','e-sort-remind'],done:['e-sort-done'],remind:['e-sort-remind'],skip:['e-match-skip']};
+const expandEdges=list=>list.flatMap(p=>p.includes('*')?$$('#edges .sedge').filter(e=>e.id.endsWith(p.split('*')[1])).map(e=>e.id):[p]);
+
+/* ---------- story texts (kid words first) ---------- */
+function clues(sh){
+  const out=[];
+  WEB.filter(e=>sh.user?e.user===sh.user:e.anon===sh.anon).forEach(e=>out.push({a:e.ago,c:sh.user&&e.ago<=state.win?C.look:C.grey,t:`Looked at the sofa ${ago(e.ago)} on a ${e.device}`}));
+  ORDERS.filter(o=>sh.user&&o.user===sh.user).forEach(o=>out.push({a:o.ago,c:o.sku!=='SOFA-01'||o.status==='cancelled'?C.grey:C.buy,t:o.sku!=='SOFA-01'?`Bought a lamp online ${ago(o.ago)}`:o.status==='cancelled'?`Ordered the sofa online, then cancelled`:`Bought the sofa online ${ago(o.ago)}`}));
+  POS.forEach(p=>{const m=storeKey(p);if(!((m&&m.cid===sh.cid)||sh.cashReceipt===p.id))return;out.push({a:p.ago,c:m&&!state.oops?C.buy:C.grey,t:`Bought the sofa in the ${p.store} shop ${ago(p.ago)}, ${m?(m.src==='loyalty'?'showed a loyalty card':'gave a phone number'):'paid cash'}`});});
+  return out.sort((x,y)=>y.a-x.a);
+}
+function kidStory(sh,s){
+  const n=sh.name, W=state.win;
+  if(s.st==='skip'&&s.why==='anon') return 'Someone looked at the sofa without logging in. There is no name tag, so nobody knows who it was. We can\'t send a message to nobody!';
+  if(s.st==='skip'&&s.why==='excl') return `${n} said no to marketing messages, so we send nothing.`;
+  if(s.st==='skip'){const last=Math.min(...WEB.filter(e=>e.user===sh.user).map(e=>e.ago));return `${n} looked at the sofa ${ago(last)}. That is more than ${W} days ago, and we only check the last ${W} days. So ${n} is skipped. Try a bigger number at the top!`;}
+  if(s.st==='done'&&s.p.channel==='online') return `${n} looked at the sofa, then bought it on the website. ${n} is on the Looked list and on the Bought list. So the sorting machine says: no reminder needed!`;
+  if(s.st==='done'){const via=s.p.via==='loyalty'?'loyalty card':'phone number';return `${n} looked on the website, then bought the sofa in a real shop. The shop till saved ${n}'s ${via}. The name-tag matcher knows that ${via} belongs to ${n}. So: no reminder!`;}
+  if(s.wrong) return `Oops! ${n} bought the sofa in a real shop. But we forgot to read the shop tills, so the machine thinks ${n} didn't buy. ${n} gets a reminder for a sofa that is already at home!`;
+  const special={
+    C04:'Dũng looked at the sofa but bought a lamp. A lamp is not a sofa! So Dũng still gets a sofa reminder.',
+    C05:'Hà ordered the sofa, then cancelled the order. Cancelled doesn\'t count as buying, so Hà gets a reminder.',
+    C07:'Minh looked at the sofa 3 times! Minh is still one person, so Minh is on the list just once. One reminder.',
+    C08:'Ngọc bought the sofa in a shop but paid cash and gave no phone number. The matcher can\'t tell it was Ngọc, so Ngọc gets a reminder by mistake. That\'s why shops ask for your phone number!',
+    C10:'Quân looked on a phone and on a laptop. Two screens, one login, one Quân. One reminder.'};
+  return special[sh.cid]||`${n} looked at the sofa ${ago(s.v.first)} and we found no purchase of it, online or in a shop. ${n} gets a friendly "Still thinking about it?" message.`;
+}
+function grownShopper(sh,s){
+  if(!sh.user) return ['<code>web_events.user_id</code> is null, so there is no <code>customer_id</code>.','The join to <code>identity_map</code> drops the row.'];
+  const keys=IDMAP.filter(m=>m.cid===sh.cid&&m.src!=='web_login').map(m=>`${m.src} <code>${esc(m.key)}</code>`);
+  const out=[`<code>customer_id = ${sh.cid}</code> from web_login <code>${sh.user}</code>${keys.length?' + '+keys.join(' + '):''}`];
+  if(s.st==='skip') out.push(`Last view is older than ${state.win} days, so it is not in <code>views</code>.`);
+  else{out.push(`<code>views</code>: 1 row, <code>view_count = ${s.v.count}</code>.`);
+    out.push(s.st==='done'?`<code>NOT EXISTS</code> finds sale <code>${s.p.line}</code> (${s.p.channel}), so the row is removed.`:`<code>NOT EXISTS</code> finds no sale, so the row goes to <code>seg_viewed_not_bought</code>.`);}
+  return out;
+}
+const SQL={
+  looked:`select k.customer_id, e.sku,\n       min(e.event_ts) as first_view_ts,\n       count(*) as view_count\nfrom web_events e\njoin unique_keys k  -- one owner per key\n  on k.source = 'web_login'\n and k.source_key = e.user_id\nwhere e.event_name = 'product_view'\n  and e.event_ts >= timestamp(date_sub(@run_date,\n        interval {W} day), 'Asia/Ho_Chi_Minh')\ngroup by 1, 2`,
+  bought:`select k.customer_id, o.sku, o.order_ts as bought_ts\nfrom online_orders o\njoin unique_keys k\n  on k.source = 'web_login' and k.source_key = o.user_id\nwhere o.status = 'completed'\nunion all\nselect k.customer_id, p.sku, p.sold_ts as bought_ts\nfrom pos_sales p\nleft join unique_keys k  -- cash sale: no customer\n  on k.source = p.member_type\n and k.source_key = p.member_key`,
+  sort:`select v.*\nfrom views v\nwhere exists (select 1 from eligible_customers c\n              where c.customer_id = v.customer_id)\n  and not exists (\n    select 1 from purchases p\n    where p.customer_id = v.customer_id\n      and p.sku = v.sku\n      and p.bought_ts >= v.first_view_ts\n      and p.bought_ts < timestamp(date_add(@run_date,\n            interval 1 day), 'Asia/Ho_Chi_Minh'))`,
+  match:`-- unique_keys: keep keys with exactly one owner\nselect source, source_key,\n       any_value(customer_id) as customer_id\nfrom identity_map\ngroup by source, source_key\nhaving count(distinct customer_id) = 1`,
+};
+const hl=s=>esc(s).replace(/('[^']*')/g,'<span class="s">$1</span>').replace(/\b(select|from|join|left|on|and|where|group|by|union|all|not|exists|as|min|count|interval|day|date_sub|current_date)\b/g,'<span class="k">$1</span>');
+function machineStory(id){
+  const W=state.win, oo=state.oops;
+  const M={
+    web:['The website','Every time someone opens the sofa page, the website writes it down, like signing a visitor book. It saves the time, and who you are if you are logged in.',['Table <code>web_events</code>. One row = one page view.','Columns: <code>user_id</code> (empty if not logged in), <code>sku</code>, <code>event_ts</code>, <code>device</code>.']],
+    online:['The online shop','The online shop writes down every order. It keeps cancelled orders too, so the totals always match.',['Table <code>online_orders</code>. One row = one order line.','<code>status</code> is "completed" or "cancelled".']],
+    till:['The shop tills',(oo?'Oops mode is on: we forgot to read the tills! ':'')+'A till is the cash register in a real shop. It writes down each sale. If you show a loyalty card or give your phone number, it writes that down too.',['Table <code>pos_sales</code>. One row = one till line.','<code>member_key</code> = loyalty number or phone. Empty for cash.']],
+    match:['The name-tag matcher','Everyone gets one secret name tag. Your login, your loyalty card and your phone number all point to the same tag. The matcher does not guess: it only links exact matches. If two people share a phone number, it leaves that sale unlinked.',['Table <code>identity_map</code>: one key → one <code>customer_id</code>.','Chosen: exact match only. Rejected: best-guess match from device, Wi-Fi and time.','A key shared by two people links no one.'],'match'],
+    looked:['The Looked list',`One line for each person who looked at the sofa in the last ${W} days. Looking 3 times still makes one line.`,['SQL step <code>views</code>: one row per customer and product.'],'looked'],
+    bought:['The Bought list','One line for each sale, from the website and from the shops. Cancelled orders are left out.',['SQL step <code>purchases</code>: web orders + till sales stacked together.'],'bought'],
+    sort:['The sorting machine','For each person on the Looked list, the machine asks one question: did this same person buy this same sofa after looking? Yes → Already bought. No → Send a reminder.',['An anti-join: keep viewers with no matching purchase.'],'sort'],
+    done:['Already bought','These people already have the sofa. We leave them alone. No message!',['Rows that <code>NOT EXISTS</code> removed.']],
+    remind:['Send a reminder','Tomorrow at 7 in the morning, these people get a friendly "Still thinking about it?" message. Anyone who opted out of marketing is removed first.',['Table <code>seg_viewed_not_bought</code>: one row per customer and product.','Checked every day by 5 test questions and an independent reference count. The metric file <code>viewed_not_bought</code> shows how a shared count would be defined; it is not run here.']],
+    skip:['Skipped','People we can\'t message: no name tag, or they looked too long ago.',['Filtered out: <code>user_id</code> is null, or the last view is outside the window.']],
+  }[id];
+  const n=NODE[id]||BIN[id];
+  return `<div class="who"><span class="bigicon" style="background:${n.soft}">${iconSVG(n.icon,n.color,30)}</span><div><h2>${M[0]}</h2></div></div>
+    <p class="kid">${M[1]}</p>
+    ${state.grown?`<div class="grown"><h3>In grown-up words</h3><ul>${M[2].map(x=>`<li>${x}</li>`).join('')}</ul>${M[3]?`<pre class="sql">${hl(SQL[M[3]].replace('{W}',W))}</pre>`:''}</div>`:'<p class="tip">Turn on <b>Grown-up words</b> to see the real table names and SQL.</p>'}`;
+}
+function equation(t,blank){return `<div class="eq" aria-label="Looked minus bought equals reminders"><div class="box l"><b>${blank?'?':t.look}</b>looked</div><span class="op">−</span><div class="box bo"><b>${blank?'?':t.buy}</b>bought</div><span class="op">=</span><div class="box r"><b>${blank?'?':t.rem}</b>reminders</div></div>`;}
+function renderStory(){
+  const box=$('#story'), t=tally();
+  if(state.view==='shopper'&&state.sel){
+    const sh=SH[state.sel],{R,RON}=results(),s=statusOf(sh,R,RON);
+    const badge=s.wrong?['wrong','Gets a reminder, by mistake!']:s.st==='done'?['done','No reminder: already bought']:s.st==='remind'?['remind',s.gap?'Gets a reminder (we can\'t see the cash sale)':'Gets a reminder']:['skip','Skipped'];
+    box.innerHTML=`<div class="who"><span class="bigav" style="background:${sh.av}">${sh.user?esc(sh.name[0]):'?'}</span><div><h2>${esc(sh.name)}</h2><span class="badge ${badge[0]}">${badge[1]}</span></div></div>
+      <p class="kid">${esc(kidStory(sh,s))}</p>
+      <h3>Clues</h3><ul class="clues">${clues(sh).map(c=>`<li><i style="background:${c.c}"></i>${esc(c.t)}</li>`).join('')}</ul>
+      ${state.grown?`<div class="grown"><h3>In grown-up words</h3><ul>${grownShopper(sh,s).map(x=>`<li>${x}</li>`).join('')}</ul></div>`:''}
+      <button type="button" class="mini" data-replay="${sh.key}">Play ${esc(sh.name)}'s clues again</button>`;
+  } else if(state.view==='machine'&&state.sel){ box.innerHTML=machineStory(state.sel); }
+  else if(state.view==='playing'){
+    box.innerHTML=`<h2>Watch the clues fly!</h2><p class="kid">Each person sends sparks. <b style="color:${C.look}">Blue</b> sparks are looks. <b style="color:#B45F00">Orange</b> sparks are buys. <b style="color:#6B6580">Grey</b> sparks don't count.</p><p class="kid">The name-tag matcher works out who is who. The sorting machine puts each person in a box.</p>`;
+  } else if(state.view==='summary'){
+    const {R,RON}=results(), ns=statusOf(SH.C08,R,RON);
+    box.innerHTML=`<h2>Case closed!</h2>${equation(t)}
+      <p class="kid"><b>${t.rem}</b> people get a reminder. <b>${t.buy}</b> already bought the sofa. <b>${t.skip}</b> were skipped.</p>
+      ${t.wrong?`<p class="tip bad"><b>But wait!</b> ${t.wrong} of the reminders go to people who already bought in a shop. Turn off <b>Oops</b> to fix it.</p>`:''}
+      ${ns.st==='remind'?`<p class="tip"><b>One sneaky case:</b> Ngọc paid cash, so the shop couldn't tell it was Ngọc. Asking for a phone number at the till would fix that.</p>`:''}
+      <p class="kid" style="font-size:14px;color:var(--muted)">Click any person to see their clues, or try the quiz.</p>`;
+  } else {
+    const n0=compute(state.win,!state.oops).list.length;
+    box.innerHTML=`<h2>Welcome, detective!</h2>
+      <div class="rulebox"><b>The rule:</b> keep logged-in people who looked at the sofa in the last ${state.win} days, and have no completed purchase of that sofa after their first look, online or in a shop. A cancelled order doesn't count.</div>
+      <p class="kid">Today that gives <b>${n0} people</b>${state.oops?' (Oops is on, so this count wrongly includes shop buyers)':''}. The CRM manager (the person who sends customer messages) uses this list to choose who gets tomorrow's friendly reminder.</p>
+      <p class="kid">One catch: if someone paid cash and gave no phone number, we can't see their shop purchase.</p>
+      <h3>The big idea</h3>${equation(t,true)}
+      <h3>How to play</h3><ol class="steps"><li>Press <b>Play the story</b>.</li><li>Click any person or machine.</li><li>Turn on <b>Oops</b> to see a mistake.</li><li>Try the <b>quiz</b>.</li></ol>`;
+  }
+}
+const QUIZ=[
+  {k:'C02',q:'Bình looked online, then bought the sofa in a real shop with a loyalty card. Send Bình a reminder?',o:['Yes, remind','No reminder'],a:1,why:'The loyalty card tells the matcher it is Bình. Bình already bought it.'},
+  {k:'C04',q:'Dũng looked at the sofa but bought a lamp. Send a sofa reminder?',o:['Yes, remind','No reminder'],a:0,why:'A lamp is not a sofa. Dũng might still want the sofa.'},
+  {k:'C05',q:'Hà ordered the sofa, then cancelled. Send a reminder?',o:['Yes, remind','No reminder'],a:0,why:'A cancelled order does not count as buying.'},
+  {k:'C07',q:'Minh looked at the sofa 3 times. How many reminders should Minh get?',o:['1','3'],a:0,why:'One person gets one reminder, however many times they looked.'},
+  {k:'a_91f',q:'Someone looked without logging in. Can we send them a reminder?',o:['Yes','No, we can\'t'],a:1,why:'No name tag means we don\'t know who to send it to.'},
+];
+function renderQuiz(){
+  const done=Object.keys(state.quiz).length, score=QUIZ.filter((q,i)=>state.quiz[i]===q.a).length;
+  $('#quiz').innerHTML=`<div class="score"><h2>Your turn!</h2><span><b>${score}</b> / ${QUIZ.length}</span></div>
+    <p class="kid" style="font-size:14px">Answer like the sorting machine. After each answer, watch that person's clues fly.</p>
+    ${QUIZ.map((q,i)=>{const pick=state.quiz[i];return `<div class="q"><p>${i+1}. ${esc(q.q)}</p><div class="opts">${q.o.map((o,j)=>`<button type="button" data-q="${i}" data-o="${j}" class="${pick===undefined?'':j===q.a?'right':j===pick?'wrongpick':''}" ${pick!==undefined?'aria-disabled="true"':''}>${esc(o)}</button>`).join('')}</div>${pick!==undefined?`<p class="why" id="why-${i}" tabindex="-1">${pick===q.a?'✓ Right!':'✕ Not quite.'} ${esc(q.why)}</p>`:''}</div>`;}).join('')}
+    ${done===QUIZ.length?`<p class="tip">${score===QUIZ.length?'Perfect score! You think like a data detective.':'Nice try! Click a person on the map to see why.'}</p>`:''}`;
+}
+function renderAll(){
+  $$('#winseg button').forEach(b=>{const on=+b.dataset.win===state.win;b.setAttribute('aria-checked',on);b.tabIndex=on?0:-1;});
+  renderLabels(); renderTrap(); renderBins(); renderRings(); renderCounters(); renderStory(); renderQuiz();
+}
+
+/* ---------- interactions ---------- */
+function setTab(t){state.tab=t;$$('.tabs button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.tab===t)));$('#story').hidden=t!=='story';$('#quiz').hidden=t!=='quiz';}
+function selectShopper(key,play=true){
+  state.sel=key; state.view='shopper'; setTab('story');
+  focusEdges(SEDGES[key]); renderStory();
+  if(play&&!state.playing) journey(SH[key],1);
+}
+function selectMachine(id){
+  state.sel=id; state.view='machine'; setTab('story');
+  const edges=expandEdges(MEDGES[id]||[]); focusEdges(edges); pop(id); renderStory();
+  const [x,y]=P[id]; ripple(x,y,(NODE[id]||BIN[id]).color,id==='sort'?48:30);
+  edges.filter(e=>e.startsWith('e-')).forEach((e,i)=>spark(e.slice(2),{color:PE[e.slice(2)][4],dur:700,delay:i*90}));
+}
+document.addEventListener('click',e=>{
+  const n=e.target.closest('#g [data-id]');
+  if(n){const id=n.dataset.id;if(SH[id])selectShopper(id);else selectMachine(id);return;}
+  const b=e.target.closest('button'); if(!b) return;
+  if(b.dataset.view) setView(b.dataset.view,true);
+  else if(b.dataset.jump) jumpTo(b.dataset.jump);
+  else if(b.dataset.sub) setSub(b.dataset.sub);
+  else if(b.dataset.win){stopAll();state.win=+b.dataset.win;renderAll();}
+  else if(b.dataset.tab) setTab(b.dataset.tab);
+  else if(b.dataset.replay) journey(SH[b.dataset.replay],1);
+  else if(b.dataset.q!==undefined&&state.quiz[b.dataset.q]===undefined){state.quiz[b.dataset.q]=+b.dataset.o;renderQuiz();const w=$('#why-'+b.dataset.q);if(w)w.focus();const k=QUIZ[b.dataset.q].k;focusEdges(SEDGES[k]);if(!state.playing)journey(SH[k],1);}
+});
+document.addEventListener('keydown',e=>{
+  const n=e.target.closest&&e.target.closest('#g [data-id]');
+  if(n&&(e.key==='Enter'||e.key===' ')){e.preventDefault();n.dispatchEvent(new MouseEvent('click',{bubbles:true}));}
+  if(e.target.closest&&e.target.closest('#winseg')&&(e.key==='ArrowRight'||e.key==='ArrowLeft')){e.preventDefault();stopAll();const w=[7,14,30];state.win=w[(w.indexOf(state.win)+(e.key==='ArrowRight'?1:2))%3];renderAll();$(`#winseg [data-win="${state.win}"]`).focus();}
+});
+$('#oops').addEventListener('change',e=>{stopAll();state.oops=e.target.checked;renderAll();if(state.oops){const [x,y]=midOf('till-match');floatText(x,y-14,'we forgot the tills!',C.oops);}});
+$('#grown').addEventListener('change',e=>{state.grown=e.target.checked;renderAll();});
+$('#play').addEventListener('click',playAll);
+$('#pause').addEventListener('click',e=>{const on=document.body.classList.toggle('still');e.currentTarget.setAttribute('aria-pressed',String(on));if(on)settleMotion();e.currentTarget.textContent=on?'Motion off: instant results':'Turn off motion';});
+$('#reset').addEventListener('click',()=>{stopAll();state.played.clear();state.sel=null;state.view='welcome';state.quiz={};focusEdges(null);prevBin.clear();renderAll();});
+
+/* ---------- tabs: why it matters, how I made this ---------- */
+function setView(v,focus){
+  $$('.views button').forEach(b=>{if(b.dataset.view===v)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
+  $$('main.view').forEach(m=>m.classList.toggle('on',m.id==='v-'+v));
+  history.replaceState(null,'','#'+v);
+  if(focus){const t=v==='story'?$('#play'):$('#v-'+v+' h2');if(t)t.focus();}
+}
+function setSub(id){
+  const host=document.getElementById(id).closest('main');
+  host.querySelectorAll('.sub').forEach(s=>s.classList.toggle('on',s.id===id));
+  host.querySelectorAll('.subtabs button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.sub===id)));
+}
+function jumpTo(id){
+  if(id==='worth'){setSub('v1');const w=$('#worth');w.classList.remove('flash');void w.offsetWidth;w.classList.add('flash');w.scrollIntoView({block:'nearest'});$('#i-r').focus();return;}
+  setView('story'); setTimeout(()=>selectMachine(id),60);
+}
+const SK=[
+  ['mail',C.remind,'#FDE7F0','CRM manager','A ready list every morning at 7. No exports, no spreadsheets.','list on time; 5 tests pass','If a check fails, hold the send and call the data team.','Reporting'],
+  ['megaphone',C.tag,'#F0E8FF','Marketing lead','Money goes to people who might still buy, not to people who already did.','extra margin per reminder, from the fair test','Expand reminders only when the rollout rule says so.','Prediction'],
+  ['store','#B45F00','#FFF0DB','Store managers','A clear reason to ask for a phone number at the till: it stops wrong reminders.','shop sales linked: 75% now, 90% goal (assumed)','If linked sales drop under 70%, coach staff to ask for a phone number.','Process modelling'],
+  ['eye',C.look,'#E3EDFF','Product and pricing','See which products people look at but don\'t buy, then check price, photos or stock.','look-to-buy rate per product','If one product lags the others, test its price, photos or stock.','Diagnosis'],
+  ['chart','#3D3557','#EEEAF6','Leaders and finance','One agreed number, and a fair test of what reminders really earn.','one metric, matched to till and web totals','Fund the rollout only after the test passes the rule.','Reporting'],
+  ['heart',C.done,'#E4F7EA','Customers','Less nagging about a sofa that is already in their living room.','unsubscribes and complaints','If unsubscribes rise, marketing sends fewer reminders.','Better experience'],
+];
+const MX=[ // effort 0..1, impact 0..1 (author's judgement)
+  [.5,.95,'#15803D','Did:','exact name-tag matching across web and tills. It changes the list the most.'],
+  [.22,.74,'#15803D','Did:','daily tests and till-total checks. Cheap, and they catch the "forgot the tills" mistake.'],
+  [.1,.9,'#B45309','Recommend:','ask for a phone number at the till. Not data work, but it fixes the cash-sale gap.'],
+  [.8,.56,'#1D4ED8','Later:','a model that predicts who will buy, once the fair test shows reminders pay.'],
+  [.74,.26,'#6B6580','Skipped:','best-guess matching. Fun to build, but one wrong guess hurts trust.'],
+  [.92,.12,'#6B6580','Skipped:','real-time streaming. The message goes out once a day.'],
+];
+const fmt=n=>Math.round(n).toLocaleString('en-US');
+const money=n=>(n<0?'−$':'$')+fmt(Math.abs(n));
+function calc(){
+  const N=+$('#i-n').value,s=+$('#i-s').value/100,r=+$('#i-r').value,a=+$('#i-a').value,g=+$('#i-g').value/100,c=+$('#i-c').value;
+  const sent=N*(1-s), extra=sent*r/100, rev=extra*a, mar=extra*a*g-sent*c;
+  $('#o-n').textContent=fmt(N); $('#o-s').textContent=Math.round(s*100)+'%'; $('#o-r').textContent=r.toFixed(1);
+  $('#o-a').textContent='$'+fmt(a); $('#o-g').textContent=Math.round(g*100)+'%'; $('#o-c').textContent='$'+c.toFixed(2);
+  $('#r-rev').textContent=money(rev); $('#r-mar').textContent=money(mar); $('#r-waste').textContent=fmt(N*s);
+  const base=3,treat=base+r,max=Math.max(15,treat);
+  $('#b-t').style.width=(treat/max*100)+'%'; $('#b-c').style.width=(base/max*100)+'%';
+  $('#v-t').textContent=treat.toFixed(1)+'%'; $('#v-c').textContent=base.toFixed(1)+'%';
+  $('#fcst').textContent=r===0?'Forecast says: no gain expected, so a test is unlikely to pay.':mar>0?'Forecast says: promising. Run the test, and decide only on its evidence.':'Forecast says: the gain does not cover the cost. Change the message or the cost before testing.';
+  $('#k-fc').textContent=`${r.toFixed(1)} extra buyers per 100 reminders → ${money(mar)} extra margin a month`;
+}
+function initValue(){
+  const on=compute(7,true), off=compute(7,false), inL=c=>on.list.some(v=>v.cid===c);
+  const tests=[!inL('C02'),inL('C04'),inL('C05'),on.list.filter(v=>v.cid==='C07').length===1,!on.list.some(v=>!v.cid)].filter(Boolean).length;
+  const linked=POS.filter(p=>storeKey(p)).length, share=Math.round((off.list.length-on.list.length)/off.list.length*100), edges=edgeTests();
+  const pct=Math.round(linked/POS.length*100)+'%';
+  $('#k-match').textContent=`${pct} of shop sales linked`; $('#k-match2').textContent=pct;
+  $('#k-tests').textContent=`${tests} of 5 tests pass`;
+  $('#k-list').textContent=`${on.list.length} people today`; $('#k-list2').textContent=on.list.length;
+  $('#i-s').value=share;
+  $('#b-edge').textContent=`${edges.filter(t=>t.pass).length} of ${edges.length}`;
+  $('#b-data').textContent=`${WEB.length} page views, ${ORDERS.length} web orders, ${POS.length} till sales and ${IDMAP.length} name-tag keys, written into the page.`;
+  $('#people').innerHTML=SK.map(([ic,c,bg,who,val,m,d,t])=>`<div class="sk"><div class="skh"><span class="ski" style="background:${bg}">${iconSVG(ic,c,18)}</span><b>${who}</b><span class="wtype">${t}</span></div><p>${esc(val)}</p><div class="skm"><span>Measured by:</span> ${esc(m)}</div><div class="skd"><span>Next decision:</span> ${esc(d)}</div></div>`).join('');
+  $$('.bi[data-icon]').forEach(e=>e.innerHTML=iconSVG(e.dataset.icon,e.dataset.c,18));
+  const X=e=>22+e*168, Y=i=>150-i*136, lab='font:700 9.5px var(--round);fill:#6F6785';
+  $('#mx').innerHTML=`<rect x="22" y="14" width="168" height="136" rx="8" fill="#FBF7F0" stroke="#ECE4D8"/>
+    <line x1="106" y1="14" x2="106" y2="150" stroke="#E2D9CC" stroke-dasharray="3 3"/><line x1="22" y1="82" x2="190" y2="82" stroke="#E2D9CC" stroke-dasharray="3 3"/>
+    <text x="27" y="78" style="${lab}">do first</text><text x="111" y="78" style="${lab}">plan it</text>
+    <text x="27" y="146" style="${lab}">maybe</text><text x="111" y="146" style="${lab}">skip</text>
+    <text x="106" y="168" text-anchor="middle" style="font:700 10px var(--round);fill:#5E5873">effort →</text>
+    <text x="12" y="82" text-anchor="middle" transform="rotate(-90 12 82)" style="font:700 10px var(--round);fill:#5E5873">impact →</text>
+    ${MX.map(([e,i,c],k)=>`<circle cx="${X(e)}" cy="${Y(i)}" r="9" fill="${c}"/><text x="${X(e)}" y="${Y(i)+3.5}" text-anchor="middle" style="font:900 10px var(--round);fill:#fff">${k+1}</text>`).join('')}`;
+  $('#mlist').innerHTML=MX.map(([,,c,tag,t],k)=>`<li><i style="background:${c}">${k+1}</i><span><b>${tag}</b> ${esc(t)}</span></li>`).join('');
+  ['#i-n','#i-s','#i-r','#i-a','#i-g','#i-c'].forEach(id=>$(id).addEventListener('input',calc));
+  calc();
+}
+
+build(); renderAll(); initValue();
+setView(['value','made'].includes(location.hash.slice(1))?location.hash.slice(1):'story');
+</script>
+</body>
+</html>

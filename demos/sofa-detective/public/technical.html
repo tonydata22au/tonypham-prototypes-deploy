@@ -1,0 +1,1168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Viewed it, didn't buy it · omnichannel tracking demo</title>
+<meta name="description" content="How to find logged-in shoppers who viewed a product online but did not buy it, online or in a physical store. Synthetic data.">
+<meta name="robots" content="noindex, nofollow">
+<style>
+:root{
+  --bg:#F6F4F0;--ink:#24222A;--muted:#5F5C66;--line:#E3DED7;--card:#FFFDF9;--soft:#EFEBE5;
+  --web:#3451C7;--web-s:#E5EAFB;
+  --store:#A35400;--store-s:#FCEFDC;
+  --id:#5F3DC4;--id-s:#ECE7FB;
+  --hit:#C2410C;--hit-s:#FDE9DF;
+  --ok:#1E6B34;--ok-s:#E3F3E7;
+  --off:#8D8A93;--off-s:#EFEDF0;
+  --bad:#B42318;--bad-s:#FDE2E1;
+  --code:#1D1B24;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans","Liberation Sans",Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Code","Roboto Mono","DejaVu Sans Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);display:flex;flex-direction:column}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid #8C6CFF;outline-offset:2px;border-radius:6px}
+h2[tabindex="-1"]:focus{outline:none}
+.skip{position:absolute;left:-999px;top:0;background:#fff;padding:8px 12px;z-index:9}
+.skip:focus{left:8px}
+b{font-weight:650}
+
+/* header */
+.top{background:#1F1D25;color:#F4F2F7;display:flex;align-items:center;gap:18px;padding:10px 20px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;flex:1;min-width:300px}
+.logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#3451C7,#5F3DC4 55%,#E07B12);display:grid;place-items:center;flex:none}
+.brand h1{font-size:19px;margin:0;letter-spacing:-.01em;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.brand p{margin:0;font-size:13px;color:#C4BFCC}
+.tag{font:600 11px var(--sans);background:#34303F;color:#DAD5E3;padding:2px 8px;border-radius:999px;letter-spacing:.02em}
+.controls{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.ctl{display:flex;align-items:center;gap:8px;font-size:13px;color:#DAD5E3}
+.seg{display:inline-flex;background:#2F2C38;border-radius:9px;padding:3px}
+.seg button{border:0;background:none;cursor:pointer;padding:4px 10px;border-radius:7px;font-size:13px;color:#DAD5E3}
+.seg button[aria-checked="true"]{background:#F4F2F7;color:#1F1D25;font-weight:650}
+.switch{cursor:pointer;position:relative}
+.switch input{position:absolute;opacity:0;width:1px;height:1px}
+.switch .track{width:38px;height:22px;border-radius:11px;background:#4A4654;position:relative;transition:background .2s;flex:none}
+.switch .track::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .2s}
+.switch input:checked + .track{background:#D9740B}
+.switch input:checked + .track::after{transform:translateX(16px)}
+.switch input:focus-visible + .track{outline:3px solid #A48BFF;outline-offset:2px}
+.live{display:flex;align-items:baseline;gap:6px;background:#FFF1EA;color:#8A2E0A;padding:4px 12px;border-radius:10px;font-size:13px}
+.live b{font:800 20px var(--sans)}
+
+/* layout */
+.app{flex:1;display:grid;grid-template-columns:200px minmax(0,1fr);min-height:0}
+.rail{background:#FBF9F6;border-right:1px solid var(--line);padding:14px 10px;display:flex;flex-direction:column;justify-content:space-between;min-height:0;overflow:auto}
+.rail ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.rail button{border:0;background:none;width:100%;display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;cursor:pointer;font-size:14px;color:var(--muted);text-align:left}
+.rail button:hover{background:var(--soft)}
+.rail .n{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font:650 12px var(--mono);background:var(--soft);color:var(--muted);flex:none}
+.rail button[aria-current="step"]{background:var(--id-s);color:var(--ink);font-weight:650}
+.rail button[aria-current="step"] .n{background:var(--id);color:#fff}
+.rail button.done .n{background:#DCD3F7;color:var(--id)}
+.railnote{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px;margin-top:10px;line-height:1.45}
+.railnote p{margin:0 0 6px}
+kbd{font:11px var(--mono);border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 4px;background:#fff}
+
+.stage{min-height:0;overflow:auto;padding:14px 22px 12px}
+.panel{display:none;flex-direction:column;gap:11px;min-height:100%}
+.panel.on{display:flex}
+.ph{display:flex;gap:14px;align-items:flex-start}
+.ph .num{font:700 13px var(--mono);color:var(--id);background:var(--id-s);border-radius:8px;padding:4px 8px;margin-top:3px;flex:none}
+.ph h2{margin:0;font-size:22px;letter-spacing:-.015em;line-height:1.25}
+.ph .ans{margin:3px 0 0;color:var(--muted);max-width:92ch}
+.ph .ans b{color:var(--ink)}
+.cols{display:grid;gap:11px;min-height:0}
+.grow{flex:1}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-width:0}
+.card h3{margin:0 0 8px;font-size:14px;font-weight:700}
+.card h3 small{font-weight:400;color:var(--muted);font-size:12.5px;margin-left:6px}
+.chead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.chead h3{margin:0}
+.note{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.mono{font-family:var(--mono)}
+.pfoot{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;border-top:1px dashed var(--line);padding-top:9px;margin-top:auto}
+.gloss{display:flex;gap:6px 22px;flex-wrap:wrap;margin:0;font-size:12.5px;color:var(--muted)}
+.gloss>div{max-width:330px}
+.gloss dt{display:inline;font-weight:700;color:var(--ink)}
+.gloss dt::after{content:" — "}
+.gloss dd{display:inline;margin:0}
+.pnav{display:flex;gap:8px;flex:none}
+.btn{border:1px solid var(--line);background:var(--card);cursor:pointer;padding:7px 14px;border-radius:9px;font-size:13.5px;font-weight:650;white-space:nowrap}
+.btn.pri{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn[disabled]{opacity:.4;cursor:default}
+
+/* chips, pills, tabs */
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.pill.ok{background:var(--ok-s);color:var(--ok)}
+.pill.bad{background:var(--bad-s);color:var(--bad)}
+.pill.warn{background:var(--store-s);color:#7A3F00}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tab{border:1px solid var(--line);background:#fff;cursor:pointer;font-size:12.5px;padding:4px 10px;border-radius:8px;color:var(--muted)}
+.tab[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+/* icons */
+.ic{display:inline-block;width:10px;height:10px;border-radius:3px;flex:none}
+.ic.web{background:var(--web)}.ic.store{background:var(--store)}.ic.id{background:var(--id);border-radius:50%}.ic.hit{background:var(--hit);border-radius:50%}
+
+/* panel 1 */
+.big{display:flex;align-items:center;gap:14px}
+.big span{font:800 66px/1 var(--sans);color:var(--hit);letter-spacing:-.04em;min-width:48px}
+.big small{font-size:14px;color:var(--muted);line-height:1.4}
+.how{list-style:none;padding:0;margin:10px 0 0;display:flex;flex-direction:column;gap:6px;font-size:13.5px}
+.how li{display:flex;gap:9px;align-items:baseline}
+.catch{margin:9px 0 0;font-size:13.5px;background:var(--id-s);border-radius:10px;padding:7px 10px}
+.trap{margin-top:8px;font-size:13px;background:var(--bad-s);color:#7A1A12;border-radius:10px;padding:7px 10px}
+.flow{display:flex;flex-direction:column;gap:6px}
+.fr{display:grid;grid-template-columns:minmax(150px,200px) 1fr 30px;align-items:center;gap:10px;font-size:13px}
+.fr.last{border-top:1px dashed var(--line);padding-top:6px}
+.dots{display:flex;flex-wrap:wrap;gap:4px}
+.dot{width:21px;height:21px;border-radius:50%;display:grid;place-items:center;font:700 10px var(--sans);color:#fff;transition:background .25s}
+.fr .c{font:700 15px var(--mono);text-align:right}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);align-items:center}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.sgrid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.sc{border:1px solid var(--line);border-radius:11px;padding:7px 9px;background:#fff;border-left:4px solid var(--off);transition:background .25s,border-color .25s}
+.sc.st-target{border-left-color:var(--hit);background:var(--hit-s)}
+.sc.st-online{border-left-color:var(--web)}
+.sc.st-store{border-left-color:var(--store)}
+.sc.st-old,.sc.st-anon,.sc.st-excl{background:var(--off-s)}
+.sc.wrong{outline:2px dashed var(--bad);outline-offset:-2px}
+.sc-top{display:flex;align-items:center;gap:6px;font-size:13.5px}
+.av{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:700 11px var(--sans);color:#fff;flex:none}
+.cid{margin-left:auto;font:11px var(--mono);color:var(--muted)}
+.trk{display:block;width:100%;height:26px;margin:3px 0 1px}
+.sc-out{font-size:12px;font-weight:750}
+.sc-why{font-size:11.5px;color:var(--muted);line-height:1.35}
+
+/* panel 2 */
+.goal{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+.gt{background:#1F1D25;color:#F4F2F7;border-radius:14px;padding:11px 14px;display:flex;flex-direction:column;gap:2px}
+.gt span{font-size:12px;color:#C4BFCC}
+.gt b{font-size:15.5px;line-height:1.35}
+.term{display:flex;flex-direction:column;gap:6px}
+.tname{display:flex;align-items:center;gap:8px;font-weight:750;font-size:16px}
+.tdef{margin:0;font-size:13.5px}
+.term ul{list-style:none;margin:0;padding:0;font-size:13px;display:flex;flex-direction:column;gap:3px}
+.term li{display:flex;gap:7px;align-items:baseline}
+.term .yes li::before{content:"✓";color:var(--ok);font-weight:800}
+.term .no li::before{content:"✕";color:var(--bad);font-weight:800}
+.ex{margin-top:auto;font-size:12.5px;background:var(--soft);border-radius:9px;padding:6px 9px}
+.why{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.why p{margin:0;font-size:13.5px;flex:1;min-width:260px}
+.cells{display:flex;gap:4px}
+.cell{width:26px;height:26px;border-radius:6px;display:grid;place-items:center;font:700 10px var(--sans);color:#fff}
+
+/* panel 3 */
+.svgtx .s1{font:700 13px var(--sans);fill:var(--ink)}
+.svgtx .s2{font:12px var(--mono);fill:var(--muted)}
+.svgtx .s3{font:11.5px var(--sans);fill:var(--muted)}
+.svgtx .s4{font:600 12px var(--sans);fill:var(--ink)}
+.svgtx .b1{font:800 22px var(--mono);fill:var(--id)}
+.svgtx .b2{font:650 14px var(--sans);fill:var(--ink)}
+.dec{border-radius:12px;padding:9px 12px;border:1px solid var(--line);font-size:13px}
+.dec h4{margin:0 0 4px;font-size:14px;display:flex;gap:8px;align-items:center}
+.dec ul{margin:0;padding-left:18px}
+.dec p{margin:5px 0 0}
+.dec.yes{border-color:#A9D8B6;background:#F2FAF4}
+.dec.no{border-color:#E8C3C0;background:#FCF4F3}
+.gauge{display:flex;gap:14px;align-items:center}
+.gauge svg{width:150px;flex:none}
+.gauge p{margin:0;font-size:13px}
+table.t{border-collapse:collapse;width:100%;font-size:12.5px}
+.t th{text-align:left;color:var(--muted);font-weight:650;border-bottom:1px solid var(--line);padding:4px 6px}
+.t td{border-bottom:1px solid #EEEAE4;padding:3px 6px;vertical-align:top}
+.t tr:last-child td{border-bottom:0}
+
+/* panel 4 */
+.node{cursor:pointer}
+.node:focus{outline:none}
+.node:focus-visible rect{stroke:#8C6CFF;stroke-width:3}
+.svgtx .nn{font:700 12.5px var(--mono);fill:var(--ink)}
+.svgtx .ng{font:11.5px var(--sans);fill:var(--muted)}
+.svgtx .colh{font:700 12px var(--sans);fill:var(--muted);letter-spacing:.04em}
+.keychip{font:600 10.5px var(--sans);background:var(--id-s);color:var(--id);border-radius:5px;padding:1px 5px;margin-left:4px}
+.agg{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12.5px}
+.agg .box{border-radius:10px;padding:8px 10px}
+.agg .bad{background:var(--bad-s)}
+.agg .good{background:var(--ok-s)}
+.agg .rowx{font:11.5px var(--mono);background:#fff;border-radius:6px;padding:2px 6px;margin:3px 0;display:block}
+
+/* code */
+.code{background:var(--code);color:#E8E5EF;border-radius:12px;font:12.5px/1.62 var(--mono);padding:10px 0;overflow:auto}
+.code .l{display:block;white-space:pre;padding:0 14px 0 48px;position:relative;transition:opacity .2s}
+.code .l::before{content:attr(data-n);position:absolute;left:0;width:34px;text-align:right;color:#8C879B}
+.code .l.off{text-decoration:line-through;opacity:.45}
+.code .k{color:#B9A4FF}.code .s{color:#FFC078}.code .c{color:#948FA3}.code .n{color:#7EE2B8}.code .y{color:#8CC7FF}
+.code .fold{display:block;width:100%;text-align:left;background:none;border:0;padding:2px 14px 2px 48px;color:#A9A3B8;cursor:pointer;font:inherit}
+.code .fold:hover{color:#fff;background:rgba(255,255,255,.05)}
+#s-yaml{max-height:max(220px,calc(100vh - 445px))}
+.offtag{font:600 10.5px var(--sans);background:#5A2A1A;color:#FFC9B3;border-radius:5px;padding:0 5px;margin-left:8px;text-decoration:none;display:inline-block}
+.stepx{display:flex;gap:10px;align-items:flex-start}
+.stepx p{margin:0;font-size:13.5px}
+.livebox{margin-top:8px;font-size:13px;background:var(--id-s);border-radius:9px;padding:6px 10px}
+
+/* builder mock */
+.sb{border:1px solid var(--line);border-radius:12px;background:#fff;font-size:13px;overflow:hidden}
+.sb-h{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-bottom:1px solid var(--line);background:#FBF9F6}
+.sb-g{padding:9px 12px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
+.sb-l{font-size:11.5px;font-weight:700;color:var(--muted)}
+.sb-r{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.chip{border:1px solid var(--line);border-radius:7px;padding:2px 8px;background:#FBF9F6;font-size:12.5px}
+.chip.ev{border-color:#B9C5F2;background:var(--web-s)}
+.chip.st{border-color:#EBC995;background:var(--store-s)}
+.chip.st.offc{text-decoration:line-through;opacity:.5}
+.chip.idc{border-color:#CFC2F5;background:var(--id-s)}
+.sb-and{font:700 11px var(--mono);color:var(--id)}
+.sb-f{display:flex;align-items:center;gap:10px;padding:9px 12px;background:#FBF9F6}
+.sb-f .sz{font:800 20px var(--sans);color:var(--hit)}
+.mk{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--id);color:#fff;font:700 10.5px var(--sans);flex:none}
+ol.clicks{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:13px}
+ol.clicks li{display:flex;gap:8px;align-items:baseline}
+
+/* panel 6 */
+.sflow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;gap:6px;align-items:center}
+.scol{display:flex;flex-direction:column;gap:5px}
+.sh{font-size:11.5px;font-weight:700;color:var(--muted)}
+.chip2{font:11px var(--mono);border-radius:7px;padding:3px 6px;background:var(--soft)}
+.chip2.v{background:var(--id-s);color:#3E2795}
+.chip2.g{background:var(--ok-s);color:var(--ok)}
+.chip2.strong{outline:2px solid var(--ok)}
+.sarrow{color:var(--muted);font-weight:700}
+.chat{display:flex;flex-direction:column;gap:8px;font-size:13.5px}
+.msg{border-radius:12px;padding:8px 11px;max-width:92%}
+.msg.u{align-self:flex-end;background:#1F1D25;color:#F4F2F7}
+.msg.a{background:var(--ok-s)}
+.msg.a .src{display:block;font:11.5px var(--mono);color:#2E5A3A;margin-top:4px}
+
+/* panel 7 */
+.gq td:nth-child(2),.gq td:nth-child(3){font-weight:700;white-space:nowrap}
+.edge{list-style:none;padding:0;margin:0;font-size:12px;line-height:1.3}
+.recon{display:flex;flex-direction:column;gap:8px;font-size:13px}
+.rrow{display:grid;grid-template-columns:1fr auto;gap:4px 8px;align-items:center}
+.rbar{grid-column:1/-1;display:flex;height:9px;border-radius:5px;overflow:hidden;background:var(--soft)}
+.rbar i{display:block;height:100%}
+.sched{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px;font-size:13px;border-left:2px solid var(--id-s);margin-left:4px}
+.sched li{display:grid;grid-template-columns:46px 1fr;gap:8px;padding-left:10px;position:relative}
+.sched li::before{content:"";position:absolute;left:-6px;top:6px;width:10px;height:10px;border-radius:50%;background:var(--id)}
+.sched time{font:650 12px var(--mono);color:var(--id)}
+.mini{font-size:13px;margin:0;padding-left:18px}
+.mini li{margin:2px 0}
+.nextbox{background:#1F1D25;color:#F4F2F7;border-radius:12px;padding:9px 12px;font-size:13px}
+.nextbox b{color:#FFC9A8}
+
+/* shorter laptop screens: tighten so each step still fits */
+@media (max-height:860px) and (min-width:1021px){
+  body{font-size:14px}
+  .top{padding:7px 18px}
+  .brand p{display:none}
+  .stage{padding:10px 18px 8px}
+  .panel{gap:8px}
+  .ph h2{font-size:19px}
+  .ph .ans{font-size:13.5px;margin-top:1px}
+  .card{padding:9px 12px}
+  .card h3{margin-bottom:5px}
+  .big span{font-size:50px}
+  .how{margin-top:6px;gap:2px;font-size:13px}
+  .catch,.trap{margin-top:6px;padding:5px 9px;font-size:13px}
+  .flow{gap:4px}
+  .dot{width:19px;height:19px}
+  .sc{padding:5px 8px}
+  .sc-why{font-size:11px}
+  .gloss{font-size:12px;gap:2px 18px}
+  .gloss>div{max-width:none}
+  .pfoot{padding-top:6px}
+  .btn{padding:5px 12px}
+  .gt{padding:8px 12px}
+  .msg{padding:6px 10px}
+  .chat{gap:6px;font-size:13px}
+  .t td{padding:2px 6px}
+  .sched{gap:3px}
+  #s-yaml{max-height:max(200px,calc(100vh - 385px))}
+}
+
+/* small screens and print */
+@media (max-width:1020px){
+  body{display:block;height:auto}
+  .app{display:block}
+  .rail{flex-direction:column;border-right:0;border-bottom:1px solid var(--line)}
+  .rail ol{flex-direction:row;overflow-x:auto}
+  .rail button{white-space:nowrap}
+  .railnote{display:none}
+  .stage{overflow:visible}
+  .cols,.goal{grid-template-columns:1fr !important}
+  .sgrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .sflow{grid-template-columns:1fr}
+  .sarrow{transform:rotate(90deg);justify-self:center}
+}
+@media (max-width:560px){.sgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}}
+@media print{
+  body{display:block;height:auto}
+  .controls,.rail,.pnav{display:none}
+  .app{display:block}
+  .stage{overflow:visible}
+  .panel{display:flex !important;break-after:page;min-height:0}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#stage">Skip to the demo</a>
+<header class="top">
+  <div class="brand">
+    <div class="logo" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></div>
+    <div>
+      <h1>Viewed it, didn't buy it <span class="tag">Made-up data</span></h1>
+      <p>Find logged-in shoppers who looked at a product online and have no matching purchase, online or in a store.</p>
+    </div>
+  </div>
+  <div class="controls">
+    <div class="ctl"><span id="winlbl">Look back</span>
+      <div class="seg" role="radiogroup" aria-labelledby="winlbl" id="winseg">
+        <button type="button" role="radio" data-win="7">7 days</button>
+        <button type="button" role="radio" data-win="14">14 days</button>
+        <button type="button" role="radio" data-win="30">30 days</button>
+      </div>
+    </div>
+    <label class="ctl switch"><input type="checkbox" id="storeT" checked><span class="track" aria-hidden="true"></span><span>Count store sales</span></label>
+    <a href="index.html" style="color:#D9CCFF;font-size:13px;font-weight:650">← Story version</a>
+    <div class="live" aria-live="polite"><b id="liveN">6</b><span>people to message</span></div>
+  </div>
+</header>
+
+<div class="app">
+<nav class="rail" aria-label="Demo steps">
+  <ol id="steps"></ol>
+  <div class="railnote">
+    <p><b>All data is made up.</b> 12 shoppers, 1 product (a linen sofa, code SOFA-01), 3 stores. "Today" is 18 Nov 2026.</p>
+    <p>Try the two switches at the top. Every step reacts.</p>
+    <p>Move with <kbd>←</kbd> <kbd>→</kbd></p>
+  </div>
+</nav>
+
+<main class="stage" id="stage" tabindex="-1">
+<noscript><p>This demo needs JavaScript to compute the lists from its made-up data.</p></noscript>
+
+<!-- 1 -->
+<section class="panel on" id="p0" aria-labelledby="h0">
+  <div class="ph"><span class="num">01</span><div><h2 id="h0">Who looked at the sofa online but didn't buy it?</h2><p class="ans" id="q-ans"></p></div></div>
+  <div class="cols" style="grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr)">
+    <div class="card">
+      <div class="big"><span id="q-big">6</span><small>people to message<br>out of <b id="q-viewers">9</b> logged-in viewers</small></div>
+      <ol class="how">
+        <li><i class="ic web"></i><span><b>Views.</b> Every product-page view from shoppers who were logged in.</span></li>
+        <li><i class="ic store"></i><span><b>Sales.</b> Every sale, from the web shop and from the store tills.</span></li>
+        <li><i class="ic id"></i><span><b>One ID.</b> Link both to one customer ID. Keep viewers with no sale.</span></li>
+      </ol>
+      <p class="catch"><b>The catch:</b> the hard part is the ID, not the SQL. Miss the store sales and you message people who already bought.</p>
+      <div class="trap" id="q-trap" hidden></div>
+    </div>
+    <div class="card"><h3>From 12 shoppers to the list</h3><div class="flow" id="q-flow"></div></div>
+  </div>
+  <div class="card">
+    <div class="chead"><h3>Every shopper, last 30 days <small>right edge = today</small></h3>
+      <div class="legend" aria-label="Legend">
+        <span><svg width="10" height="10" aria-hidden="true"><circle cx="5" cy="5" r="4" fill="#3451C7"/></svg>viewed</span>
+        <span><svg width="10" height="10" aria-hidden="true"><rect width="9" height="9" fill="#3451C7"/></svg>bought online</span>
+        <span><svg width="10" height="10" aria-hidden="true"><rect width="9" height="9" fill="#A35400"/></svg>bought in store</span>
+        <span><svg width="10" height="10" aria-hidden="true"><rect x="1" y="1" width="8" height="8" fill="none" stroke="#3451C7" stroke-width="1.5"/></svg>cancelled</span>
+        <span><svg width="10" height="10" aria-hidden="true"><rect width="9" height="9" fill="#8D8A93"/></svg>other product</span>
+        <span><svg width="16" height="10" aria-hidden="true"><rect width="16" height="10" rx="2" fill="#ECE7FB"/></svg>look-back window</span>
+      </div>
+    </div>
+    <div class="sgrid" id="q-grid"></div>
+  </div>
+  <div class="pfoot"><dl class="gloss">
+    <div><dt>Logged-in viewer</dt><dd>someone who opened the product page while signed in to their account.</dd></div>
+    <div><dt>Look-back window</dt><dd>how many days back we search. Change it at the top.</dd></div>
+    <div><dt>Made-up (synthetic) data</dt><dd>fake records shaped like real ones.</dd></div>
+  </dl><div class="pnav"></div></div>
+</section>
+
+<!-- 2 -->
+<section class="panel" id="p1" aria-labelledby="h1">
+  <div class="ph"><span class="num">02</span><div><h2 id="h1">What exactly counts as "viewed" and "bought"?</h2><p class="ans">Write each rule once, with what it leaves out. Most wrong numbers start with a vague definition.</p></div></div>
+  <div class="goal">
+    <div class="gt"><span>Who uses the list</span><b>The CRM manager</b></div>
+    <div class="gt"><span>What they decide</span><b>Who gets tomorrow's "still thinking about it?" message</b></div>
+    <div class="gt"><span>How often</span><b>Every day. List ready by 07:00</b></div>
+  </div>
+  <div class="cols" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+    <div class="card term">
+      <div class="tname"><i class="ic web"></i>Logged-in viewer</div>
+      <p class="tdef">Opened the product page while signed in, in the last <b data-win>7</b> days.</p>
+      <ul class="yes"><li>Any device: phone and laptop are one person</li><li>Many views still make one row</li></ul>
+      <ul class="no"><li>Visitors who never signed in</li><li>Staff, test accounts and bots (eligibility check; none in this data)</li></ul>
+      <div class="ex"><b>Example:</b> Quân viewed on a phone and a laptop. That is 1 viewer.</div>
+    </div>
+    <div class="card term">
+      <div class="tname"><i class="ic store"></i>Bought</div>
+      <p class="tdef">A completed sale of the same product, online or in a store, on or after the first view and by the run date (18 Nov 2026, Vietnam time).</p>
+      <ul class="yes"><li>Online order with status "completed"</li><li>Store sale linked by loyalty card or phone</li></ul>
+      <ul class="no"><li>Cancelled orders and items left in a cart</li><li>A different product</li></ul>
+      <div class="ex"><b>Example:</b> Hà's order was cancelled. Hà has not bought.</div>
+    </div>
+    <div class="card term">
+      <div class="tname"><i class="ic hit"></i>To message</div>
+      <p class="tdef">A logged-in viewer with no "bought" for that product.</p>
+      <ul class="yes"><li>One row per person and product</li><li>Rebuilt every morning</li></ul>
+      <ul class="no"><li>People who opted out of marketing (eligibility check)</li><li>Visitors we can't name</li></ul>
+      <div class="ex"><b>Example:</b> Dũng viewed the sofa and bought a lamp. Dũng is on the list.</div>
+    </div>
+  </div>
+  <div class="card why" id="d-why"></div>
+  <div class="pfoot"><dl class="gloss">
+    <div><dt>CRM</dt><dd>customer relationship management: the team and tool that message customers.</dd></div>
+    <div><dt>Definition</dt><dd>one sentence that says what counts and what does not.</dd></div>
+    <div><dt>Opt-out</dt><dd>the customer said no to marketing messages.</dd></div>
+  </dl><div class="pnav"></div></div>
+</section>
+
+<!-- 3 -->
+<section class="panel" id="p2" aria-labelledby="h2">
+  <div class="ph"><span class="num">03</span><div><h2 id="h2">How do we know the web shopper and the store buyer are the same person?</h2><p class="ans">We link them with exact keys only: the website login, the loyalty card and the phone number. A wrong link costs more than a missed one.</p></div></div>
+  <div class="cols grow" style="grid-template-columns:minmax(0,1.12fr) minmax(0,1fr)">
+    <div class="card" style="display:flex;flex-direction:column;gap:8px">
+      <h3>One person, three keys</h3>
+      <svg class="svgtx" viewBox="0 0 566 232" role="img" aria-labelledby="idt" style="width:100%;max-height:310px">
+        <title id="idt">Bình's website login, loyalty card and phone number all point to one customer ID, C02. Bình's online view and store purchase then sit on one timeline, so Bình is not on the list.</title>
+        <g><rect x="8" y="10" width="180" height="52" rx="10" fill="#E5EAFB" stroke="#3451C7"/><text x="20" y="31" class="s1">Website login</text><text x="20" y="50" class="s2">user_id = u_binh</text></g>
+        <g><rect x="8" y="90" width="180" height="52" rx="10" fill="#FCEFDC" stroke="#A35400"/><text x="20" y="111" class="s1">Loyalty card at the till</text><text x="20" y="130" class="s2">member_key = L-2041</text></g>
+        <g><rect x="8" y="170" width="180" height="52" rx="10" fill="#FCEFDC" stroke="#A35400"/><text x="20" y="191" class="s1">Phone at the till</text><text x="20" y="210" class="s2">0912 340 204</text></g>
+        <path d="M188 36 C222 36,222 116,252 116" fill="none" stroke="#5F3DC4" stroke-width="1.6"/>
+        <path d="M188 116 L252 116" fill="none" stroke="#5F3DC4" stroke-width="1.6"/>
+        <path d="M188 196 C222 196,222 116,252 116" fill="none" stroke="#5F3DC4" stroke-width="1.6"/>
+        <circle cx="300" cy="116" r="48" fill="#ECE7FB" stroke="#5F3DC4" stroke-width="2"/>
+        <text x="300" y="112" text-anchor="middle" class="b1">C02</text>
+        <text x="300" y="134" text-anchor="middle" class="b2">Bình</text>
+        <path d="M348 116 L382 116" fill="none" stroke="#5F3DC4" stroke-width="1.6"/>
+        <rect x="382" y="44" width="176" height="146" rx="10" fill="#FFFDF9" stroke="#E3DED7"/>
+        <text x="396" y="68" class="s1">One timeline</text>
+        <circle cx="402" cy="92" r="5" fill="#3451C7"/><text x="414" y="90" class="s3">3 days ago</text><text x="414" y="106" class="s4">viewed it online</text>
+        <rect x="397" y="125" width="10" height="10" fill="#A35400"/><text x="414" y="128" class="s3">2 days ago</text><text x="414" y="144" class="s4">bought it in store</text>
+        <text x="396" y="174" class="s4" style="fill:#1E6B34">Not on the list ✓</text>
+      </svg>
+      <table class="t" aria-label="identity_map rows for Bình">
+        <thead><tr><th>source</th><th>source_key</th><th>customer_id</th><th>how we got it</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">web_login</td><td class="mono">u_binh</td><td class="mono">C02</td><td>Bình created an account</td></tr>
+          <tr><td class="mono">loyalty</td><td class="mono">L-2041</td><td class="mono">C02</td><td>Card linked to the account email</td></tr>
+          <tr><td class="mono">phone</td><td class="mono">0912 340 204</td><td class="mono">C02</td><td>Same phone on the account</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:11px;min-width:0">
+      <div class="card" style="display:flex;flex-direction:column;gap:8px">
+        <h3>The one hard decision</h3>
+        <div class="dec yes"><h4><span class="pill ok">Chosen</span>Exact match only</h4>
+          <ul><li>Link a store sale to a person only by login, loyalty card or phone.</li><li>Wrong merges are rare and easy to trace. A key that two people share links no one.</li></ul>
+          <p><b>Cost:</b> a cash sale with no card or phone stays unlinked. Here that is <span id="m-gapn">1 of 4</span> store sales (Ngọc).</p></div>
+        <div class="dec no"><h4><span class="pill bad">Rejected</span>Best-guess match</h4>
+          <ul><li>A model guesses from device, Wi-Fi, area and time.</li><li>Finds more matches.</li></ul>
+          <p><b>Why not:</b> one wrong guess drops a real lead, or messages someone about a sofa they never saw. It is hard to audit and risky for privacy.</p></div>
+      </div>
+      <div class="card"><h3>Store sales linked to a person</h3><div class="gauge" id="m-gauge"></div></div>
+    </div>
+  </div>
+  <div class="pfoot"><dl class="gloss">
+    <div><dt>Identity resolution</dt><dd>linking records from different systems to one person.</dd></div>
+    <div><dt>Exact (deterministic) match</dt><dd>the same login, card number or phone.</dd></div>
+    <div><dt>Best-guess (probabilistic) match</dt><dd>a model guesses from patterns such as device and place.</dd></div>
+  </dl><div class="pnav"></div></div>
+</section>
+
+<!-- 4 -->
+<section class="panel" id="p3" aria-labelledby="h3">
+  <div class="ph"><span class="num">04</span><div><h2 id="h3">What do the tables look like?</h2><p class="ans">Four source tables feed the models, and an eligibility table removes opt-outs, staff and bots. Every table has a clear <b>grain</b>: what one row means. Click any table to see its columns.</p></div></div>
+  <div class="cols grow" style="grid-template-columns:minmax(0,1.45fr) minmax(0,1fr)">
+    <div class="card"><h3>How data flows <small>sources → dbt models → outputs</small></h3><svg class="svgtx" id="lin" viewBox="0 0 796 318" role="group" aria-label="Table lineage. Select a table to see its columns." style="width:100%;max-height:255px"></svg>
+      <p class="note">Purple = built by us. Orange = the list CRM uses. Dashed green = the metric (step 6).</p>
+      <div id="m-sample" style="margin-top:10px;overflow-x:auto"></div></div>
+    <div style="display:flex;flex-direction:column;gap:11px;min-width:0">
+      <div class="card" id="m-detail" aria-live="polite"></div>
+      <div class="card"><h3>Group rows before you join</h3><div class="agg" id="m-agg"></div></div>
+    </div>
+  </div>
+  <div class="pfoot"><dl class="gloss">
+    <div><dt>Grain</dt><dd>what one row means. Decide it before writing SQL.</dd></div>
+    <div><dt>Key</dt><dd>the column, or columns, that make each row unique.</dd></div>
+    <div><dt>dbt model</dt><dd>one SQL file that builds one table.</dd></div>
+  </dl><div class="pnav"></div></div>
+</section>
+
+<!-- 5 -->
+<section class="panel" id="p4" aria-labelledby="h4">
+  <div class="ph"><span class="num">05</span><div><h2 id="h4">What is the SQL?</h2><p class="ans">Three steps: find viewers, find buyers, keep viewers who are not buyers. The two switches at the top edit the query live.</p></div></div>
+  <div class="tabs" role="group" aria-label="Show as" id="buildtabs">
+    <button type="button" class="tab" data-view="sql">SQL (BigQuery)</button>
+    <button type="button" class="tab" data-view="nocode">Same rule in a no-code segment builder</button>
+  </div>
+  <div class="cols grow" style="grid-template-columns:minmax(0,1.32fr) minmax(0,1fr)">
+    <div class="card" style="display:flex;flex-direction:column;gap:8px;min-width:0">
+      <div class="chead" id="sqlhead"><h3 id="b-title">One query, straight from the raw tables</h3>
+        <div class="tabs" role="group" aria-label="SQL step" id="sqltabs"></div></div>
+      <div id="b-left"></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:11px;min-width:0">
+      <div class="card" id="b-explain"></div>
+      <div class="card grow" id="b-result"></div>
+    </div>
+  </div>
+  <div class="pfoot"><dl class="gloss">
+    <div><dt>CTE</dt><dd>a named step inside one query: <span class="mono">with views as (...)</span>.</dd></div>
+    <div><dt>Anti-join</dt><dd>keep rows from table A that have no match in table B.</dd></div>
+    <div><dt>NOT EXISTS</dt><dd>SQL for "no matching row". It never duplicates rows.</dd></div>
+  </dl><div class="pnav"></div></div>
+</section>
+
+<!-- 6 -->
+<section class="panel" id="p5" aria-labelledby="h5">
+  <div class="ph"><span class="num">06</span><div><h2 id="h5">How does every team get the same number?</h2><p class="ans">Define the metric once, in a <b>semantic layer</b>. Dashboards, segments and the AI question box all read that one definition.</p></div></div>
+  <div class="cols grow" style="grid-template-columns:minmax(0,1fr) minmax(0,1.08fr)">
+    <div style="display:flex;flex-direction:column;gap:11px;min-width:0">
+      <div class="card"><h3>Where the metric sits</h3>
+        <div class="sflow">
+          <div class="scol"><span class="sh">Tables</span><span class="chip2">int_product_<wbr>views</span><span class="chip2">fct_purchases</span></div>
+          <span class="sarrow" aria-hidden="true">→</span>
+          <div class="scol"><span class="sh">Semantic models</span><span class="chip2 v">product_views</span><span class="chip2 v">purchases</span></div>
+          <span class="sarrow" aria-hidden="true">→</span>
+          <div class="scol"><span class="sh">Metrics</span><span class="chip2 g">product_viewers</span><span class="chip2 g">view_to_buy</span><span class="chip2 g strong">viewed_not_<wbr>bought</span></div>
+          <span class="sarrow" aria-hidden="true">→</span>
+          <div class="scol"><span class="sh">Used by</span><span class="chip2">Dashboard</span><span class="chip2">Segment builder</span><span class="chip2">AI question box</span></div>
+        </div>
+        <p class="note"><b>Without it:</b> each dashboard writes its own SQL, and the numbers drift apart. <b>With it:</b> one definition, every tool.</p>
+      </div>
+      <div class="card grow"><h3>Ask the AI question box <small>simulated</small></h3><div class="chat" id="s-chat"></div></div>
+    </div>
+    <div class="card" style="display:flex;flex-direction:column;gap:8px;min-width:0">
+      <div class="chead"><h3>The metric file <small>dbt MetricFlow-style YAML</small></h3><div class="tabs" role="group" aria-label="YAML file part" id="ytabs"></div></div>
+      <div class="code" id="s-yaml"></div>
+      <p class="note" id="s-ynote"></p>
+    </div>
+  </div>
+  <div class="pfoot"><dl class="gloss">
+    <div><dt>Semantic layer</dt><dd>files that define each metric once, for every tool.</dd></div>
+    <div><dt>Measure</dt><dd>a number to add up, such as distinct buyers.</dd></div>
+    <div><dt>Entity</dt><dd>what tables join on, such as customer or product.</dd></div>
+  </dl><div class="pnav"></div></div>
+</section>
+
+<!-- 7 -->
+<section class="panel" id="p6" aria-labelledby="h6">
+  <div class="ph"><span class="num">07</span><div><h2 id="h6">How do we know it's right, every day?</h2><p class="ans">Five test questions with known answers, totals that match the source systems, and alerts when something drifts.</p></div></div>
+  <div class="cols grow" style="grid-template-columns:minmax(0,1.2fr) minmax(0,.95fr) minmax(0,1fr)">
+    <div class="card"><div class="chead"><h3>Five test questions</h3><span id="g-score"></span></div><table class="t gq" id="g-table"></table>
+      <p class="note" id="g-note"></p>
+      <div class="chead" style="margin-top:4px"><h3>Edge cases <small>tiny datasets; list and metric</small></h3><span id="e-score"></span></div><ul class="mini edge" id="e-list"></ul></div>
+    <div style="display:flex;flex-direction:column;gap:11px;min-width:0">
+      <div class="card"><h3>Totals match the source</h3><div class="recon" id="r-recon"></div></div>
+      <div class="card"><h3>Beats the old way</h3><div id="r-bench"></div></div>
+      <div class="nextbox"><b>What I'd change first:</b> ask for a phone number at the till, for an e-receipt. Each unlinked sale can put a buyer, like Ngọc, on the list by mistake.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:11px;min-width:0">
+      <div class="card"><h3>Runs every day <small>proposed</small></h3>
+        <ul class="sched">
+          <li><time>02:00</time><span>Store sales arrive overnight.</span></li>
+          <li><time>02:30</time><span>Re-read 2 days of store sales (late uploads).</span></li>
+          <li><time>06:00</time><span>Rebuild the list (recent days only).</span></li>
+          <li><time>06:15</time><span>Run the tests; stop if any fail.</span></li>
+          <li><time>07:00</time><span>Send to the CRM journey.</span></li>
+        </ul></div>
+      <div class="card"><h3>If a check fails</h3>
+        <p class="note" style="margin:0 0 3px"><b>Owner:</b> the analytics engineer on duty; the CRM manager is told.</p>
+        <ol class="mini"><li>Hold the 07:00 send.</li><li>Find the cause: late till data, a broken join or a key clash.</li><li>Fix, rebuild the list and rerun the tests.</li><li>Send once. Sends are keyed by person, product and run date, so nobody gets two.</li></ol></div>
+      <div class="card"><h3>Alerts and access</h3>
+        <ul class="mini" id="r-alerts"></ul>
+        <p class="note">Marketing sees name and product; email and phone stay masked.</p></div>
+    </div>
+  </div>
+  <div class="pfoot"><dl class="gloss">
+    <div><dt>Test (golden) question</dt><dd>a question with a known right answer.</dd></div>
+    <div><dt>Reconciliation</dt><dd>checking our totals equal the source system's totals.</dd></div>
+    <div><dt>Late data</dt><dd>store sales that arrive a day or more after the sale.</dd></div>
+  </dl><div class="pnav"></div></div>
+</section>
+</main>
+</div>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ago=d=>d===0?'today':d===1?'1 day ago':d+' days ago';
+
+/* ---------- made-up source data ("today" = 18 Nov 2026; ago = days before today) ---------- */
+const SHOPPERS=[
+  {cid:'C01',name:'An',user:'u_an'},
+  {cid:'C02',name:'Bình',user:'u_binh'},
+  {cid:'C03',name:'Chi',user:'u_chi'},
+  {cid:'C04',name:'Dũng',user:'u_dung'},
+  {cid:'C05',name:'Hà',user:'u_ha'},
+  {cid:null,name:'Unknown',user:null,anon:'a_91f'},
+  {cid:'C06',name:'Linh',user:'u_linh'},
+  {cid:'C07',name:'Minh',user:'u_minh'},
+  {cid:'C08',name:'Ngọc',user:'u_ngoc',cashReceipt:'R-8814'},
+  {cid:'C09',name:'Phúc',user:'u_phuc'},
+  {cid:'C10',name:'Quân',user:'u_quan'},
+  {cid:'C11',name:'Trang',user:'u_trang'},
+];
+const WEB=[ // web_events: one row = one product-page view
+  {id:'e01',user:'u_an',anon:'a_11',sku:'SOFA-01',ago:3,device:'laptop'},
+  {id:'e02',user:'u_an',anon:'a_12',sku:'SOFA-01',ago:2,device:'phone'},
+  {id:'e03',user:'u_binh',anon:'a_21',sku:'SOFA-01',ago:3,device:'phone'},
+  {id:'e04',user:'u_chi',anon:'a_31',sku:'SOFA-01',ago:1,device:'phone'},
+  {id:'e05',user:'u_dung',anon:'a_41',sku:'SOFA-01',ago:5,device:'laptop'},
+  {id:'e06',user:'u_ha',anon:'a_51',sku:'SOFA-01',ago:2,device:'phone'},
+  {id:'e07',user:null,anon:'a_91f',sku:'SOFA-01',ago:2,device:'phone'},
+  {id:'e08',user:'u_linh',anon:'a_71',sku:'SOFA-01',ago:12,device:'laptop'},
+  {id:'e09',user:'u_minh',anon:'a_81',sku:'SOFA-01',ago:4,device:'phone'},
+  {id:'e10',user:'u_minh',anon:'a_81',sku:'SOFA-01',ago:4,device:'phone'},
+  {id:'e11',user:'u_minh',anon:'a_82',sku:'SOFA-01',ago:3,device:'laptop'},
+  {id:'e12',user:'u_ngoc',anon:'a_61',sku:'SOFA-01',ago:6,device:'phone'},
+  {id:'e13',user:'u_phuc',anon:'a_A1',sku:'SOFA-01',ago:2,device:'laptop'},
+  {id:'e14',user:'u_quan',anon:'a_B1',sku:'SOFA-01',ago:2,device:'phone'},
+  {id:'e15',user:'u_quan',anon:'a_B2',sku:'SOFA-01',ago:2,device:'laptop'},
+  {id:'e16',user:'u_trang',anon:'a_C1',sku:'SOFA-01',ago:26,device:'phone'},
+];
+const ORDERS=[ // online_orders: one row = one order line
+  {id:'O-501',user:'u_an',sku:'SOFA-01',status:'completed',ago:1},
+  {id:'O-502',user:'u_dung',sku:'LAMP-07',status:'completed',ago:4},
+  {id:'O-503',user:'u_ha',sku:'SOFA-01',status:'cancelled',ago:1},
+];
+const POS=[ // pos_sales: one row = one till line; member = loyalty number or phone, empty for cash
+  {id:'R-8790',store:'District 1',member:'L-3310',mtype:'loyalty',sku:'SOFA-01',ago:24},
+  {id:'R-8812',store:'District 1',member:'L-2041',mtype:'loyalty',sku:'SOFA-01',ago:2},
+  {id:'R-8813',store:'Thu Duc',member:'0903 555 118',mtype:'phone',sku:'SOFA-01',ago:1},
+  {id:'R-8814',store:'District 7',member:null,sku:'SOFA-01',ago:5},
+];
+const IDMAP=[ // identity_map: exact keys only
+  ...SHOPPERS.filter(s=>s.user).map(s=>({src:'web_login',key:s.user,cid:s.cid})),
+  {src:'loyalty',key:'L-2041',cid:'C02'},
+  {src:'phone',key:'0912 340 204',cid:'C02'},
+  {src:'phone',key:'0903 555 118',cid:'C09'},
+  {src:'loyalty',key:'L-3310',cid:'C11'},
+];
+const C={target:'#C2410C',online:'#3451C7',store:'#A35400',old:'#6B6580',anon:'#6B6580',excl:'#6B6580'};
+
+/* ---------- the same logic as the SQL in step 5 ---------- */
+// Rules: run date 18 Nov 2026 (Asia/Ho_Chi_Minh). ago = whole days before the run date; h = hour of the day (12 when not recorded).
+// A view counts if ago <= N. A purchase counts if it is completed, the same person and product, at or after the first counted view, and by the end of the run date.
+// A key (source + value) that points to two different people links no one. EXCL = customers who fail the eligibility check (opted out, staff, bot); none in this made-up data.
+const DATA={WEB,ORDERS,POS,IDMAP,EXCL:[]};
+const hrs=r=>(r.h??12)-24*r.ago; // hours after the run date's midnight; bigger = later
+const keyOwner=(src,key,D)=>{const m=D.IDMAP.filter(x=>x.src===src&&x.key===key);return m.length&&new Set(m.map(x=>x.cid)).size===1?m[0]:null;};
+const linkWeb=(u,D=DATA)=>{const m=u?keyOwner('web_login',u,D):null;return m?m.cid:null;};
+const storeKey=(p,D=DATA)=>p.member?keyOwner(p.mtype,p.member,D):null;
+function purchasesAll(D=DATA){
+  return [
+    ...D.ORDERS.map(o=>({line:o.id,cid:linkWeb(o.user,D),sku:o.sku,ago:o.ago,t:hrs(o),channel:'online',status:o.status,via:'web shop'})),
+    ...D.POS.map(p=>{const m=storeKey(p,D);return {line:p.id,cid:m?m.cid:null,sku:p.sku,ago:p.ago,t:hrs(p),channel:'store',status:'completed',via:m?(m.src==='loyalty'?'loyalty card':'phone at the till'):'cash, no ID',store:p.store};}),
+  ];
+}
+function compute(win,store,D=DATA){
+  const vm=new Map();
+  for(const e of D.WEB){
+    if(!e.user||e.ago>win) continue;              // logged in, inside the window
+    const cid=linkWeb(e.user,D); if(!cid) continue;
+    const k=cid+'|'+e.sku, v=vm.get(k)||{cid,sku:e.sku,first:e.ago,ft:Infinity,count:0};
+    v.first=Math.max(v.first,e.ago); v.ft=Math.min(v.ft,hrs(e)); v.count++; vm.set(k,v); // one row per person × product
+  }
+  const views=[...vm.values()];
+  const all=purchasesAll(D);
+  const counted=all.filter(p=>p.status==='completed'&&(store||p.channel==='online'));
+  const list=[],bought=[],excluded=[];
+  for(const v of views){
+    if(D.EXCL.includes(v.cid)){excluded.push(v);continue;}  // eligibility check
+    const p=counted.find(p=>p.cid&&p.cid===v.cid&&p.sku===v.sku&&p.t>=v.ft&&p.ago>=0); // NOT EXISTS
+    if(p) bought.push({...v,p}); else list.push(v);
+  }
+  return {views,all,counted,list,bought,excluded};
+}
+// a second count, written separately: eligible viewer rows minus those with a matching purchase (always counts store sales)
+function metricCount(win,D=DATA){
+  const first=new Map();
+  D.WEB.forEach(e=>{if(!e.user||e.ago>win)return;const c=linkWeb(e.user,D);if(!c||D.EXCL.includes(c))return;const k=c+'|'+e.sku;first.set(k,Math.min(first.has(k)?first.get(k):Infinity,hrs(e)));});
+  let conv=0;
+  first.forEach((f,k)=>{const [c,sku]=k.split('|');
+    const web=D.ORDERS.some(o=>o.status==='completed'&&o.sku===sku&&hrs(o)>=f&&o.ago>=0&&linkWeb(o.user,D)===c);
+    const till=D.POS.some(p=>{const m=storeKey(p,D);return m&&m.cid===c&&p.sku===sku&&hrs(p)>=f&&p.ago>=0;});
+    if(web||till) conv++;});
+  return first.size-conv;
+}
+function edgeTests(){
+  const L=o=>({WEB:[],ORDERS:[],POS:[],IDMAP:[{src:'web_login',key:'u1',cid:'K1'},{src:'web_login',key:'u2',cid:'K2'}],EXCL:[],...o});
+  const W=(user,sku,ago,h)=>({user,anon:'x',sku,ago,h,device:'phone'});
+  const O=(id,sku,ago,h,status='completed')=>({id,user:'u1',sku,status,ago,h});
+  const T=[
+    ['A purchase made before the first view does not count',L({WEB:[W('u1','S',3)],ORDERS:[O('a','S',10)]}),1],
+    ['Same day: a 09:00 purchase before a 15:00 view does not count',L({WEB:[W('u1','S',2,15)],ORDERS:[O('a','S',2,9)]}),1],
+    ['Same day: an 18:00 purchase after a 15:00 view counts',L({WEB:[W('u1','S',2,15)],ORDERS:[O('a','S',2,18)]}),0],
+    ['A view exactly 7 days ago counts; 8 days ago does not',L({WEB:[W('u1','S',7),W('u2','S',8)]}),1],
+    ['A phone number shared by two people links no one',L({WEB:[W('u1','S',3)],POS:[{id:'r',store:'x',member:'P',mtype:'phone',sku:'S',ago:1}],IDMAP:[{src:'web_login',key:'u1',cid:'K1'},{src:'phone',key:'P',cid:'K1'},{src:'phone',key:'P',cid:'K2'}]}),1],
+    ['A login shared by two people links no one',L({WEB:[W('u1','S',3)],IDMAP:[{src:'web_login',key:'u1',cid:'K1'},{src:'web_login',key:'u1',cid:'K2'}]}),0],
+    ['The same login listed twice for one person still links',L({WEB:[W('u1','S',3)],IDMAP:[{src:'web_login',key:'u1',cid:'K1'},{src:'web_login',key:'u1',cid:'K1'}]}),1],
+    ['Repeat views and two sale lines give one row and one decision',L({WEB:[W('u1','S',3),W('u1','S',2)],ORDERS:[O('a','S',1),O('b','S',1)]}),0],
+    ['An opted-out person is removed',L({WEB:[W('u1','S',3)],EXCL:['K1']}),0],
+    ['Buying one product does not cancel another',L({WEB:[W('u1','S',3),W('u1','L',3)],ORDERS:[O('a','L',1)]}),1],
+  ];
+  // the list (compute) and the separate metric count must both give the expected number of rows
+  return T.map(([name,D,want])=>{const r=compute(7,true,D);return {name,pass:r.list.length===want&&metricCount(7,D)===want&&new Set(r.list.map(v=>v.cid+'|'+v.sku)).size===r.list.length};});
+}
+// self-check: expected list sizes for this made-up data
+[[7,true,6],[7,false,8],[14,true,7],[14,false,9],[30,true,7],[30,false,10]].forEach(([w,s,n])=>console.assert(compute(w,s).list.length===n,`list(${w},${s}) should be ${n}`));
+edgeTests().forEach(t=>console.assert(t.pass,'edge case failed: '+t.name));
+console.assert(metricCount(7)===6,'metric count should be 6');
+
+/* ---------- state ---------- */
+const state={step:0,win:7,store:true,sqlStep:1,view:'sql',node:'fct_purchases',ytab:'metrics'};
+let R,RON,ROFF;
+const STEPS=['The question','Define it','Match people','Tables','SQL','Metric layer','Prove & run'];
+const nameOf=cid=>(SHOPPERS.find(s=>s.cid===cid)||{}).name||'?';
+
+function statusOf(sh){
+  if(!sh.user) return {st:'anon'};
+  const v=R.views.find(x=>x.cid===sh.cid);
+  if(!v) return {st:'old'};
+  if(R.excluded.some(x=>x.cid===sh.cid)) return {st:'excl',v};
+  const b=R.bought.find(x=>x.cid===sh.cid);
+  if(b) return {st:b.p.channel,v,p:b.p};
+  return {st:'target',v,wrong:!state.store&&RON.bought.some(x=>x.cid===sh.cid)};
+}
+function whyText(sh,s){
+  if(s.st==='excl') return 'Opted out of marketing, so not messaged.';
+  if(s.st==='anon') return 'No account, so no one to message.';
+  if(s.st==='old'){const last=Math.min(...WEB.filter(e=>e.user===sh.user).map(e=>e.ago));return `Viewed ${ago(last)}. Outside the ${state.win}-day window.`;}
+  if(s.st==='online') return `Bought online ${ago(s.p.ago)}.`;
+  if(s.st==='store') return `Bought in store ${ago(s.p.ago)}, by ${s.p.via}.`;
+  if(s.wrong) return 'Bought in store, but store sales are switched off. Wrong!';
+  const special={C04:'Bought a lamp, not the sofa.',C05:'The sofa order was cancelled.',C07:`Viewed ${s.v.count} times. Still one row.`,C08:'Paid cash in store, gave no phone. We cannot see it.',C10:'Phone and laptop, one login. One row.'};
+  return special[sh.cid]||`Viewed ${ago(s.v.first)}. No purchase.`;
+}
+const outText={excl:'Opted out',target:'On the list',online:'Bought online',store:'Bought in store',old:'Outside window',anon:'Not logged in'};
+
+/* ---------- step 1 ---------- */
+function track(sh){
+  const X=a=>136-a*(130/30);
+  const xw=X(state.win);
+  let s=`<rect x="${xw}" y="1" width="${139-xw}" height="24" rx="4" fill="#ECE7FB"/><line x1="6" y1="13" x2="138" y2="13" stroke="#D9D4CC"/>`;
+  WEB.filter(e=>sh.user?e.user===sh.user:e.anon===sh.anon).forEach(e=>{
+    s+=`<circle cx="${X(e.ago)}" cy="7.5" r="3.3" fill="${sh.user?'#3451C7':'#8D8A93'}"><title>Viewed ${ago(e.ago)} on a ${e.device}</title></circle>`;});
+  ORDERS.filter(o=>sh.user&&o.user===sh.user).forEach(o=>{
+    const x=X(o.ago)-3.5;
+    if(o.sku!=='SOFA-01') s+=`<rect x="${x}" y="15" width="7" height="7" fill="#8D8A93"><title>Bought a lamp online ${ago(o.ago)}</title></rect>`;
+    else if(o.status==='cancelled') s+=`<rect x="${x+.7}" y="15.7" width="5.6" height="5.6" fill="#fff" stroke="#3451C7" stroke-width="1.4"><title>Order cancelled ${ago(o.ago)}</title></rect>`;
+    else s+=`<rect x="${x}" y="15" width="7" height="7" fill="#3451C7"><title>Bought online ${ago(o.ago)}</title></rect>`;});
+  POS.forEach(p=>{
+    const m=storeKey(p); const mine=(m&&m.cid===sh.cid)||sh.cashReceipt===p.id; if(!mine) return;
+    const x=X(p.ago)-3.5, op=state.store?1:.3;
+    s+= m ? `<rect x="${x}" y="15" width="7" height="7" fill="#A35400" opacity="${op}"><title>Bought in store ${ago(p.ago)}</title></rect>`
+          : `<rect x="${x+.7}" y="15.7" width="5.6" height="5.6" fill="#fff" stroke="#A35400" stroke-width="1.4" stroke-dasharray="2 1.5" opacity="${op}"><title>Cash sale ${ago(p.ago)}, not linked to anyone</title></rect>`;});
+  return `<svg class="trk" viewBox="0 0 140 26" aria-hidden="true">${s}</svg>`;
+}
+function renderQ(){
+  const n=R.list.length, wrongs=R.list.filter(v=>!state.store&&RON.bought.some(b=>b.cid===v.cid));
+  $('#q-big').textContent=n; $('#q-viewers').textContent=R.views.length;
+  $('#q-ans').innerHTML=`<b>${n} people</b> in the last ${state.win} days. To find them, put every view and every sale, web and store, on one customer ID, then keep the viewers with no sale.`;
+  const trap=$('#q-trap');
+  trap.hidden=state.store; $('#p0 .catch').hidden=!state.store;
+  if(!state.store) trap.innerHTML=`<b>Trap on:</b> store sales are off, so ${wrongs.map(v=>nameOf(v.cid)).join(' and ')} look like lost sales. They bought in a store. That is ${wrongs.length} wasted message${wrongs.length===1?'':'s'}.`;
+  const st=SHOPPERS.map(sh=>({sh,s:statusOf(sh)}));
+  const rows=[
+    ['Viewed the sofa page',st],
+    ['Logged in, so we know who',st.filter(x=>x.sh.user)],
+    [`Viewed in the last ${state.win} days`,st.filter(x=>['target','online','store','excl'].includes(x.s.st))],
+    [state.store?'Bought it, online or in store':'Bought it online',st.filter(x=>['online','store'].includes(x.s.st))],
+    ["Didn't buy: message them",st.filter(x=>x.s.st==='target')],
+  ];
+  $('#q-flow').innerHTML=rows.map(([label,arr],i)=>`<div class="fr${i===4?' last':''}"><span>${label}</span><span class="dots" aria-label="${arr.map(x=>x.sh.name).join(', ')}">${arr.map(x=>`<span class="dot" title="${esc(x.sh.name)}" style="background:${C[x.s.st]}">${esc(x.sh.name[0])}</span>`).join('')}</span><span class="c" style="${i===4?'color:var(--hit)':''}">${arr.length}</span></div>`).join('');
+  $('#q-grid').innerHTML=st.map(({sh,s})=>`<div class="sc st-${s.st}${s.wrong?' wrong':''}">
+    <div class="sc-top"><span class="av" style="background:${C[s.st]}">${esc(sh.name[0])}</span><b>${esc(sh.name)}</b><span class="cid">${sh.cid||sh.anon}</span></div>
+    ${track(sh)}
+    <div class="sc-out" style="color:${s.wrong?'var(--bad)':C[s.st]}">${outText[s.st]}</div>
+    <div class="sc-why">${esc(whyText(sh,s))}</div></div>`).join('');
+}
+
+/* ---------- step 2 ---------- */
+function renderDefine(){
+  const off=ROFF.list.length,on=RON.list.length,w=off-on;
+  const wrongIds=new Set(ROFF.list.filter(v=>RON.bought.some(b=>b.cid===v.cid)).map(v=>v.cid));
+  $('#d-why').innerHTML=`<div class="cells" aria-hidden="true">${ROFF.list.map(v=>`<span class="cell" style="background:${wrongIds.has(v.cid)?'#6B6580':'#C2410C'}" title="${esc(nameOf(v.cid))}">${esc(nameOf(v.cid)[0])}</span>`).join('')}</div>
+    <p><b>Why define first?</b> If "bought" meant online only, the list would have ${off} people. <b>${w} of ${off}</b> already bought in a store (grey). Good definitions stop wasted messages before any SQL is written.</p>`;
+}
+
+/* ---------- step 3 ---------- */
+function gaugeSVG(f){
+  const a=Math.PI*f,x=(70-56*Math.cos(a)).toFixed(1),y=(70-56*Math.sin(a)).toFixed(1);
+  const tick=(g,c)=>{const b=Math.PI*g;return `<line x1="${70-46*Math.cos(b)}" y1="${70-46*Math.sin(b)}" x2="${70-66*Math.cos(b)}" y2="${70-66*Math.sin(b)}" stroke="${c}" stroke-width="2"/>`;};
+  return `<svg viewBox="0 0 140 82" role="img" aria-label="${Math.round(f*100)} percent of store sales are linked to a person"><path d="M14 70 A56 56 0 0 1 126 70" stroke="#EFEBE5" stroke-width="12" fill="none" stroke-linecap="round"/><path d="M14 70 A56 56 0 0 1 ${x} ${y}" stroke="#5F3DC4" stroke-width="12" fill="none" stroke-linecap="round"/>${tick(.7,'#B42318')}${tick(.9,'#1E6B34')}<text x="70" y="66" text-anchor="middle" style="font:800 24px var(--sans);fill:var(--ink)">${Math.round(f*100)}%</text></svg>`;
+}
+function renderMatch(){
+  const linked=POS.filter(p=>storeKey(p)).length, f=linked/POS.length;
+  $('#m-gapn').textContent=`${POS.length-linked} of ${POS.length}`;
+  $('#m-gauge').innerHTML=gaugeSVG(f)+`<p><b>${linked} of ${POS.length}</b> till sales have a loyalty card or phone, so we know who bought.<br><span style="color:var(--bad)">▍</span>Alert below 70%. <span style="color:var(--ok)">▍</span>Goal 90% (assumed).</p>`;
+}
+
+/* ---------- step 4 ---------- */
+const KIND={src:{stroke:'#8D8A93',soft:'#EFEDF0',label:'Source table'},model:{stroke:'#5F3DC4',soft:'#ECE7FB',label:'dbt model (built by us)'},out:{stroke:'#C2410C',soft:'#FDE9DF',label:'Output for CRM'},metric:{stroke:'#1E6B34',soft:'#E3F3E7',label:'Metric (semantic layer)'}};
+const NODES=[
+  {id:'web_events',c:0,r:0,kind:'src',short:'one page view',grain:'One row = one product-page view.',rows:()=>WEB.length,cols:[['event_id','key'],['user_id','login ID; empty if not logged in'],['anonymous_id','browser cookie'],['event_name',"'product_view'"],['sku','product code'],['event_ts','time of the view']]},
+  {id:'online_orders',c:0,r:1,kind:'src',short:'one order line',grain:'One row = one line of a web order.',rows:()=>ORDERS.length,cols:[['order_line_id','key: order ID + line number'],['user_id','login ID'],['sku','product code'],['status',"'completed' or 'cancelled'"],['order_ts','time of the order']]},
+  {id:'pos_sales',c:0,r:2,kind:'src',short:'one till line',grain:'One row = one line on a store receipt.',rows:()=>POS.length,cols:[['receipt_line_id','key: receipt ID + line number'],['store_id','which store'],['member_type',"'loyalty' or 'phone'"],['member_key','loyalty number or phone; empty for cash'],['sku','product code'],['sold_ts','time of the sale']]},
+  {id:'identity_map',c:0,r:3,kind:'src',short:'one key → one person',grain:'One row = one known key that points to one person.',rows:()=>IDMAP.length,cols:[['source',"key: with source_key; 'web_login', 'loyalty' or 'phone'"],['source_key','key: with source; the ID in that system'],['customer_id','our one ID for the person']],note:'Exact keys only. A key with two owners links no one. See step 3.'},
+  {id:'int_product_views',c:1,r:.5,kind:'model',short:'person × product × day',grain:'One row = one person, one product, one day they viewed it.',rows:()=>new Set(WEB.filter(e=>e.user).map(e=>e.user+e.sku+e.ago)).size,cols:[['view_key','key: customer_id + sku + viewed_on'],['customer_id','who looked'],['sku','product code'],['viewed_on','the day, Vietnam time'],['view_count','views that day'],['is_eligible','from eligible_customers']],note:'Views with no login are dropped here: we cannot message them.'},
+  {id:'fct_purchases',c:1,r:2,kind:'model',short:'one sale line, web or store',grain:'One row = one sale line, from the web shop or a store till.',rows:()=>ORDERS.length+POS.length,cols:[['sale_line_id','key'],['customer_id','empty if not linked'],['sku','product code'],['channel',"'online' or 'store'"],['status',"'completed' or 'cancelled'"],['bought_ts','time of the sale (bought_at in the metric file)']],note:'Cancelled and unlinked lines stay in, so totals match the web shop and the tills.'},
+  {id:'eligible_customers',c:1,r:3.25,kind:'model',short:'one eligible customer',grain:'One row = one customer who passed the eligibility check: opted in, not staff, not a bot.',rows:()=>new Set(IDMAP.map(m=>m.cid)).size-DATA.EXCL.length,cols:[['customer_id','key: unique; a test fails on duplicates'],['opted_in_at','when marketing consent was given'],['checked_on','the run date of the check']],note:'Built daily from CRM consent, the staff list and bot flags. The final list uses an EXISTS filter, so a duplicate row could never multiply it. In the demo, DATA.EXCL holds the customers who fail the check (none).'},
+  {id:'seg_viewed_not_bought',c:2,r:.5,kind:'out',short:'person × product',grain:'One row = one person and one product to message.',rows:()=>R.list.length,cols:[['customer_id','key'],['sku','key'],['first_view_ts','earliest view in the window'],['view_count','how many views']],note:'The candidate list CRM sends to, after the eligibility check. Rebuilt every morning.'},
+  {id:'viewed_not_bought',c:2,r:2,kind:'metric',short:'one number, defined once',grain:'One number: eligible viewers minus those who bought (a design in the metric file).',rows:()=>metricCount(state.win),cols:[['viewed','metric product_viewers'],['bought','metric view_to_buy'],['result','viewed − bought']],note:'A concept in the semantic layer (step 6); the YAML is not run here. The value shown is the independent JavaScript reference count.'},
+];
+const EDGES=[['web_events','int_product_views'],['identity_map','int_product_views'],['online_orders','fct_purchases'],['pos_sales','fct_purchases'],['identity_map','fct_purchases'],['int_product_views','seg_viewed_not_bought'],['fct_purchases','seg_viewed_not_bought'],['int_product_views','viewed_not_bought'],['fct_purchases','viewed_not_bought'],['eligible_customers','seg_viewed_not_bought'],['eligible_customers','viewed_not_bought']];
+function renderModel(){
+  const W=210,H=50,X=c=>12+c*280,Y=r=>36+r*68;
+  const pos=Object.fromEntries(NODES.map(n=>[n.id,{x:X(n.c),y:Y(n.r)}]));
+  let s=['Sources','Models','Outputs'].map((t,i)=>`<text x="${X(i)}" y="20" class="colh">${t.toUpperCase()}</text>`).join('');
+  EDGES.forEach(([a,b])=>{const p=pos[a],q=pos[b],x1=p.x+W,y1=p.y+H/2,x2=q.x,y2=q.y+H/2,on=a===state.node||b===state.node;
+    s+=`<path d="M${x1} ${y1} C${x1+40} ${y1},${x2-40} ${y2},${x2} ${y2}" fill="none" stroke="${on?'#5F3DC4':'#D3CEC6'}" stroke-width="${on?2.2:1.3}"/>`;});
+  NODES.forEach(n=>{const p=pos[n.id],k=KIND[n.kind],sel=n.id===state.node;
+    s+=`<g class="node" tabindex="0" role="button" aria-pressed="${sel}" aria-label="${n.id}: ${n.grain}" data-node="${n.id}"><rect x="${p.x}" y="${p.y}" width="${W}" height="${H}" rx="10" fill="${sel?k.soft:'#FFFDF9'}" stroke="${k.stroke}" stroke-width="${sel?2.4:1.2}"${n.kind==='metric'?' stroke-dasharray="5 3"':''}/><text x="${p.x+12}" y="${p.y+21}" class="nn">${n.id}</text><text x="${p.x+12}" y="${p.y+38}" class="ng">1 row = ${n.short}</text></g>`;});
+  $('#lin').innerHTML=s;
+  const n=NODES.find(x=>x.id===state.node),k=KIND[n.kind];
+  $('#m-detail').innerHTML=`<div class="chead"><h3 class="mono" style="font-size:14px">${n.id}</h3><span class="pill" style="background:${k.soft};color:${k.stroke}">${k.label}</span></div>
+    <p style="margin:0 0 6px;font-size:13.5px"><b>${n.grain}</b> ${n.kind==='metric'?`Independent reference count now: <b>${n.rows()}</b> (JavaScript, not the YAML).`:`Rows in this demo: <b>${n.rows()}</b>.`}</p>
+    <table class="t"><thead><tr><th>column</th><th>meaning</th></tr></thead><tbody>${n.cols.map(([c,m])=>`<tr><td class="mono">${c}</td><td>${esc(m.replace(/^key(: |$)/,''))}${/^key/.test(m)?'<span class="keychip">key</span>':''}</td></tr>`).join('')}</tbody></table>
+    ${n.note?`<p class="note">${n.note}</p>`:''}`;
+  const smp=sample(n.id);
+  $('#m-sample').innerHTML=`<h3>Sample rows <small>${smp.note}</small></h3><table class="t"><thead><tr>${smp.cols.map(c=>`<th class="mono">${c}</th>`).join('')}</tr></thead><tbody>${smp.rows.map(r=>`<tr>${r.map(v=>`<td class="mono">${v===null?'<span style="color:var(--off)">null</span>':esc(v)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+  const anViews=WEB.filter(e=>e.user==='u_an');
+  $('#m-agg').innerHTML=`<div class="box bad"><b>Join raw rows</b>${anViews.map(e=>`<span class="rowx">An · viewed ${day(e.ago).slice(5)} · O-501</span>`).join('')}${anViews.length} rows: An's one order is counted twice.</div>
+    <div class="box good"><b>Group views first</b><span class="rowx">An · SOFA-01 · ${anViews.length} views</span><span class="rowx">→ O-501</span>1 row. NOT EXISTS only asks if any matching sale exists, so a viewer row never multiplies, even when several sales match.</div>`;
+}
+const day=a=>new Date(Date.UTC(2026,10,18-a)).toISOString().slice(0,10);
+function sample(id){
+  const pick=(arr,ids)=>arr.filter(x=>ids.includes(x.id));
+  if(id==='web_events') return {note:"Minh's 3 views, and a visitor who never logged in",cols:['event_id','user_id','anonymous_id','sku','event_date','device'],rows:pick(WEB,['e07','e09','e10','e11']).map(e=>[e.id,e.user,e.anon,e.sku,day(e.ago),e.device])};
+  if(id==='online_orders') return {note:'all rows',cols:['order_line_id','user_id','sku','status','order_date'],rows:ORDERS.map(o=>[o.id+'-1',o.user,o.sku,o.status,day(o.ago)])};
+  if(id==='pos_sales') return {note:'all rows; R-8814 was paid in cash',cols:['receipt_line_id','store_id','member_type','member_key','sku','sold_date'],rows:POS.map(p=>[p.id+'-1',p.store,p.mtype||null,p.member,p.sku,day(p.ago)])};
+  if(id==='identity_map') return {note:'every store key, plus their web logins',cols:['source','source_key','customer_id'],rows:IDMAP.filter(m=>['C02','C09','C11'].includes(m.cid)).map(m=>[m.src,m.key,m.cid])};
+  if(id==='int_product_views'){const g=new Map();WEB.filter(e=>e.user&&['u_an','u_minh','u_quan'].includes(e.user)).forEach(e=>{const k=e.user+e.ago;const r=g.get(k)||[linkWeb(e.user),e.sku,day(e.ago),0];r[3]++;g.set(k,r);});return {note:"An, Minh and Quân: one row per day they looked",cols:['customer_id','sku','viewed_on','view_count'],rows:[...g.values()]};}
+  if(id==='fct_purchases') return {note:'all rows; nothing dropped',cols:['sale_line_id','customer_id','sku','channel','status','bought_date'],rows:R.all.map(p=>[p.line+'-1',p.cid,p.sku,p.channel,p.status,day(p.ago)])};
+  if(id==='seg_viewed_not_bought') return {note:`live: ${state.win} days, store sales ${state.store?'on':'off'}`,cols:['customer_id','sku','first_view_date','view_count'],rows:R.list.map(v=>[v.cid,v.sku,day(v.first),v.count])};
+  if(id==='eligible_customers') return {note:'everyone with a login passes here; the made-up data has no opt-outs',cols:['customer_id','opted_in_at','checked_on'],rows:[...new Set(IDMAP.map(m=>m.cid))].slice(0,5).map(c=>[c,'2026-09-01','2026-11-18'])};
+  return {note:'reference values from this page\'s JavaScript; the YAML is not run',cols:['metric (design)','reference value'],rows:[['product_viewers',RON.views.length],['view_to_buy',RON.bought.length],['viewed_not_bought',metricCount(state.win)]]};
+}
+
+/* ---------- step 5 ---------- */
+function hlSQL(t){
+  let code=t,com='';const i=t.indexOf('--');if(i>=0){code=t.slice(0,i);com=t.slice(i);}
+  const out=code.split(/('[^']*')/).map((p,j)=>j%2?`<span class="s">${esc(p)}</span>`:esc(p)
+    .replace(/\b(with|as|select|from|join|left|on|and|where|group|by|union|all|not|exists|in|min|count|timestamp|date_sub|current_date|interval|day)\b/g,'<span class="k">$1</span>')
+    .replace(/\b(\d+)\b/g,'<span class="n">$1</span>')).join('');
+  return out+(com?`<span class="c">${esc(com)}</span>`:'');
+}
+function hlYAML(t){
+  let code=t,com='';const i=t.indexOf('#');if(i>=0){code=t.slice(0,i);com=t.slice(i);}
+  const out=code.split(/('[^']*')/).map((p,j)=>j%2?`<span class="s">${esc(p)}</span>`:esc(p)
+    .replace(/^(\s*-?\s*)([A-Za-z_]+)(:)/,'$1<span class="y">$2</span>$3')
+    .replace(/\b(\d+)\b/g,'<span class="n">$1</span>')).join('');
+  return out+(com?`<span class="c">${esc(com)}</span>`:'');
+}
+function sqlLines(){
+  const W=state.win;
+  return [
+    [1,'-- Step 1. Who viewed? One row per person × product.'],
+    [1,'with unique_keys as (                   -- a key with two owners links no one'],
+    [1,'  select source, source_key, any_value(customer_id) as customer_id'],
+    [1,'  from identity_map'],
+    [1,'  group by source, source_key'],
+    [1,'  having count(distinct customer_id) = 1'],
+    [1,'),'],
+    [1,'views as ('],
+    [1,'  select k.customer_id, e.sku,'],
+    [1,'    min(e.event_ts) as first_view_ts,   -- earliest counted view'],
+    [1,'    count(*)        as view_count       -- 3 views, still 1 row'],
+    [1,'  from web_events e'],
+    [1,'  join unique_keys k                    -- no login = no match = dropped'],
+    [1,"    on k.source = 'web_login' and k.source_key = e.user_id"],
+    [1,"  where e.event_name = 'product_view'"],
+    [1,`    and e.event_ts >= timestamp(date_sub(@run_date, interval ${W} day),`],
+    [1,"                                'Asia/Ho_Chi_Minh')"],
+    [1,'  group by 1, 2'],
+    [1,'),'],
+    [2,'-- Step 2. Who bought? Web and store, one row per sale line.'],
+    [2,'purchases as ('],
+    [2,'  select k.customer_id, o.sku, o.order_ts as bought_ts'],
+    [2,'  from online_orders o'],
+    [2,'  join unique_keys k'],
+    [2,"    on k.source = 'web_login' and k.source_key = o.user_id"],
+    [2,"  where o.status = 'completed'          -- cancelled is not bought"],
+    [2,'  union all',1],
+    [2,'  select k.customer_id, p.sku, p.sold_ts as bought_ts',1],
+    [2,'  from pos_sales p',1],
+    [2,'  left join unique_keys k               -- cash sale: customer_id stays empty',1],
+    [2,'    on k.source = p.member_type and k.source_key = p.member_key',1],
+    [2,')'],
+    [3,'-- Step 3. Keep eligible viewers with no matching purchase.'],
+    [3,'select v.customer_id, v.sku, v.first_view_ts, v.view_count'],
+    [3,'from views v'],
+    [3,'where exists (select 1 from eligible_customers c   -- opted in, not staff or bot'],
+    [3,'              where c.customer_id = v.customer_id)'],
+    [3,'  and not exists ('],
+    [3,'    select 1 from purchases p'],
+    [3,'    where p.customer_id = v.customer_id  -- same person'],
+    [3,'      and p.sku         = v.sku          -- same product'],
+    [3,'      and p.bought_ts  >= v.first_view_ts  -- bought after looking'],
+    [3,'      and p.bought_ts  <  timestamp(date_add(@run_date, interval 1 day),'],
+    [3,"                                  'Asia/Ho_Chi_Minh'));  -- by the run date"],
+  ];
+}
+const SQLSTEP={1:'Viewers',2:'Buyers',3:'Not bought'};
+const CTE={1:'views',2:'purchases',3:'final select'};
+function renderSQL(){
+  $$('#buildtabs .tab').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===state.view)));
+  const sqlMode=state.view==='sql';
+  $('#b-title').textContent=sqlMode?'One query, straight from the raw tables':'No-code version of the same rule';
+  $('#sqltabs').hidden=!sqlMode;
+  $('#sqltabs').innerHTML=[1,2,3,0].map(k=>`<button type="button" class="tab" aria-pressed="${state.sqlStep===k}" data-sql="${k}">${k?k+' · '+SQLSTEP[k]:'Show all'}</button>`).join('');
+  const viewers=R.views.length, unlinked=R.all.filter(p=>p.channel==='store'&&!p.cid).length, onl=R.counted.filter(p=>p.channel==='online').length;
+  if(sqlMode){
+    const lines=sqlLines(); let html='',seen=new Set();
+    lines.forEach(([st,t,storeLine],i)=>{
+      if(state.sqlStep&&st!==state.sqlStep){
+        if(!seen.has(st)){seen.add(st);const cnt=lines.filter(l=>l[0]===st).length;html+=`<button type="button" class="fold" data-sql="${st}">▸ Step ${st} · ${CTE[st]} (${cnt} lines). Click to open.</button>`;}
+        return;
+      }
+      const off=storeLine&&!state.store;
+      html+=`<span class="l${off?' off':''}" data-n="${i+1}">${hlSQL(t)||' '}${off&&t.includes('union all')?'<span class="offtag">store sales switched off</span>':''}</span>`;
+    });
+    $('#b-left').innerHTML=`<div class="code" role="region" aria-label="SQL query" tabindex="0">${html}</div>`;
+    const ex={
+      1:`Take product-page views from the last <b>${state.win} days</b>. The join to <span class="mono">identity_map</span> drops anyone who was not logged in. <span class="mono">group by</span> makes one row per person and product, however many times they looked.`,
+      2:`Stack web orders and till sales into one list. Cancelled orders drop out. A cash sale with no card or phone keeps an empty <span class="mono">customer_id</span>, so it can never match anyone. A login, loyalty number or phone that belongs to two people links no one.`,
+      3:`Keep only eligible people: opted in, not staff, not bots (the made-up data has none of these). Then, for each viewer, look for a purchase by the <b>same person</b>, of the <b>same product</b>, <b>after</b> the first view and by the end of the run date. Keep the viewer only if none exists. <span class="mono">not exists</span> returns each viewer once, so rows cannot multiply.`,
+      0:`Step 1 finds viewers. Step 2 finds buyers in both channels. Step 3 keeps viewers who are not buyers. Click a step to read it line by line.`};
+    const lv={
+      1:`Live: <b>${viewers}</b> viewer rows. Minh viewed 3 times and has 1 row.`,
+      2:state.store?`Live: <b>${R.counted.length}</b> sale lines count as bought. <b>${unlinked}</b> store sale has no customer_id.`:`Live: store branch is off. Only <b>${onl}</b> online sale lines count.`,
+      3:`Live: <b>${R.list.length}</b> people on the list.`,
+      0:`Live: ${viewers} viewers − ${R.bought.length} buyers = <b>${R.list.length}</b> on the list.`};
+    const k=state.sqlStep;
+    $('#b-explain').innerHTML=`<h3>${k?'Step '+k+' · '+SQLSTEP[k]:'The whole query'} <small>in plain words</small></h3><div class="stepx"><p>${ex[k]}</p></div><div class="livebox">${lv[k]}</div>`;
+  } else {
+    $('#b-left').innerHTML=`<div class="sb">
+      <div class="sb-h"><span><span class="mk">1</span> <b>New segment:</b> Viewed sofa, didn't buy (${state.win} days)</span></div>
+      <div class="sb-g"><div class="sb-l">INCLUDE PEOPLE WHO</div>
+        <div class="sb-r"><span class="mk">2</span><span class="chip">did event</span><span class="chip ev">Product view</span>where<span class="chip">SKU = SOFA-01</span>in<span class="chip">last ${state.win} days</span></div>
+        <div class="sb-and">AND</div>
+        <div class="sb-r"><span class="mk">3</span><span class="chip">Login status</span>is<span class="chip">Logged in</span></div></div>
+      <div class="sb-g"><div class="sb-l">EXCLUDE PEOPLE WHO</div>
+        <div class="sb-r"><span class="mk">4</span><span class="chip">did event</span><span class="chip ev">Purchase</span>where<span class="chip">SKU = SOFA-01</span>channel<span class="chip ev">Online</span><span class="chip st${state.store?'':' offc'}">Store</span>after the view</div></div>
+      <div class="sb-g"><div class="sb-l">MATCH PEOPLE ON</div>
+        <div class="sb-r"><span class="mk">5</span><span class="chip idc">Customer ID, merged from login, loyalty card and phone</span></div></div>
+      <div class="sb-f"><span class="mk">6</span>Audience size <span class="sz">${R.list.length}</span><button type="button" class="btn" style="margin-left:auto">Preview</button><button type="button" class="btn pri">Send to journey</button></div></div>`;
+    $('#b-explain').innerHTML=`<h3>The clicks, in order</h3><ol class="clicks">
+      <li><span class="mk">1</span><span>Create a segment and give it a clear name.</span></li>
+      <li><span class="mk">2</span><span>Include: did <b>Product view</b>, SKU SOFA-01, last ${state.win} days.</span></li>
+      <li><span class="mk">3</span><span>Add AND: login status is <b>Logged in</b>.</span></li>
+      <li><span class="mk">4</span><span>Exclude: did <b>Purchase</b> of the same SKU, channel <b>Online and Store</b>.</span></li>
+      <li><span class="mk">5</span><span>Check people are matched on the <b>merged customer ID</b>, not the device.</span></li>
+      <li><span class="mk">6</span><span>Preview, open 2 or 3 profiles to spot-check, then send to the journey daily.</span></li></ol>`;
+  }
+  $('#b-result').innerHTML=`<div class="chead"><h3>Result <small>live, ${state.win} days, store sales ${state.store?'on':'off'}</small></h3><span class="pill ${state.store?'ok':'bad'}">${R.list.length} rows</span></div>
+    <table class="t"><thead><tr><th>customer_id</th><th>name</th><th>first view</th><th>views</th><th></th></tr></thead><tbody>
+    ${R.list.map(v=>{const w=!state.store&&RON.bought.some(b=>b.cid===v.cid);return `<tr><td class="mono">${v.cid}</td><td>${esc(nameOf(v.cid))}</td><td>${ago(v.first)}</td><td>${v.count}</td><td>${w?'<span class="pill bad">bought in store</span>':v.cid==='C08'?'<span class="pill warn">cash sale unseen</span>':''}</td></tr>`;}).join('')}</tbody></table>`;
+}
+
+/* ---------- step 6 ---------- */
+function yamlParts(){
+  const W=state.win;
+  return {
+    product_views:[
+"semantic_models:",
+"  - name: product_views",
+"    description: One row per person, product and day. Logged-in only.",
+"    model: ref('int_product_views')",
+"    defaults:",
+"      agg_time_dimension: viewed_on",
+"    entities:",
+"      - name: view",
+"        type: primary",
+"        expr: view_key          # customer_id + sku + day",
+"      - name: customer",
+"        type: foreign",
+"        expr: customer_id",
+"      - name: product",
+"        type: foreign",
+"        expr: sku",
+"    dimensions:",
+"      - name: viewed_on",
+"        type: time",
+"        type_params:",
+"          time_granularity: day",
+"      - name: is_eligible       # from eligible_customers",
+"        type: categorical",
+"    measures:",
+"      - name: viewers",
+"        agg: count_distinct",
+"        expr: customer_id"],
+    purchases:[
+"semantic_models:",
+"  - name: purchases",
+"    description: One row per sale line, online and in store.",
+"    model: ref('fct_purchases')",
+"    defaults:",
+"      agg_time_dimension: bought_at",
+"    entities:",
+"      - name: sale_line",
+"        type: primary",
+"        expr: sale_line_id",
+"      - name: customer",
+"        type: foreign",
+"        expr: customer_id       # empty for a cash sale with no ID",
+"      - name: product",
+"        type: foreign",
+"        expr: sku",
+"    dimensions:",
+"      - name: bought_at",
+"        type: time",
+"        expr: bought_ts",
+"        type_params:",
+"          time_granularity: day",
+"      - name: channel           # 'online' or 'store'",
+"        type: categorical",
+"    measures:",
+"      - name: buyers",
+"        agg: count_distinct",
+"        expr: case when status = 'completed' then customer_id end"],
+    metrics:[
+"metrics:",
+"  - name: product_viewers",
+"    type: simple",
+"    type_params:",
+"      measure: viewers",
+`    filter: "{{ Dimension('view__is_eligible') }} = true"`,
+"",
+"  - name: view_to_buy",
+"    type: conversion",
+"    type_params:",
+"      conversion_type_params:",
+"        entity: customer        # same person",
+"        base_measure:",
+"          name: viewers",
+"        conversion_measure:",
+"          name: buyers          # online + store",
+`        window: ${W} days`,
+"        calculation: conversions",
+"        constant_properties:    # same product",
+"          - base_property: product",
+"            conversion_property: product",
+`    filter: "{{ Dimension('view__is_eligible') }} = true"`,
+"",
+"  - name: viewed_not_bought",
+"    description: Viewers with no purchase of that product, any channel.",
+"    type: derived",
+"    type_params:",
+"      expr: viewed - bought",
+"      metrics:",
+"        - name: product_viewers",
+"          alias: viewed",
+"        - name: view_to_buy",
+"          alias: bought"]};
+}
+const YNOTE={product_views:'Reads the views table. <b>viewers</b> counts distinct people, so 3 views by Minh count once. <b>is_eligible</b> comes from eligible_customers.',purchases:'Cancelled lines stay in the table for totals, but the <b>buyers</b> measure skips them.',metrics:'<b>viewed_not_bought</b> = eligible viewers minus those who bought the same product within the window. This file is a concept: it works on daily rows and a day-based window, so it cannot see a purchase earlier on the same day as a view. Its match with the list is not verified; the SQL list decides who gets a message.'};
+function renderSem(){
+  const parts=yamlParts();
+  $('#ytabs').innerHTML=Object.keys(parts).map(k=>`<button type="button" class="tab" aria-pressed="${state.ytab===k}" data-y="${k}">${k}</button>`).join('');
+  $('#s-yaml').innerHTML=parts[state.ytab].map((t,i)=>`<span class="l" data-n="${i+1}">${hlYAML(t)||' '}</span>`).join('');
+  $('#s-ynote').innerHTML=YNOTE[state.ytab];
+  const m=metricCount(state.win);
+  $('#s-chat').innerHTML=`<div class="msg u">How many people viewed the sofa but didn't buy it in the last ${state.win} days?</div>
+    <div class="msg a"><b>${m} people.</b> <i>Simulated answer: the reference calculation returns ${m} candidates. It does not run the YAML shown beside it.</i><span class="src">would read: viewed_not_bought · product = SOFA-01 · window = ${state.win} days · channels = online + store</span></div>
+    ${state.store?'':`<div class="trap" style="margin:0">Your quick list says <b>${ROFF.list.length}</b> with store sales off. The independent reference count, which always includes them, says <b>${m}</b>. A shared definition is meant to stop this drift.</div>`}
+    <div class="msg u">Did they skip buying because of the price?</div>
+    <div class="msg a" style="background:var(--soft)"><b>I can't answer that.</b> No defined metric covers why people didn't buy. I won't guess. A survey or a price test would answer it.<span class="src" style="color:var(--muted)">no matching metric · answer withheld</span></div>`;
+}
+
+/* ---------- step 7 ---------- */
+function renderProve(){
+  const inL=cid=>R.list.some(v=>v.cid===cid)?'Yes':'No';
+  const G=[
+    ['Bình viewed online, then bought in store with a loyalty card. On the list?','No',inL('C02')],
+    ['Dũng viewed the sofa but bought a lamp. On the list?','Yes',inL('C04')],
+    ["Hà's sofa order was cancelled. On the list?",'Yes',inL('C05')],
+    ['Minh viewed 3 times. How many rows for Minh?','1',String(R.list.filter(v=>v.cid==='C07').length)],
+    ['A visitor viewed without logging in. On the list?','No',R.list.some(v=>!v.cid)?'Yes':'No'],
+  ];
+  const pass=G.filter(g=>g[1]===g[2]).length;
+  $('#g-score').innerHTML=`<span class="pill ${pass===5?'ok':'bad'}">${pass} of 5 pass</span>`;
+  $('#g-note').textContent=state.store?'Turn off "Count store sales" at the top to see a test fail.':'Store sales off: the Bình test fails, so the run stops.';
+  $('#g-table').innerHTML=`<thead><tr><th>question</th><th>expect</th><th>got</th><th></th></tr></thead><tbody>${G.map(([q,e,g])=>`<tr><td>${esc(q)}</td><td>${e}</td><td>${g}</td><td>${e===g?'<span class="pill ok">pass</span>':'<span class="pill bad">fail</span>'}</td></tr>`).join('')}</tbody>`;
+  const st=R.all.filter(p=>p.channel==='store'),lk=st.filter(p=>p.cid).length;
+  const on=R.all.filter(p=>p.channel==='online'),comp=on.filter(p=>p.status==='completed').length;
+  const SRC={till_lines:4,web_order_lines:3}; // synthetic report totals, typed in separately from the data
+  const tillOk=st.length===SRC.till_lines, webOk=on.length===SRC.web_order_lines;
+  const metric=metricCount(state.win), same=R.list.length===metric, pill=ok=>`<span class="pill ${ok?'ok':'bad'}">${ok?'match':'mismatch'}</span>`;
+  const E=edgeTests(), ep=E.filter(t=>t.pass).length;
+  $('#e-score').innerHTML=`<span class="pill ${ep===E.length?'ok':'bad'}">${ep} of ${E.length} pass</span>`;
+  $('#e-list').innerHTML=E.map(t=>`<li>${t.pass?'✓':'✕'} ${esc(t.name)}</li>`).join('');
+  const bar=(a,b,ca,cb)=>`<div class="rbar"><i style="width:${a/(a+b)*100}%;background:${ca}"></i><i style="width:${b/(a+b)*100}%;background:${cb}"></i></div>`;
+  $('#r-recon').innerHTML=`
+    <div class="rrow"><span>Till report (synthetic): <b>${SRC.till_lines}</b> lines → model: <b>${st.length}</b> (${lk} linked, ${st.length-lk} not)</span>${pill(tillOk)}${bar(lk,st.length-lk,'#A35400','#E8C9A3')}</div>
+    <div class="rrow"><span>Web-shop report (synthetic): <b>${SRC.web_order_lines}</b> order lines → model: <b>${on.length}</b> (${comp} completed, ${on.length-comp} cancelled)</span>${pill(webOk)}${bar(comp,on.length-comp,'#3451C7','#B9C5F2')}</div>
+    <div class="rrow"><span>List rows <b>${R.list.length}</b> vs independent reference count <b>${metric}</b>${same?'':': store sales missing'}</span>${pill(same)}</div>`;
+  const off=ROFF.list.length,onN=RON.list.length,w=off-onN,pct=Math.round(w/off*100);
+  $('#r-bench').innerHTML=`<p style="margin:0;font-size:13px">Old way, online sales only: <b>${off}</b> people. New way: <b>${onN}</b>.</p>
+    <div class="cells" style="margin:7px 0" aria-hidden="true">${ROFF.list.map(v=>`<span class="cell" style="background:${RON.list.some(x=>x.cid===v.cid)?'#C2410C':'#6B6580'}">${esc(nameOf(v.cid)[0])}</span>`).join('')}</div>
+    <p class="note" style="margin:0"><b>${w} of ${off}</b> old-way messages (${pct}%) go to people who already bought (grey).</p>`;
+  const f=Math.round(POS.filter(p=>storeKey(p)).length/POS.length*100);
+  $('#r-alerts').innerHTML=`<li>List doubles overnight.</li><li>Linked store sales under 70% (now <b>${f}%</b>).</li><li>Newest data older than 26 hours.</li>`;
+}
+
+/* ---------- navigation and controls ---------- */
+function renderAll(){
+  R=compute(state.win,state.store); RON=compute(state.win,true); ROFF=compute(state.win,false);
+  $('#liveN').textContent=R.list.length;
+  $$('#winseg button').forEach(b=>{const on=+b.dataset.win===state.win;b.setAttribute('aria-checked',on);b.tabIndex=on?0:-1;});
+  $$('b[data-win]').forEach(el=>el.textContent=state.win);
+  renderQ();renderDefine();renderMatch();renderModel();renderSQL();renderSem();renderProve();
+}
+function go(i,focus){
+  state.step=Math.max(0,Math.min(STEPS.length-1,i));
+  $$('.panel').forEach((p,j)=>p.classList.toggle('on',j===state.step));
+  $$('#steps button').forEach((b,j)=>{if(j===state.step)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current');b.classList.toggle('done',j<state.step);});
+  $('#stage').scrollTop=0;
+  history.replaceState(null,'','#'+(state.step+1));
+  if(focus){const h=$$('.panel')[state.step].querySelector('h2');h.tabIndex=-1;h.focus({preventScroll:true});}
+}
+$('#steps').innerHTML=STEPS.map((t,i)=>`<li><button type="button" data-step="${i}"><span class="n">${i+1}</span><span>${t}</span></button></li>`).join('');
+$$('.panel').forEach((p,i)=>{p.querySelector('.pnav').innerHTML=
+  `<button type="button" class="btn" data-go="${i-1}" ${i===0?'disabled':''}>← Back</button>`+
+  (i<STEPS.length-1?`<button type="button" class="btn pri" data-go="${i+1}">Next: ${STEPS[i+1]} →</button>`:`<button type="button" class="btn pri" data-go="0">Start again</button>`);});
+
+document.addEventListener('click',e=>{
+  const t=e.target.closest('button,[data-node]'); if(!t) return;
+  if(t.dataset.step!==undefined) go(+t.dataset.step,true);
+  else if(t.dataset.go!==undefined) go(+t.dataset.go,true);
+  else if(t.dataset.win&&t.closest('#winseg')){state.win=+t.dataset.win;renderAll();}
+  else if(t.dataset.sql!==undefined){state.sqlStep=+t.dataset.sql;renderSQL();}
+  else if(t.dataset.view){state.view=t.dataset.view;renderSQL();}
+  else if(t.dataset.y){state.ytab=t.dataset.y;renderSem();}
+  else if(t.dataset.node){state.node=t.dataset.node;renderModel();const el=$(`[data-node="${state.node}"]`);if(el)el.focus();}
+});
+document.addEventListener('keydown',e=>{
+  const node=e.target.closest&&e.target.closest('[data-node]');
+  if(node&&(e.key==='Enter'||e.key===' ')){e.preventDefault();node.dispatchEvent(new MouseEvent('click',{bubbles:true}));return;}
+  if(e.target.closest&&e.target.closest('#winseg')&&(e.key==='ArrowRight'||e.key==='ArrowLeft')){
+    e.preventDefault();const wins=[7,14,30];let k=wins.indexOf(state.win)+(e.key==='ArrowRight'?1:-1);k=(k+3)%3;state.win=wins[k];renderAll();$(`#winseg [data-win="${state.win}"]`).focus();return;}
+  if(/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+  if(e.key==='ArrowRight') go(state.step+1);
+  if(e.key==='ArrowLeft') go(state.step-1);
+});
+$('#storeT').addEventListener('change',e=>{state.store=e.target.checked;renderAll();});
+
+renderAll();
+go((parseInt(location.hash.slice(1),10)||1)-1);
+</script>
+</body>
+</html>
