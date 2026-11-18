@@ -110,6 +110,8 @@
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
   @media (max-width: 720px) { #motif { position: relative; right: auto; top: auto; width: 100%; max-width: 360px; margin: 14px 0 0; } .timeline > li { padding-left: 34px; } .steps thead { display: none; } .steps tr { display: block; border-bottom: 1px solid var(--line); padding: 8px 0; } .steps th, .steps td { display: block; border: 0; padding: 2px 0; } .steps td::before { content: attr(data-label) ": "; color: var(--muted); } .kpis { grid-template-columns: 1fr 1fr; gap: 8px; } .kpi { padding: 10px 12px; } .kpi strong { font-size: 24px; } .hero { padding: 24px 20px 20px; } .wrap { padding: 12px 12px 56px; } [role=tab] { flex: 1 1 140px; min-width: 0; } }
+  /* The demo site adds an "Edit with AI" button at the bottom-right (max z-index), so lift the tour card above it on narrow screens. */
+  @media (max-width: 640px) { #tour { bottom: 68px; padding: 12px 14px 10px; } #tour h2 { font-size: 19px; margin-bottom: 6px; } #tour p { font-size: 15px; line-height: 1.5; margin-bottom: 10px; } }
   @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
 </style>
 </head>
