@@ -204,15 +204,32 @@
     return res;
   }
 
+  // Monday moves: per top-up, which store-size targets change most when switching from
+  // last season's mix to the store's own size curve. Positive = send more, negative = send fewer.
+  function mondayMoves(data, model, { leadTime = 4, safety = 0.1 } = {}, n = 3) {
+    const moves = [];
+    data.stores.forEach((store, st) => {
+      const delta = new Array(data.sizes.length).fill(0);
+      for (let sy = 0; sy < data.nStyles; sy++) {
+        const total = Math.round(model.styleStore[st * data.nStyles + sy] * leadTime * (1 + safety));
+        const base = split(total, model.stockShare[st]), cur = split(total, model.storeCurve[st]);
+        base.forEach((b, z) => { delta[z] += cur[z] - b; });
+      }
+      delta.forEach((d, z) => moves.push({ store: store.name, size: data.sizes[z], delta: d }));
+    });
+    moves.sort((a, b) => b.delta - a.delta);
+    return { more: moves.slice(0, n), fewer: moves.slice(-n).reverse() };
+  }
+
   // Golden questions: plain-English questions with known answers at the default settings.
   // Questions 1-4 are answered from raw fact rows, not the metric code; question 5 pins the simulation result.
   const DEFAULTS = { leadTime: 4, safety: 0.1, correct: true };
   const GOLDEN = [
-    { q: 'How many store × style × size SKUs does the plan cover?', expected: 14400 },
-    { q: 'How many units were sold last season, summed from raw sales rows?', expected: 737314 },
-    { q: 'Which size had the most stockout weeks last season?', expected: 'XXL' },
-    { q: 'Which city sells the largest share of XL and XXL?', expected: 'Chicago' },
-    { q: 'At default settings, how many lost units does the size-curve method avoid?', expected: 80151 },
+    { q: 'How many store, style and size combinations does the plan cover?', expected: 14400 },
+    { q: 'How many items were sold last season, added up from the raw sales rows?', expected: 737314 },
+    { q: 'Which size ended the most weeks with no stock left last season?', expected: 'XXL' },
+    { q: 'Which city’s customers want the largest share of sizes XL and XXL?', expected: 'Chicago' },
+    { q: 'With the starting settings, how many extra items does each store’s own mix sell?', expected: 80151 },
   ];
   function answerGolden(data) {
     const Z = data.sizes.length, W = data.weeks;
@@ -233,7 +250,7 @@
     return GOLDEN.map((g, i) => ({ ...g, answer: answers[i], pass: answers[i] === g.expected }));
   }
 
-  const api = { SIZES, DEFAULTS, GOLDEN, split, curve, generate, storeRates, correctedDemand, learn, simulate, answerGolden, idx };
+  const api = { SIZES, DEFAULTS, GOLDEN, split, curve, generate, storeRates, correctedDemand, learn, simulate, mondayMoves, answerGolden, idx };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Alloc = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
