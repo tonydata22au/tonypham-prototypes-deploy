@@ -175,7 +175,7 @@
   function simulate(data, model, method, { leadTime = 4, safety = 0.1 } = {}) {
     const S = data.stores.length, Z = data.sizes.length, W = data.weeks;
     const res = { demand: 0, sold: 0, lost: 0, received: 0, leftover: 0, planned: 0,
-      bySize: Array.from({ length: S }, () => ({ demand: new Array(Z).fill(0), received: new Array(Z).fill(0), lost: new Array(Z).fill(0) })) };
+      bySize: Array.from({ length: S }, () => ({ demand: new Array(Z).fill(0), received: new Array(Z).fill(0), lost: new Array(Z).fill(0), leftover: new Array(Z).fill(0) })) };
     for (let st = 0; st < S; st++) {
       const shares = method === 'baseline' ? model.stockShare[st] : model.storeCurve[st];
       for (let sy = 0; sy < data.nStyles; sy++) {
@@ -196,6 +196,7 @@
             res.bySize[st].demand[z] += d; res.bySize[st].lost[z] += d - s;
           }
           res.leftover += onHand;
+          res.bySize[st].leftover[z] += onHand;
         }
       }
     }
