@@ -8,7 +8,7 @@ This page is for people who add demos by hand or change the scripts. To put a de
 2. **Branch and folder.** Use the branch `demo/<name>` and put everything in `demos/<name>/`:
    - `public/` holds the website files, or the build output.
    - `functions/` is optional and holds Pages Functions. For example, `functions/api/hello.js` answers at `/api/hello`.
-   - `demo.json` is optional, for example `{"build": "npm run build", "output": "dist", "acp": true}`. The build runs inside `demos/<name>/`, after `npm ci` or `npm install` if there is a `package.json`. `"acp": true` adds the "Edit with AI" panel, which is off by default.
+   - `demo.json` is optional, for example `{"build": "npm run build", "output": "dist"}`. The build runs inside `demos/<name>/`, after `npm ci` or `npm install` if there is a `package.json`. Every demo gets the "Edit with AI" panel.
 3. **PR.** Open a PR from `demo/<name>` into `main`. Leave it open and never merge it.
 4. **Link.** CI deploys the demo and comments the public link. Push again to update it.
 5. **Take down.** Close the PR. If the cleanup job fails, run the **cleanup** workflow by hand from the Actions tab and type the demo name.
