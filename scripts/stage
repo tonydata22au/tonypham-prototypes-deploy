@@ -40,16 +40,15 @@ if [[ -d "$demo/functions" ]]; then
   cp -R "$demo/functions" "$stage/functions"
 fi
 # Every demo gets the "Edit with AI" panel (acp/panel.js), in index.html only.
+# It must be the first script in the page: it shows the demo in a frame with the panel in a strip below.
 {
   mkdir -p "$stage/public/_acp"
   cp "$here/acp/panel.js" "$stage/public/_acp/panel.js"
   repo="$(sed -n 's/^REPO=//p' "$here/deploy.config")"
-  tag="<script src=\"/_acp/panel.js\" data-demo=\"$name\" data-repo=\"$repo\" defer></script>"
+  tag="<script src=\"/_acp/panel.js\" data-demo=\"$name\" data-repo=\"$repo\"></script>"
   index="$stage/public/index.html"
-  if [[ -f "$index" ]] && grep -qi '</body>' "$index"; then
-    TAG="$tag" perl -0pi -e 's#</body>#$ENV{TAG}\n</body>#i' "$index"
-  elif [[ -f "$index" ]]; then
-    echo "$tag" >> "$index"
+  if [[ -f "$index" ]]; then
+    TAG="$tag" perl -0pi -e 's#<head\b[^>]*>#$&$ENV{TAG}#i or s#<html\b[^>]*>#$&$ENV{TAG}#i or s#<!doctype[^>]*>#$&$ENV{TAG}#i or $_ = "$ENV{TAG}\n$_"' "$index"
   fi
 }
 echo "staged demos/$name -> .stage/"

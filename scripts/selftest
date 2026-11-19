@@ -34,7 +34,7 @@ expect_exit 1 "stage rejects missing demo" scripts/stage no-such-demo
 mkdir -p demos/zz-selftest
 echo '{"build": "mkdir -p dist && echo built > dist/index.html", "output": "dist"}' > demos/zz-selftest/demo.json
 expect_exit 0 "stage runs demo.json build" scripts/stage zz-selftest
-if [[ "$(head -1 .stage/public/index.html 2>/dev/null)" == built ]]; then ok "build output staged"; else bad "build output staged"; fi
+if grep -qx built .stage/public/index.html 2>/dev/null; then ok "build output staged"; else bad "build output staged"; fi
 echo '{"output": "../zz-api/public"}' > demos/zz-selftest/demo.json
 expect_exit 1 "stage rejects output outside the demo" scripts/stage zz-selftest
 
@@ -43,6 +43,7 @@ mkdir -p demos/zz-selftest/public
 echo '<html><BODY>x</BODY></html>' > demos/zz-selftest/public/index.html
 expect_exit 0 "stage with no demo.json" scripts/stage zz-selftest
 if grep -q "src=\"/_acp/panel.js\" data-demo=\"zz-selftest\" data-repo=\"$(sed -n 's/^REPO=//p' deploy.config)\"" .stage/public/index.html && [[ -f .stage/public/_acp/panel.js ]]; then ok "acp panel injected"; else bad "acp panel injected"; fi
+if grep -qi '^<html><script src="/_acp/panel.js".*</script><BODY>' .stage/public/index.html; then ok "acp panel loads before the demo"; else bad "acp panel loads before the demo"; fi
 echo '{"acp": false}' > demos/zz-selftest/demo.json
 expect_exit 0 "stage with acp false" scripts/stage zz-selftest
 if grep -q _acp/panel.js .stage/public/index.html; then ok "acp panel forced on"; else bad "acp panel forced on"; fi
