@@ -1,0 +1,1538 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Data quest: an ad revenue + retention model you can play (demo, made-up data)</title>
+<style>:root{--font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans",Helvetica,Arial,sans-serif;--font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"DejaVu Sans Mono",monospace;color-scheme:dark}html,body{margin:0;background:#130f26}</style>
+</head><body>
+<style>
+  .dq { --bg:#130f26; --panel:#1d1838; --panel2:#272150; --line:#463c86; --ink:#f4f1ff; --mute:#c6bfe8;
+        --pink:#ff74b1; --cyan:#57e4ff; --lime:#a8ff7c; --gold:#ffd966; --red:#ff8080; --violet:#b9a2ff;
+        box-sizing:border-box; height:780px; display:grid; grid-template-rows:auto auto minmax(0,1fr) auto; gap:8px;
+        background:var(--bg); color:var(--ink); border:1px solid var(--line); border-radius:18px; padding:10px 12px; overflow:hidden;
+        font-family:var(--font-sans); line-height:1.4; }
+  .dq.standalone { border:none; border-radius:0; }
+  .dq.compact { height:auto; overflow:visible; }
+  .dq * { box-sizing:border-box; }
+  .dq [hidden] { display:none !important; }
+  .sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+  .px { font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.08em; }
+  .dq button { font:inherit; color:var(--ink); background:var(--panel2); border:2px solid var(--line); border-radius:10px; padding:5px 11px; cursor:pointer; }
+  .dq button:hover:not(:disabled) { border-color:var(--cyan); }
+  .dq button:disabled { opacity:.45; cursor:default; }
+  .dq button:focus-visible, .dq canvas:focus-visible, .dq [tabindex="0"]:focus-visible { outline:3px solid var(--gold); outline-offset:2px; }
+  .dq .big { background:var(--pink); color:#1a0b1f; border-color:var(--pink); font-weight:800; border-radius:999px; padding:6px 18px; }
+  .dq .link { background:none; border:none; color:var(--mute); text-decoration:underline; padding:0; font-size:12px; }
+
+  /* top bar + stepper */
+  .top { display:flex; align-items:center; gap:12px; min-width:0; }
+  .logo { font-weight:800; font-size:16px; display:flex; align-items:center; gap:8px; white-space:nowrap; }
+  .logo small { font-weight:400; font-size:11px; color:var(--mute); text-transform:none; letter-spacing:0; }
+  .eq { display:inline-flex; gap:3px; align-items:flex-end; height:16px; }
+  .eq i { width:4px; background:var(--pink); height:100%; transform-origin:bottom; animation:eq .7s ease-in-out 4 alternate; }
+  .eq i:nth-child(2){ background:var(--cyan); animation-delay:.15s } .eq i:nth-child(3){ background:var(--lime); animation-delay:.3s } .eq i:nth-child(4){ background:var(--gold); animation-delay:.45s }
+  .dq .answer { flex:1; min-width:0; text-align:left; font-size:12px; padding:4px 10px; border-color:var(--gold); background:var(--panel); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .answer b { color:var(--gold); font:800 10px var(--font-mono); letter-spacing:.1em; margin-right:6px; }
+  .stats { display:flex; gap:10px; font-size:11px; color:var(--mute); align-items:center; white-space:nowrap; }
+  .stats b { color:var(--gold); font-size:13px; }
+  .lights { display:inline-flex; gap:3px; } .lights i { width:9px; height:9px; border-radius:2px; background:var(--lime); box-shadow:0 0 6px var(--lime); }
+  .lights i.bad { background:var(--red); box-shadow:0 0 6px var(--red); }
+  .stepper { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+  .stepper .ls { display:none; } .dq.compact .stepper .lf { display:none; } .dq.compact .stepper .ls { display:inline; }
+  .dq .stepper button.how { border-style:dashed; }
+  .stepper button { display:flex; align-items:center; gap:8px; padding:4px 8px; font-size:13px; font-weight:600; text-align:left; }
+  .stepper i { display:inline-grid; place-items:center; flex:none; width:22px; height:22px; border-radius:50%; background:var(--line); color:var(--ink); font:800 12px var(--font-mono); font-style:normal; }
+  .stepper button.seen i { background:var(--lime); color:#130f26; }
+  .stepper button[aria-current=step] { border-color:var(--pink); box-shadow:0 0 0 1px var(--pink), 0 0 12px rgba(255,116,177,.45); }
+  .stepper button[aria-current=step] i { background:var(--pink); color:#130f26; }
+
+  /* main: stage | details */
+  .main { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(300px,1fr); gap:10px; min-height:0; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:10px 12px; min-width:0; min-height:0; }
+  .main > .panel { display:flex; flex-direction:column; }
+  .phead { margin-bottom:8px; }
+  .phead h2 { margin:0; font-size:18px; } .phead h2:focus { outline:none; }
+  .phead h3 { margin:0; font:700 15px var(--font-mono); color:var(--gold); word-break:break-word; }
+  .phead p { margin:2px 0 0; color:var(--mute); font-size:13px; }
+  .eyebrow { font:700 10px var(--font-mono); letter-spacing:.1em; color:var(--mute); }
+  .sbody { flex:1; min-height:0; display:grid; grid-template-columns:236px minmax(0,1fr); gap:12px; container-type:size; }
+  .sbody.nophone { grid-template-columns:minmax(0,1fr); }
+  .slide { min-height:0; height:100%; display:flex; flex-direction:column; gap:8px; overflow:hidden; animation:fade .25s ease; }
+  .slide[data-step="3"], .slide[data-step="5"], .slide[data-step="6"] { justify-content:safe center; } /* graph steps: balance spare height */
+  .card { background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:8px 10px; min-width:0; }
+  .card h4 { margin:0 0 4px; font-size:13px; }
+  .sub { color:var(--mute); font-size:12px; margin:0; }
+  .detail .dbody { flex:1; min-height:0; overflow:auto; padding-right:2px; }
+  .seg { display:flex; gap:4px; margin-bottom:8px; }
+  .seg button { font-size:12px; padding:3px 12px; border-radius:999px; }
+  .seg button[aria-pressed=true] { background:var(--cyan); color:#130f26; border-color:var(--cyan); font-weight:700; }
+  .foot { display:flex; align-items:center; gap:12px; }
+  .footmid { flex:1; min-width:0; text-align:center; }
+  .footmid p { margin:0; font-size:13px; font-weight:600; }
+  .footmid small { display:block; font-size:10.5px; color:var(--mute); }
+  .keys { font:11px var(--font-mono); color:var(--mute); }
+  .keys kbd { border:1px solid var(--line); border-radius:4px; padding:0 4px; font:inherit; }
+  .dq .fwd.go { animation:glow 1.2s ease 5; }
+
+  /* phone (steps 1-2) */
+  .phoneCol { display:flex; flex-direction:column; align-items:center; min-height:0; }
+  .phone { width:100%; background:#05030d; border:3px solid #3b3270; border-radius:30px; padding:9px; box-shadow:0 8px 24px rgba(0,0,0,.5), 0 0 22px rgba(255,116,177,.22); }
+  .screen { position:relative; height:380px; border-radius:22px; overflow:hidden; background:linear-gradient(160deg,#2b1d63,#130f26); }
+  @container (min-height: 600px) { .screen { height:430px; } }
+  @container (max-height: 470px) { .screen { height:330px; } }
+  @container (max-height: 420px) { .screen { height:290px; } }
+  @container (max-height: 380px) { .screen { height:250px; } .hint { min-height:1.4em; margin:3px 0 0; } }
+  @container (max-height: 360px) { .screen { height:226px; } .hint { font-size:11.5px; } }
+  @container (max-height: 470px) { .slide[data-step="2"] { gap:5px; } .tcard { padding:5px 9px; } .tcard h4 { margin-bottom:2px; } }
+  .scr { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px; padding:12px; text-align:center; animation:fade .3s ease; }
+  .scr small { color:var(--mute); }
+  .appicon { width:70px; height:70px; border-radius:18px; display:grid; place-items:center; font-size:36px; background:linear-gradient(135deg,var(--pink),#7b5cff 60%,var(--cyan)); box-shadow:0 0 18px rgba(255,116,177,.5); animation:pop .5s ease; }
+  .appicon.sm { width:48px; height:48px; font-size:24px; border-radius:13px; }
+  .stars { color:var(--gold); letter-spacing:2px; }
+  .bar { width:80%; height:8px; border-radius:6px; background:rgba(255,255,255,.12); overflow:hidden; }
+  .bar i { display:block; height:100%; width:0; background:linear-gradient(90deg,var(--cyan),var(--lime)); transition:width .9s ease; }
+  .chip { font:800 11px var(--font-mono); background:var(--cyan); color:#130f26; padding:2px 8px; border-radius:999px; }
+  .song { background:rgba(255,255,255,.08); border:1px solid var(--line); border-radius:12px; padding:6px 12px; }
+  .song b, .song small { display:block; }
+  .play { padding:7px; justify-content:flex-start; gap:5px; }
+  .topbar { width:100%; display:flex; justify-content:space-between; align-items:center; font:800 13px var(--font-mono); }
+  .topbar #combo { color:var(--gold); }
+  .dq .topbar button { padding:1px 8px; font-size:11px; }
+  #cv { flex:1 1 0; min-height:0; width:100%; border-radius:12px; background:rgba(0,0,0,.3); touch-action:none; display:block; }
+  .lanes { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; width:100%; }
+  .dq .lanes button { padding:5px 0; font:800 13px var(--font-mono); }
+  .ad { background:linear-gradient(160deg,#ffd966,#ff74b1); color:#1a0b1f; } .ad.rew { background:linear-gradient(160deg,#57e4ff,#a8ff7c); }
+  .ad .adtag { position:absolute; top:10px; left:12px; font:800 10px var(--font-mono); background:#1a0b1f; color:#fff; padding:2px 6px; border-radius:4px; }
+  .adEmoji { font-size:58px; animation:pop .5s ease; }
+  .ad b { font:900 20px var(--font-mono); } .ad small { color:#3a1b3f; }
+  .dq .ad button { background:#1a0b1f; color:#fff; border-color:#1a0b1f; }
+  .clear { font:900 17px var(--font-mono); color:var(--lime); } .bigScore { font:900 30px var(--font-mono); }
+  .lock { background:linear-gradient(180deg,#0b0820,#22184a); } .clock { font:200 42px var(--font-sans); line-height:1; }
+  .notif { background:rgba(255,255,255,.1); border-radius:14px; padding:7px 11px; width:100%; text-align:left; animation:drop .5s ease; }
+  .notif b, .notif span { display:block; font-size:12px; }
+  .hint { margin:6px 0 2px; text-align:center; font-weight:700; color:var(--gold); min-height:2.6em; font-size:12.5px; }
+
+  /* step 1 */
+  .log { --rows:6; --rh:21px; list-style:none; margin:4px 0 0; padding:0; font:12px var(--font-mono); height:calc(var(--rh) * var(--rows)); overflow:hidden; } /* fixed height: new rows never push the cards below */
+  .log li { display:flex; gap:6px; align-items:baseline; height:var(--rh); padding:2px 6px; border-radius:6px; white-space:nowrap; overflow:hidden; }
+  .log li.new { animation:slidein .35s ease; background:rgba(255,217,102,.14); } /* only the newest row moves; older rows have no animation to replay (that was the flicker) */
+  @container (max-height: 470px) { .log { --rows:3; } .log li:nth-child(n+4) { display:none; } }
+  @container (max-height: 430px) { .slide[data-step="1"] .sub { display:none; } .log { --rows:2; --rh:20px; } .log li:nth-child(n+3) { display:none; } .epath { margin:3px 0 2px; } .strip { margin-top:2px; } .slide[data-step="1"] { gap:5px; } .slide[data-step="1"] .card h4 { margin-bottom:2px; } } /* very short screens: keep the visuals, drop helper captions */
+  .log .d { color:var(--mute); } .log .f { color:var(--mute); overflow:hidden; text-overflow:ellipsis; }
+  .log .empty { color:var(--mute); font-family:var(--font-sans); white-space:normal; height:auto; }
+  .ev { padding:0 5px; border-radius:4px; color:#130f26; font-weight:800; background:var(--cyan); }
+  .ev-ad_impression { background:var(--gold); } .ev-app_install { background:var(--lime); } .ev-song_start, .ev-song_end { background:var(--pink); }
+  .strip { display:grid; grid-template-columns:repeat(8,1fr); gap:4px; margin-top:4px; }
+  .cell { border:1px solid var(--line); border-radius:8px; padding:3px 0; text-align:center; font:700 11px var(--font-mono); color:var(--mute); }
+  .cell i { display:block; font-style:normal; font-size:14px; }
+  .cell.key { border-color:var(--gold); } .cell.yes { background:rgba(168,255,124,.18); color:var(--lime); animation:pop .4s ease; }
+  .cell.no { background:rgba(255,128,128,.14); color:var(--red); } .cell.now { outline:2px solid var(--cyan); }
+  .ret { font:700 12px var(--font-mono); margin:6px 0 0; }
+  .toast { display:flex; flex-wrap:wrap; gap:8px; align-items:center; background:var(--panel2); border:1px solid var(--gold); border-radius:10px; padding:7px 10px; font-size:13px; animation:drop .4s ease; }
+
+  .epath { display:flex; flex-wrap:wrap; align-items:center; gap:5px; margin:6px 0 4px; font:11px var(--font-mono); }
+  .epath span { border:1px solid var(--line); border-radius:999px; padding:3px 8px; color:var(--mute); background:var(--panel); white-space:nowrap; }
+  .epath span.on { background:var(--cyan); color:#130f26; border-color:var(--cyan); font-weight:800; animation:hop .35s ease backwards; }
+  .epath i { color:var(--pink); font-style:normal; font-weight:800; }
+  .efork { display:flex; flex-direction:column; gap:3px; }
+
+  /* step 2: table pipeline */
+  .tcard { cursor:pointer; }
+  .tcard[aria-pressed=true], .rcard[aria-pressed=true] { border-color:var(--gold); box-shadow:0 0 0 1px var(--gold); }
+  .tcard h4 small, .rcard h4 small { font:400 10.5px var(--font-mono); color:var(--mute); margin-left:6px; }
+  .tcard table { width:100%; border-collapse:collapse; font:11px var(--font-mono); }
+  .tcard th { color:var(--mute); font-weight:400; text-align:left; } .tcard td, .tcard th { padding:1px 3px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  tr.me td { color:var(--ink); background:rgba(255,116,177,.17); } tr.crowd td { color:var(--mute); }
+  tr.new td { animation:flash 1.4s ease; }
+  .count { font-size:11px; color:var(--mute); margin-top:3px; } .count b { color:var(--cyan); }
+  .parrow { text-align:center; color:var(--pink); font:700 11px var(--font-mono); line-height:1; }
+  .parrow b { font-size:18px; display:inline-block; margin-right:4px; vertical-align:-2px; }
+  .parrow.pulse b { animation:nudgeY .45s ease 3; }
+
+  /* step 3 + 5: model graph */
+  .runbar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+  .runmsg { font-weight:700; color:var(--lime); font-size:13px; }
+  .graph { flex:1 1 auto; min-height:120px; display:flex; }
+  .graph svg { width:100%; height:100%; display:block; } /* viewBox "meet": the whole graph always fits */
+  svg .node { cursor:default; } svg .node.click { cursor:pointer; }
+  svg .node rect { fill:var(--panel); stroke:var(--line); stroke-width:1.6; transition:fill .3s, stroke .3s; }
+  svg .k-src rect { stroke:var(--cyan); } svg .k-stg rect { stroke:var(--violet); } svg .k-dim rect { stroke:var(--lime); }
+  svg .k-fct rect { stroke:var(--pink); stroke-width:2.2; } svg .k-agg rect { stroke:var(--gold); stroke-dasharray:5 4; } svg .k-rpt rect { stroke:#e3a6ff; }
+  svg .node.done rect { fill:var(--panel2); }
+  svg .node.sel rect { stroke:var(--gold); stroke-width:3.4; }
+  svg .node:focus { outline:none; } svg .node:focus-visible rect { stroke:var(--gold); stroke-width:3.5; }
+  svg .node.bug rect { fill:#5a1730; stroke:var(--red); stroke-width:3; } svg .node.bad rect { fill:#3a1b3f; stroke:var(--red); stroke-width:2.2; }
+  svg .node .nl { fill:var(--ink); font:600 12px var(--font-mono); } svg .node .ns { fill:var(--mute); font:11px var(--font-sans); }
+  svg .node.bad .ns, svg .node.bug .ns { fill:var(--red); font-weight:700; }
+  svg .edge { stroke:#5b4fa0; stroke-width:1.6; fill:none; } svg .edge.t { stroke-dasharray:3 4; }
+  svg .fl { fill:none; stroke-width:3.4; stroke-linecap:round; stroke-dasharray:1 10; opacity:0; }
+  svg .fl.on { opacity:1; stroke:var(--cyan); animation:dots .8s linear 8; }
+  svg .fl.red { opacity:1; stroke:var(--red); animation:dots .6s linear 14; }
+  svg .test rect { fill:var(--panel); stroke:var(--line); stroke-width:1.4; } svg .test text { fill:var(--mute); font:11px var(--font-sans); }
+  svg .test.pass rect { stroke:var(--lime); } svg .test.pass text { fill:var(--lime); }
+  svg .test.fail rect { fill:#5a1730; stroke:var(--red); stroke-width:2.4; } svg .test.fail text { fill:#ffd0d0; font-weight:700; }
+  svg .test.flashfail { animation:blink .45s ease 4; }
+  .legend { display:flex; flex-wrap:wrap; gap:10px; font-size:11px; color:var(--mute); }
+  .legend i { display:inline-block; width:10px; height:10px; border-radius:3px; border:2px solid; margin-right:4px; vertical-align:-1px; }
+  .fine { font-size:12px; color:var(--mute); margin:0; }
+
+  /* step 4: a dashboard. Every tile is a button that explains itself in the details panel */
+  .dhead { display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
+  .dhead b { font-size:14px; margin-right:auto; }
+  .pill { border:1px solid var(--line); border-radius:999px; padding:1px 9px; color:var(--mute); font-size:11px; white-space:nowrap; background:var(--panel2); }
+  .pill.ok { color:var(--lime); border-color:rgba(168,255,124,.55); } .pill.bad { color:var(--red); border-color:var(--red); }
+  .dcard { cursor:pointer; transition:border-color .15s; }
+  .dcard:hover { border-color:var(--cyan); }
+  .dcard[aria-pressed=true] { border-color:var(--gold); box-shadow:0 0 0 1px var(--gold); }
+  .sum { border-left:4px solid var(--gold); display:grid; grid-template-columns:auto 1fr; gap:4px 12px; align-items:center; }
+  .sum h4 { margin:0; font-size:13px; color:var(--gold); line-height:1.2; }
+  .sum h4 small { display:block; font-weight:400; font-size:11px; color:var(--mute); }
+  .takeaways { margin:0; padding:0; list-style:none; display:grid; grid-template-columns:1fr 1fr; gap:3px 14px; font-size:12.5px; }
+  .takeaways li { min-width:0; } .takeaways li.act { color:var(--lime); font-weight:700; }
+  .kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+  .kpi { display:flex; flex-direction:column; padding:6px 10px; }
+  .kpi .kl { font-size:11.5px; color:var(--mute); white-space:nowrap; }
+  .kpi b { font:800 20px var(--font-mono); line-height:1.25; }
+  .kpi small { font-size:11px; color:var(--mute); white-space:nowrap; } .kpi small.up { color:var(--lime); } .kpi small.down { color:var(--red); }
+  .charts { display:grid; grid-template-columns:1.3fr 1fr 1fr; gap:8px; flex:1 1 auto; min-height:0; max-height:330px; } /* tall screens: charts stop growing, the dashboard centres */
+  .slide[data-step="4"] { justify-content:safe center; }
+  .rcard { cursor:pointer; display:flex; flex-direction:column; min-height:0; }
+  .bars { flex:1; min-height:56px; display:flex; align-items:flex-end; gap:6px; padding-top:18px; margin:2px 0 20px; border-bottom:1px solid var(--line); }
+  .mix { flex:1; display:grid; grid-template-columns:auto auto minmax(0,1fr) 34px; gap:3px 6px; align-content:center; font-size:11px; }
+  .mix .mt { grid-row:span 2; font-weight:700; font-size:11.5px; align-self:center; } .mix .mk { color:var(--mute); }
+  .mix .mb { height:9px; border-radius:4px; background:rgba(255,255,255,.08); align-self:center; overflow:hidden; }
+  .mix .mb i { display:block; height:100%; width:0; border-radius:4px; transition:width .7s cubic-bezier(.22,1,.36,1); }
+  .mix .mb.n i { background:var(--violet); } .mix .mb.m i { background:var(--gold); }
+  .mix em { font:700 10.5px var(--font-mono); font-style:normal; text-align:right; }
+  .mixkey { font-size:10.5px; color:var(--mute); margin:4px 0 0; }
+  .mixkey i { display:inline-block; width:9px; height:9px; border-radius:2px; margin:0 3px 0 6px; vertical-align:-1px; }
+  @container (max-height: 440px) { .takeaways { font-size:12px; gap:1px 12px; } .kpi { padding:4px 9px; } .kpi b { font-size:17px; } .mixkey { display:none; } }
+  @container (max-height: 380px) { .sum h4 small, .kpi small { display:none; } .dhead .pill:not(.keep) { display:none; } }
+  .bars div { flex:1; position:relative; border-radius:6px 6px 0 0; height:4px; transition:height .7s cubic-bezier(.22,1,.36,1); }
+  .bars div.me { box-shadow:0 0 0 2px var(--pink), 0 0 10px rgba(255,116,177,.6); }
+  .bars span { position:absolute; top:-17px; left:-6px; right:-6px; text-align:center; font:700 10px var(--font-mono); color:var(--ink); }
+  .bars em { position:absolute; bottom:-18px; left:-6px; right:-6px; text-align:center; font-style:normal; font-size:11px; color:var(--mute); }
+
+  /* step 5 */
+  .carts { display:grid; grid-template-columns:repeat(3,1fr) auto; gap:8px; }
+  .cart { text-align:left; } .cart b { display:block; font-size:13px; } .cart small { color:var(--mute); font-size:11px; }
+  .cart[aria-pressed=true] { border-color:var(--red) !important; background:#3a1b3f !important; box-shadow:0 0 12px rgba(255,128,128,.4); }
+  .verdict { margin:0; font-weight:700; font-size:13px; min-height:1.4em; }
+  .impact { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .impact b { display:block; font:800 15px var(--font-mono); margin-top:2px; } .impact b.bad { color:var(--red); } .impact b.ok { color:var(--lime); }
+
+  /* step 6: a level map. The robot runs the morning by itself; every level and power-up explains itself */
+  .map { position:relative; flex:1 1 auto; min-height:170px; max-height:380px; display:flex; flex-direction:column; justify-content:space-between; gap:8px; padding:9px 12px 10px; border:1px solid var(--line); border-radius:14px; overflow:hidden; background:linear-gradient(180deg,#0a0826 0%,#21195a 55%,#3a2668 100%); }
+  .map::before { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(87,228,255,.18),rgba(255,116,177,.22) 60%,rgba(255,217,102,.35)); pointer-events:none; } /* sunrise */
+  .map.run::before { animation:dawn 3.6s ease backwards; }
+  .mapbar { position:relative; z-index:2; display:flex; align-items:center; gap:10px; }
+  .mapbar b { font-size:14px; } .mapbar span { font-size:12px; color:var(--mute); flex:1; }
+  .sky { position:absolute; inset:0; pointer-events:none; font-style:normal; }
+  .sky i { position:absolute; color:#fff; font-size:9px; font-style:normal; opacity:.7; animation:blink 2.4s ease-in-out 3 alternate; }
+  .sun, .moon { position:absolute; font-size:30px; line-height:1; pointer-events:none; }
+  .sun { right:5%; top:38px; filter:drop-shadow(0 0 12px rgba(255,217,102,.9)); } .map.run .sun { animation:rise 3.6s ease backwards; }
+  .moon { left:4%; top:40px; font-size:24px; opacity:0; } .map.run .moon { animation:moonset 2.6s ease; }
+  .lv { position:relative; z-index:1; display:grid; grid-template-columns:repeat(5,1fr); padding-top:30px; }
+  .road { position:absolute; left:10%; right:10%; top:58px; height:4px; border-radius:2px; background:repeating-linear-gradient(90deg,var(--gold) 0 12px,transparent 12px 20px); opacity:.8; }
+  .bot { position:absolute; top:0; left:90%; transform:translateX(-50%); font-size:26px; line-height:1; z-index:2; pointer-events:none; } /* ends at the last level */
+  .map.run .bot { animation:walk 3.2s linear backwards; }
+  .dq .lvl { --c:var(--cyan); display:flex; flex-direction:column; align-items:center; gap:1px; background:none; border:none; padding:0 2px 2px; border-radius:12px; text-align:center; min-width:0; }
+  .lvl i { display:grid; place-items:center; width:56px; height:56px; border-radius:50%; font-size:26px; font-style:normal; background:var(--panel2); border:3px solid var(--c); box-shadow:0 0 14px color-mix(in srgb, var(--c) 55%, transparent); transition:transform .15s; }
+  .lvl b { font:800 12px var(--font-mono); color:var(--gold); margin-top:3px; } .lvl span { font-size:12px; line-height:1.25; }
+  .dq .lvl:hover i { transform:scale(1.06); }
+  .lvl[aria-pressed=true] i { border-color:var(--gold); box-shadow:0 0 0 3px var(--gold), 0 0 18px var(--gold); transform:scale(1.08); }
+  .map.run .lvl { animation:lit .5s ease backwards; animation-delay:calc(var(--n) * .8s); }
+  .bag { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; }
+  .bagh { grid-column:1 / -1; font-size:12px; color:var(--mute); margin:0; } .bagh b { color:var(--ink); }
+  .dq .pow { display:flex; flex-direction:column; align-items:flex-start; gap:0; text-align:left; padding:6px 9px; border-radius:12px; min-width:0; }
+  .pow > i { font-size:20px; font-style:normal; line-height:1.2; } .pow b { font-size:13px; } .pow small { font-size:11px; color:var(--mute); line-height:1.25; }
+  .dq .pow.alarm { border-color:rgba(255,128,128,.6); }
+  .pow[aria-pressed=true], .trophy[aria-pressed=true] { border-color:var(--gold) !important; box-shadow:0 0 0 1px var(--gold), 0 0 12px rgba(255,217,102,.35); }
+  .dq .trophy { display:flex; align-items:center; gap:10px; text-align:left; padding:7px 12px; border-radius:12px; border-color:var(--gold); background:linear-gradient(90deg,rgba(255,217,102,.18),var(--panel2) 70%); }
+  .trophy > i { font-size:24px; font-style:normal; } .trophy b { display:block; font-size:14px; } .trophy small { color:var(--mute); font-size:12px; }
+  @container (max-height: 440px) { .pow small { display:none; } .map { min-height:150px; } .mapbar span { display:none; } }
+  @container (max-height: 380px) { .lvl i { width:46px; height:46px; font-size:21px; } .road { top:53px; } .trophy small { display:none; } }
+  /* details: the kid version first, then what really happens */
+  .kid { display:flex; gap:10px; align-items:flex-start; background:linear-gradient(135deg,rgba(87,228,255,.14),rgba(255,116,177,.14)); border:1px solid var(--line); border-radius:12px; padding:9px 11px; margin-bottom:6px; }
+  .kid > span { font-size:26px; line-height:1; } .kid p { margin:0; font-size:14px; line-height:1.45; }
+  .dtext { margin:0 0 4px; font-size:13px; } .ok-line { color:var(--lime); font-weight:700; } .bad-line { color:var(--red); font-weight:700; }
+
+  /* step 7: how I built it. A long read on a timeline; it scrolls inside its panel, the page never does */
+  .main.wide { grid-template-columns:minmax(0,1fr); } .main.wide .detail { display:none; }
+  .slide[data-step="7"] { display:grid; grid-template-columns:190px minmax(0,1fr); gap:18px; }
+  .rail { display:flex; flex-direction:column; gap:2px; padding-top:2px; }
+  .dq .rail button { text-align:left; background:none; border:none; border-left:2px solid var(--line); border-radius:0; padding:5px 10px; font-size:12.5px; color:var(--mute); }
+  .rail button b { display:block; font:700 10px var(--font-mono); letter-spacing:.12em; color:var(--cyan); }
+  .dq .rail button[aria-current=true] { border-left-color:var(--cyan); color:var(--ink); background:rgba(87,228,255,.08); }
+  .read { position:relative; overflow-y:auto; min-height:0; padding:4px 10px 0 4px; }
+  .ch { position:relative; max-width:780px; margin-left:8px; padding:0 0 26px 30px; border-left:2px solid rgba(87,228,255,.45); }
+  .ch::before { content:""; position:absolute; left:-9px; top:1px; width:16px; height:16px; border-radius:50%; background:var(--ink); box-shadow:0 0 12px var(--cyan); }
+  .ch.end { border-left-color:transparent; }
+  .ch .eyebrow { color:var(--cyan); letter-spacing:.16em; }
+  .ch h3 { margin:4px 0 10px; font-size:22px; line-height:1.25; }
+  .ch p { margin:0 0 10px; font:15px/1.65 Georgia, "Iowan Old Style", "Times New Roman", serif; color:#ddd7f6; max-width:68ch; }
+  .ch figure { margin:12px 0 10px; } .ch figcaption { font-size:12px; color:var(--mute); margin-top:5px; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; margin:4px 0 12px; }
+  .chips span { border:1px solid var(--line); background:var(--panel2); border-radius:10px; padding:5px 10px; font-size:12px; color:var(--mute); }
+  .chips b { display:block; font:800 16px var(--font-mono); color:var(--gold); }
+  .lanes3 { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; background:#0c0919; border:1px solid var(--line); border-radius:12px; padding:10px; }
+  .lane { display:flex; flex-direction:column; align-items:center; gap:3px; border:1px solid var(--line); border-radius:10px; padding:8px; }
+  .lane h5 { align-self:flex-start; margin:0 0 4px; font:700 10.5px var(--font-mono); letter-spacing:.1em; }
+  .lane > i { color:var(--mute); font-style:normal; line-height:1; }
+  .box { width:100%; max-width:200px; text-align:center; border:1.5px solid var(--c, var(--gold)); border-radius:8px; padding:5px 6px; font-weight:700; font-size:12.5px; }
+  .box small { display:block; font-weight:400; font-size:11px; color:var(--mute); }
+  .vers { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin:6px 0 12px; }
+  .ver { background:var(--panel2); border:1px solid var(--line); border-top:3px solid var(--violet); border-radius:10px; padding:7px 9px; font-size:12px; }
+  .ver b { display:block; font:800 12px var(--font-mono); color:var(--gold); } .ver strong { display:block; font-size:13px; margin:1px 0 2px; } .ver span { color:var(--mute); }
+  .ver.now { border-top-color:var(--pink); }
+  .scores { display:grid; grid-template-columns:auto 1fr; gap:6px 10px; align-items:center; margin:4px 0 12px; font:12px var(--font-mono); }
+  .scores div { display:flex; flex-wrap:wrap; align-items:center; gap:4px; color:var(--mute); }
+  .scores em { font-style:normal; border:1px solid var(--line); border-radius:999px; padding:1px 8px; color:var(--ink); }
+  .scores em.win { background:var(--lime); border-color:var(--lime); color:#130f26; font-weight:800; }
+  .notes { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; max-width:810px; margin:0 0 14px 8px; padding-top:12px; border-top:1px solid var(--line); font-size:12px; color:var(--mute); }
+  .notes b { display:block; font:700 10px var(--font-mono); letter-spacing:.12em; color:var(--ink); margin-bottom:2px; }
+  .dq.compact .slide[data-step="7"] { display:block; } .dq.compact .rail { display:none; } .dq.compact .read { overflow:visible; padding:0; }
+  .dq.compact .ch { padding-left:18px; } .dq.compact .ch h3 { font-size:18px; } .dq.compact .ch p { font-size:14px; }
+  .dq.compact .lanes3, .dq.compact .notes { grid-template-columns:1fr; } .dq.compact .vers { grid-template-columns:1fr 1fr; }
+
+  /* details panel content */
+  .sql { margin:0; background:#0c0919; border:1px solid var(--line); border-radius:10px; padding:9px; font:11px/1.45 var(--font-mono); color:#ddd6ff; overflow-x:auto; white-space:pre; }
+  .sql .kw { color:var(--cyan); } .sql .jj { color:var(--gold); } .sql .cm { color:#9a91c4; font-style:italic; }
+  .sql .del { display:block; background:rgba(255,128,128,.2); } .sql .add { display:block; background:rgba(168,255,124,.14); }
+  .cap { font:700 10.5px var(--font-mono); color:var(--mute); margin:8px 0 3px; letter-spacing:.06em; }
+  .cap:first-child { margin-top:0; }
+  .dtable { width:100%; border-collapse:collapse; font:11.5px var(--font-mono); }
+  .dtable th { color:var(--mute); font-weight:400; text-align:left; } .dtable td, .dtable th { padding:2px 4px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  .dtable td.ok { color:var(--lime); font-weight:800; } .dtable td.ng { color:var(--red); font-weight:800; }
+  .words { display:flex; flex-wrap:wrap; gap:5px; }
+  .words span { background:var(--panel2); border:1px solid var(--line); border-radius:999px; padding:2px 9px; font-size:12px; }
+  .words b { color:var(--gold); }
+  .story { border:1px solid var(--red); border-radius:10px; padding:8px 10px; margin-bottom:8px; }
+  .story h4 { margin:0 0 4px; color:var(--red); font-size:13px; }
+  .dl { display:grid; grid-template-columns:auto 1fr; gap:3px 10px; margin:0; font-size:12.5px; } .dl dt { color:var(--mute); } .dl dd { margin:0; }
+  .calm { color:var(--lime); font-weight:700; margin:0; }
+  .you { font:700 12px var(--font-mono); color:var(--pink); margin:6px 0 0; }
+  .recap dt { color:var(--gold); font-weight:700; font-size:14px; } .recap dd { margin:0 0 6px; font-size:13px; }
+
+  @keyframes eq { from { transform:scaleY(.3) } to { transform:scaleY(1) } }
+  @keyframes pop { from { transform:scale(.6); opacity:0 } to { transform:scale(1); opacity:1 } }
+  @keyframes hop { from { background:var(--panel); color:var(--mute); border-color:var(--line); transform:scale(.94) } } /* starts unlit, never invisible */
+  @keyframes fade { from { opacity:0 } to { opacity:1 } }
+  @keyframes drop { from { transform:translateY(-12px); opacity:0 } to { transform:none; opacity:1 } }
+  @keyframes slidein { from { transform:translateX(-12px); opacity:0 } to { transform:none; opacity:1 } }
+  @keyframes flash { from { background:rgba(255,217,102,.45) } to { background:transparent } }
+  @keyframes nudgeY { 50% { transform:translateY(4px) } }
+  @keyframes glow { 50% { box-shadow:0 0 18px rgba(255,116,177,.8) } }
+  @keyframes dots { to { stroke-dashoffset:-22 } }
+  @keyframes blink { 50% { opacity:.35 } }
+  @keyframes walk { from { left:10% } }
+  @keyframes lit { from { filter:grayscale(1) brightness(.45) } }
+  @keyframes dawn { from { opacity:0 } }
+  @keyframes rise { from { transform:translateY(90px); opacity:0 } }
+  @keyframes moonset { from { opacity:1 } 70% { opacity:1 } to { opacity:0; transform:translateY(-30px) } }
+  @media (prefers-reduced-motion: reduce) { .dq *, .dq *::before, .dq *::after { animation:none !important; transition:none !important; } }
+  .dq.rm *, .dq.rm *::before, .dq.rm *::after { animation:none !important; transition:none !important; }
+  @media (max-width:1100px) { .sbody { grid-template-columns:204px minmax(0,1fr); } .stepper button { font-size:12px; gap:5px; padding:4px 5px; } .logo small, .keys { display:none; } }
+  /* phones: one column, smaller parts so more fits on screen; steps and Back/Next stay pinned */
+  .dq.compact { grid-template-rows:auto; padding:6px 8px; gap:6px; }
+  .dq.compact .main { grid-template-columns:1fr; gap:8px; }
+  .dq.compact .sbody, .dq.compact .slide { container-type:normal; height:auto; overflow:visible; }
+  .dq.compact .sbody { grid-template-columns:1fr; gap:8px; }
+  .dq.compact .phoneCol { max-width:200px; margin:0 auto; width:100%; }
+  .dq.compact .phone { border-radius:24px; padding:6px; } .dq.compact .screen { height:290px; border-radius:18px; }
+  .dq.compact .hint { font-size:12px; min-height:1.4em; margin:4px 0 0; }
+  .dq.compact .top { gap:8px; } .dq.compact .logo { font-size:13px; } .dq.compact .stats { display:none; }
+  .dq.compact .answer { font-size:11px; padding:3px 8px; }
+  .dq.compact .stepper { position:sticky; top:0; z-index:6; background:var(--bg); padding:4px 0; grid-template-columns:repeat(7,1fr); gap:3px; }
+  .dq.compact .stepper button { flex-direction:column; justify-content:center; gap:1px; padding:3px 0; font-size:10px; line-height:1.15; text-align:center; white-space:nowrap; border-radius:8px; }
+  .dq.compact .stepper i { width:18px; height:18px; font-size:10.5px; }
+  .dq.compact .panel { padding:8px 9px; border-radius:12px; }
+  .dq.compact .phead { margin-bottom:6px; } .dq.compact .phead h2 { font-size:15px; } .dq.compact .phead p { font-size:12px; } .dq.compact .phead h3 { font-size:13.5px; }
+  .dq.compact .card { padding:6px 8px; } .dq.compact .card h4 { font-size:12.5px; }
+  .dq.compact .log { --rows:4; font-size:11px; } .dq.compact .log li:nth-child(n+5) { display:none; }
+  .dq.compact .tcard table { font-size:10px; }
+  .dq.compact .detail .dbody { max-height:52vh; overflow:auto; }
+  .dq.compact .sql { font-size:10.5px; padding:7px; }
+  .dq.compact .foot { position:sticky; bottom:0; z-index:6; background:var(--bg); padding:5px 0; gap:6px; }
+  .dq.compact .foot button { padding:4px 10px; font-size:13px; } .dq.compact .footmid p { font-size:11.5px; } .dq.compact .footmid small { display:none; }
+  .dq.compact .kpis { grid-template-columns:1fr 1fr; gap:6px; } .dq.compact .kpi b { font-size:17px; }
+  .dq.compact .charts { grid-template-columns:1fr; max-height:none; } .dq.compact .bars { flex:none; height:110px; }
+  .dq.compact .sum { grid-template-columns:1fr; } .dq.compact .takeaways { grid-template-columns:1fr; font-size:12px; }
+  .dq.compact .carts { grid-template-columns:1fr 1fr; gap:6px; } .dq.compact .cart small { display:none; }
+  .dq.compact .impact { gap:6px; } .dq.compact .impact b { font-size:13px; }
+  .dq.compact .map { min-height:0; padding:8px; } .dq.compact .mapbar span { display:none; } .dq.compact .mapbar b { font-size:12.5px; flex:1; }
+  .dq.compact #bMorning { font-size:12px; padding:3px 9px; white-space:nowrap; }
+  .dq.compact .lvl i { width:44px; height:44px; font-size:20px; } .dq.compact .road { top:52px; } .dq.compact .lvl span, .dq.compact .lvl b { font-size:10.5px; }
+  .dq.compact .bag { grid-template-columns:repeat(3,1fr); } .dq.compact .pow small { display:none; }
+  .uplink { display:none; } .dq.compact .uplink { display:inline-block; margin-top:4px; }
+  .nodelist { display:none; }
+  .dq.compact .nodelist { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+  .nodelist button, .nodelist div { min-height:44px; text-align:left; font-size:13px; padding:6px 9px; border-radius:10px; }
+  .nodelist div { background:var(--panel2); border:2px solid var(--line); }
+  .nodelist b { display:block; font:700 13px var(--font-mono); } .nodelist small { color:var(--mute); font-size:12px; }
+  .nodelist [aria-pressed=true] { border-color:var(--gold); }
+  .nodelist .bad { border-color:var(--red); } .nodelist .bad small { color:var(--red); }
+  .dq.compact .phead h2, .dq.compact .detail .phead { scroll-margin-top:56px; }
+</style>
+
+<div class="dq" id="dq">
+  <header class="top">
+    <div class="logo px"><span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>Data quest <small>Tempo Rush · made-up game</small></div>
+    <button type="button" class="answer" id="bAnswer" title="Open the recap (step 6)"><b>THE ANSWER</b>2 fact tables: 1 row per ad · 1 row per player per day · tests catch bad data before reports</button>
+    <div class="stats px">
+      <span>Events <b id="evCount">0</b></span>
+      <span>Bugs caught <b id="caught">0/0</b></span>
+      <span class="lights" id="lights" role="img" aria-label="Test lights"></span>
+    </div>
+  </header>
+
+  <nav class="stepper" aria-label="Steps" id="stepper">
+    <button type="button" data-go="1"><i>1</i>Play</button><button type="button" data-go="2"><i>2</i>Stored</button><button type="button" data-go="3"><i>3</i>Models</button>
+    <button type="button" data-go="4"><i>4</i>Reports</button><button type="button" data-go="5"><i>5</i>Break it</button><button type="button" data-go="6"><i>6</i>Level up</button>
+    <button type="button" data-go="7" class="how"><i>7</i><span class="lf">How I built it</span><span class="ls">Behind</span></button>
+  </nav>
+
+  <main class="main" id="main">
+    <section class="stage panel" aria-labelledby="stageTitle">
+      <div class="phead"><h2 id="stageTitle" tabindex="-1"></h2><p id="stageLead"></p></div>
+      <div class="sbody" id="sbody">
+        <div class="phoneCol" id="phoneCol">
+          <div class="phone">
+            <div class="screen">
+              <div class="scr" id="sStore">
+                <div class="appicon" aria-hidden="true">🎵</div>
+                <b>Tempo Rush</b><small>Music game · Free</small><div class="stars" role="img" aria-label="4 stars">★★★★☆</div>
+                <button type="button" class="big" id="bInstall">Install</button>
+                <div class="bar" aria-hidden="true"><i id="instBar"></i></div>
+              </div>
+              <div class="scr" id="sHome" hidden>
+                <span class="chip" id="homeDay">Day 0</span>
+                <div class="appicon sm" aria-hidden="true">🎵</div>
+                <div class="song"><b>Neon Nights</b><small>Easy · 16 tiles</small></div>
+                <button type="button" class="big" id="bPlay">▶ Play</button>
+                <small id="coins">🪙 0 coins</small>
+                <button type="button" class="link" id="bHomeNext">🌙 Skip to next day</button>
+              </div>
+              <div class="scr play" id="sPlay" hidden>
+                <div class="topbar"><span id="score">0</span><span id="combo"></span><button type="button" id="bPause">⏸ Pause</button></div>
+                <canvas id="cv" tabindex="0" aria-label="Falling tiles. Hit them with the lane buttons, or the D, F, J and K keys."></canvas>
+                <div class="lanes" role="group" aria-label="Lanes">
+                  <button type="button" data-lane="0" aria-label="Lane 1 (D key)">D</button><button type="button" data-lane="1" aria-label="Lane 2 (F key)">F</button><button type="button" data-lane="2" aria-label="Lane 3 (J key)">J</button><button type="button" data-lane="3" aria-label="Lane 4 (K key)">K</button>
+                </div>
+                <button type="button" class="link" id="bSkip">Skip song</button>
+              </div>
+              <div class="scr ad" id="sAd" hidden>
+                <span class="adtag">AD · made up</span>
+                <div class="adEmoji" id="adEmoji" aria-hidden="true">🥤</div>
+                <b id="adTitle" tabindex="-1">FIZZ SODA</b>
+                <small id="adSub">Tastes like bubbles</small>
+                <button type="button" id="bAdClose" disabled>Close in 3</button>
+              </div>
+              <div class="scr" id="sResult" hidden>
+                <b class="clear">SONG CLEAR!</b>
+                <div class="bigScore" id="resScore">0</div>
+                <div class="stars" id="resStars">★★★</div>
+                <button type="button" class="big" id="bReward">🎁 Watch ad: +100 coins</button>
+                <button type="button" id="bAgain">▶ Play again</button>
+                <button type="button" id="bNext">🌙 Next day</button>
+              </div>
+              <div class="scr lock" id="sLock" hidden>
+                <div class="clock">08:00</div>
+                <small id="lockDay">Day 1</small>
+                <div class="notif"><b>🎵 Tempo Rush</b><span>New song today!</span></div>
+                <button type="button" class="big" id="bOpen">Open</button>
+                <button type="button" id="bIgnore">Ignore</button>
+              </div>
+            </div>
+          </div>
+          <p class="hint" id="hint" role="status"></p>
+          <button type="button" class="link" id="bRestart">↺ Start over</button>
+        </div>
+
+        <!-- 1 PLAY -->
+        <div class="slide" data-step="1">
+          <div class="card"><h4>📡 Events your phone sends</h4><p class="sub">Each note says who, what and when (UTC). The newest is on top.</p><ol class="log" id="log"></ol></div>
+          <div class="card"><h4>📅 Did you come back?</h4><div class="strip" id="strip"></div><p class="ret" id="ret"></p></div>
+          <div class="card"><h4>🧭 Where your latest event goes</h4>
+            <div class="epath" id="epath" aria-hidden="true"><span data-n="phone">📱 phone</span><i>→</i><span data-n="raw">raw_events</span><i>→</i><span data-n="stg">stg_events</span><i>→</i><div class="efork"><span data-n="dimp">dim_player</span><span data-n="fad">fct_ad_impression</span><span data-n="fday">fct_player_day</span></div><i>→</i><span data-n="rpt">reports</span></div>
+            <p class="sub" id="epathCap">Tap Install to send your first event.</p></div>
+          <div class="toast" id="toast" role="status" hidden>📦 Your data just landed in tables. <button type="button" id="tGo">Show me ▶</button><button type="button" class="link" id="tStay">Stay here</button></div>
+        </div>
+
+        <!-- 2 STORED -->
+        <div class="slide" data-step="2">
+          <div class="card tcard" data-sel="raw" role="button" tabindex="0" aria-pressed="false"><h4>📥 raw_events<small>1 row = 1 event</small></h4>
+            <table><thead><tr><th scope="col">time (UTC)</th><th scope="col">player</th><th scope="col">event</th></tr></thead><tbody id="tRaw"></tbody></table><div class="count" id="cRaw"></div></div>
+          <div class="parrow" id="a1" aria-hidden="true"><b>↓</b>ad events only</div>
+          <div class="card tcard" data-sel="fad" role="button" tabindex="0" aria-pressed="false"><h4>💰 fct_ad_impression<small>1 row = 1 ad</small></h4>
+            <table><thead><tr><th scope="col">date</th><th scope="col">player</th><th scope="col">ad</th><th scope="col">$</th></tr></thead><tbody id="tAd"></tbody></table><div class="count" id="cAd"></div></div>
+          <div class="parrow" id="a2" aria-hidden="true"><b>↓</b>add up per player per day</div>
+          <div class="card tcard" data-sel="fday" role="button" tabindex="0" aria-pressed="false"><h4>📅 fct_player_day<small>1 row = 1 player, 1 day</small></h4>
+            <table><thead><tr><th scope="col">date</th><th scope="col">player</th><th scope="col">songs</th><th scope="col">ads</th><th scope="col">$</th></tr></thead><tbody id="tDay"></tbody></table><div class="count" id="cDay"></div></div>
+        </div>
+
+        <!-- 3 MODELS -->
+        <div class="slide" data-step="3">
+          <div class="runbar"><button type="button" class="big" id="bRun">▶ Run the models</button><span class="runmsg" id="runMsg" role="status">Tap a box to see its SQL →</span></div>
+          <div class="graph"><svg id="dag1" viewBox="0 0 756 300" role="group" aria-label="Model graph: raw_events to stg_events to fact tables to reports"><title>Model graph</title></svg></div>
+          <div class="nodelist" id="list1" role="group" aria-label="Models (tap one to see its SQL)"></div>
+          <div class="legend" aria-hidden="true"><span><i style="border-color:var(--cyan)"></i>source</span><span><i style="border-color:var(--violet)"></i>clean-up</span><span><i style="border-color:var(--lime)"></i>dimension</span><span><i style="border-color:var(--pink)"></i>fact</span><span><i style="border-color:var(--gold)"></i>rollup</span><span><i style="border-color:#e3a6ff"></i>report</span><span>🧪 test</span></div>
+          <p class="fine">🧩 <b>Dimensions</b> describe facts: who, when, which ad. dim_player is built here; dates, ad types and networks link to small lookup tables (dim_date, dim_ad_unit, dim_ad_network) we skip. Later: country, app version, song.</p>
+        </div>
+
+        <!-- 4 REPORTS -->
+        <div class="slide" data-step="4">
+          <div class="dhead"><b>📊 Ads &amp; players dashboard</b><span class="pill keep">📅 Nov 12–18, 2026 · UTC</span><span class="pill">🌍 All countries</span><span class="pill ok keep" id="dTests">✓ 4/4 tests · 07:00</span></div>
+          <div class="card dcard sum" data-sel="sum" role="button" tabindex="0" aria-pressed="false"><h4>💡 In 10 seconds<small>tap for the proof</small></h4><ul class="takeaways" id="takeaways"></ul></div>
+          <div class="kpis">
+            <div class="card dcard kpi" data-sel="kRev" role="button" tabindex="0" aria-pressed="false"><span class="kl">💰 Ad money · 7 days</span><b id="kRev"></b><small id="kRevD"></small></div>
+            <div class="card dcard kpi" data-sel="kArp" role="button" tabindex="0" aria-pressed="false"><span class="kl">🪙 ARPDAU</span><b id="kArp"></b><small id="kArpD"></small></div>
+            <div class="card dcard kpi" data-sel="kDau" role="button" tabindex="0" aria-pressed="false"><span class="kl">🎮 Players a day</span><b id="kDau"></b><small id="kDauD"></small></div>
+            <div class="card dcard kpi" data-sel="kD7" role="button" tabindex="0" aria-pressed="false"><span class="kl">🔁 Back on day 7</span><b id="kD7"></b><small id="kD7D"></small></div>
+          </div>
+          <div class="charts">
+            <div class="card dcard rcard" data-sel="rarp" role="button" tabindex="0" aria-pressed="false"><h4>💰 ARPDAU by day<small>★ = you played</small></h4><div class="bars" id="barsA"></div></div>
+            <div class="card dcard rcard" data-sel="rd7" role="button" tabindex="0" aria-pressed="false"><h4>🔁 Back on day 7<small>by day-0 ads</small></h4><div class="bars" id="barsB"></div></div>
+            <div class="card dcard rcard" data-sel="mix" role="button" tabindex="0" aria-pressed="false"><h4>🎁 Ads vs money<small>by ad type</small></h4><div class="mix" id="mix"></div><p class="mixkey" aria-hidden="true"><i style="background:var(--violet)"></i>share of ads<i style="background:var(--gold)"></i>share of money</p></div>
+          </div>
+        </div>
+
+        <!-- 5 BREAK IT -->
+        <div class="slide" data-step="5">
+          <div class="carts" role="group" aria-label="Bugs to add">
+            <button type="button" class="cart" data-bug="fan" aria-pressed="false"><b>🐛 Double count</b><small>Join ads to sessions, then add up</small></button>
+            <button type="button" class="cart" data-bug="dup" aria-pressed="false"><b>🐛 File loaded twice</b><small>Same ad file again, repeats kept</small></button>
+            <button type="button" class="cart" data-bug="young" aria-pressed="false"><b>🐛 Too-new players</b><small>This week's players counted in D7</small></button>
+            <button type="button" id="reset">↺ Clear</button>
+          </div>
+          <div class="graph"><svg id="dag2" viewBox="0 0 756 300" role="img" aria-labelledby="dag2t"><title id="dag2t">Model graph showing where bad data flows</title></svg></div>
+          <div class="nodelist" id="list2" aria-label="Models and tests, with what the bugs did"></div>
+          <p class="verdict" id="verdict" role="status"></p>
+          <div class="impact"><div class="card"><span class="sub">ARPDAU report</span><b id="impA"></b></div><div class="card"><span class="sub">D7 report</span><b id="impD"></b></div><div class="card"><span class="sub">Tests passing</span><b id="impT"></b></div></div>
+        </div>
+
+        <!-- 6 LEVEL UP -->
+        <div class="slide" data-step="6">
+          <div class="map" id="map">
+            <div class="sky" aria-hidden="true"><i style="left:22%;top:14%">✦</i><i style="left:41%;top:30%;animation-delay:.6s">✦</i><i style="left:63%;top:12%;animation-delay:1.1s">✦</i><i style="left:78%;top:34%;animation-delay:.3s">✦</i></div>
+            <span class="moon" aria-hidden="true">🌙</span><span class="sun" aria-hidden="true">☀️</span>
+            <div class="mapbar"><b>🌅 Every morning, a robot runs it all</b><span>No one has to press a button. Tap a stop.</span><button type="button" id="bMorning">▶ Play the morning</button></div>
+            <div class="lv" role="group" aria-label="The morning run, stop by stop">
+              <div class="road" aria-hidden="true"></div><span class="bot" aria-hidden="true">🤖</span>
+              <button type="button" class="lvl" data-sel="mail" style="--n:0" aria-pressed="false"><i aria-hidden="true">📬</i><b>06:00</b><span>Notes arrive</span></button>
+              <button type="button" class="lvl" data-sel="redo" style="--n:1" aria-pressed="false"><i aria-hidden="true">🔁</i><b>06:10</b><span>Redo 3 days</span></button>
+              <button type="button" class="lvl" data-sel="build" style="--n:2;--c:var(--lime)" aria-pressed="false"><i aria-hidden="true">⚙️</i><b>06:30</b><span>Build + test</span></button>
+              <button type="button" class="lvl" data-sel="ready" style="--n:3;--c:var(--pink)" aria-pressed="false"><i aria-hidden="true">📊</i><b>07:00</b><span>Reports ready</span></button>
+              <button type="button" class="lvl" data-sel="boss" style="--n:4;--c:var(--gold)" aria-pressed="false"><i aria-hidden="true">🧑‍💼</i><b>Monday</b><span>Boss decides</span></button>
+            </div>
+          </div>
+          <div class="bag" role="group" aria-label="Power-ups">
+            <p class="bagh">🎒 <b>Power-ups</b> that keep it safe, cheap and fair</p>
+            <button type="button" class="pow alarm" data-sel="alarm" aria-pressed="false"><i aria-hidden="true">🚨</i><b>Alarm</b><small>rings if numbers look wrong</small></button>
+            <button type="button" class="pow" data-sel="cheap" aria-pressed="false"><i aria-hidden="true">💸</i><b>Cheap</b><small>reads only what it needs</small></button>
+            <button type="button" class="pow" data-sel="private" aria-pressed="false"><i aria-hidden="true">🔒</i><b>Private</b><small>secret player codes</small></button>
+            <button type="button" class="pow" data-sel="handover" aria-pressed="false"><i aria-hidden="true">📘</i><b>Hand over</b><small>a guide for the team</small></button>
+            <button type="button" class="pow" data-sel="next" aria-pressed="false"><i aria-hidden="true">🧪</i><b>Next quest</b><small>a fair test (A/B)</small></button>
+          </div>
+          <button type="button" class="trophy" data-sel="recap" aria-pressed="false"><i aria-hidden="true">🏆</i><span><b>Final level: the whole answer</b><small>Fact tables, grain, dimensions, checks, in one place</small></span></button>
+        </div>
+        <!-- 7 HOW I BUILT IT -->
+        <div class="slide" data-step="7">
+          <nav class="rail" aria-label="Chapters">
+            <button type="button" data-ch="ch1"><b>01</b>The idea</button><button type="button" data-ch="ch2"><b>02</b>The data</button><button type="button" data-ch="ch3"><b>03</b>The stack</button>
+            <button type="button" data-ch="ch4"><b>04</b>The build</button><button type="button" data-ch="ch5"><b>05</b>The checks</button><button type="button" data-ch="ch6"><b>06</b>The receipts</button>
+          </nav>
+          <div class="read" id="read" tabindex="0" aria-label="How I built it, six chapters">
+            <section class="ch" id="ch1"><span class="eyebrow">01 · THE IDEA</span><h3>Make the reader create the data</h3>
+              <p>The question is easy to say and hard to picture. Design a dimensional model for in-game ad revenue and retention in a mobile music game. Name the grain and the dimensions. Then show how you would check it. A star schema diagram answers it, but nobody remembers a diagram.</p>
+              <p>So I flipped it. You install a made-up game, play a song, see an ad, and watch your own taps turn into rows, models, a dashboard and, at the end, bad data that the tests catch.</p></section>
+            <section class="ch" id="ch2"><span class="eyebrow">02 · THE DATA</span><h3>4,000 players who don't exist</h3>
+              <p>Real game data was never an option, so every number comes from a small generator inside the page. It uses a fixed seed, so you see the same numbers on every visit. Ad prices and country price levels are assumptions.</p>
+              <div class="chips"><span><b>4,000</b>made-up players</span><span><b>28</b>days</span><span><b id="statAds">–</b>ads in the fake crowd</span><span><b>7</b>seed</span></div>
+              <p>I planted one pattern on purpose: players who see more ads on day 0 come back a little less often. That gives the dashboard something real to find, and the page says the pattern was planted.</p>
+              <p>Your own play joins the crowd as pink rows, so the totals move when you play. Every tile, chart and test result is calculated from those rows. Only the assumptions, like prices and alarm limits, are typed in.</p></section>
+            <section class="ch" id="ch3"><span class="eyebrow">03 · THE STACK</span><h3>One file, no servers</h3>
+              <p>The whole demo is one HTML file: plain CSS, plain JavaScript and hand-drawn SVG. No libraries, no build tool and no network calls, so it opens anywhere and sends nothing out.</p>
+              <p>The SQL you see is dbt-style BigQuery SQL, written to match each model. The page does not send it anywhere. It does the same maths in JavaScript, so every "run" is simulated.</p>
+              <figure><div class="lanes3">
+                <div class="lane"><h5 style="color:var(--gold)">MY LAPTOP</h5><span class="box">Claude Code<small>writes each change</small></span><i aria-hidden="true">↓</i><span class="box">preview.html<small>one file: HTML, CSS, JS</small></span><i aria-hidden="true">↓</i><span class="box">Playwright<small>tests in a real browser</small></span></div>
+                <div class="lane"><h5 style="color:var(--lime)">REVIEW</h5><span class="box" style="--c:var(--lime)">GPT-6.1-Sol<small>a second AI, read-only</small></span><i aria-hidden="true">↓</i><span class="box" style="--c:var(--lime)">Score out of 100<small>same rules every round</small></span><i aria-hidden="true">↓</i><span class="box" style="--c:var(--lime)">Fix, then score again<small>until it is above 95</small></span></div>
+                <div class="lane"><h5 style="color:var(--cyan)">YOUR BROWSER</h5><span class="box" style="--c:var(--cyan)">The page<small>no server, no network</small></span><i aria-hidden="true">↓</i><span class="box" style="--c:var(--cyan)">Fake players<small>made in the page</small></span><i aria-hidden="true">↓</i><span class="box" style="--c:var(--cyan)">SQL + numbers<small>SQL shown, maths in JS</small></span></div>
+              </div><figcaption>How a change travels: written, tested, reviewed, then opened in your browser.</figcaption></figure></section>
+            <section class="ch" id="ch4"><span class="eyebrow">04 · THE BUILD</span><h3>Five versions to get to a game</h3>
+              <p>Each version came from one piece of feedback on the version before it.</p>
+              <div class="vers">
+                <div class="ver"><b>V1</b><strong>Star schema</strong><span>Tables and grain as a diagram. Correct, but flat.</span></div>
+                <div class="ver"><b>V2</b><strong>Play the game</strong><span>A phone you can play; ads and events appear as you go.</span></div>
+                <div class="ver"><b>V3</b><strong>One story</strong><span>Your taps flow to tables, models, reports and a break-it graph, with the SQL behind each.</span></div>
+                <div class="ver"><b>V4</b><strong>One screen</strong><span>The picture on the left, its details on the right, no page scroll.</span></div>
+                <div class="ver now"><b>V5</b><strong>Dashboard + map</strong><span>A real dashboard, a level map for the daily run, a calmer event list, a tighter phone layout.</span></div>
+              </div>
+              <p>The hardest part was not the SQL. It was fitting a lot of detail on one screen, from a phone to a big monitor, without anything getting cut off.</p></section>
+            <section class="ch" id="ch5"><span class="eyebrow">05 · THE CHECKS</span><h3>How I know it works</h3>
+              <p>29 browser tests run against the page served as a real website. On 7 laptop sizes, they check that the page never scrolls and nothing gets cut off. On 2 phone sizes, the page scrolls, but nothing spills sideways or out of its card. Other tests check each step by mouse and keyboard, reduced motion, and that the event list no longer flickers.</p>
+              <p>The page also checks itself each time it loads: clean data passes all 4 tests, each bug is caught by at least one, and the dashboard tiles match the model's own numbers.</p>
+              <p>Then a second AI reviewed each version with the same scoring rules, and I fixed what it found until the score was above 95:</p>
+              <div class="scores"><span>V4</span><div><em>77</em>→<em>89</em>→<em>93</em>→<em>95</em>→<em class="win">96</em></div><span>V5</span><div><em>83</em>→<em>93</em>→<em>95</em>→<em class="win">97</em></div></div>
+              <p>One honest note: the last V5 step, 95 to 97, was not a fix. The reviewer dropped two deductions it could not point to evidence for.</p></section>
+            <section class="ch end" id="ch6"><span class="eyebrow">06 · THE RECEIPTS</span><h3>Am I sure it's right?</h3>
+              <p>The modelling ideas are standard: decide the grain first, add up each side before a join, and test against a total you trust. The numbers are not real. They show how the calculations work, not what a real game earns.</p>
+              <p>Some things I could not check here. The SQL has never run on a real BigQuery warehouse; it was reviewed against the documentation. The page has not been tried with a real screen reader. Inside a chat app, its height is a guess from your screen size, not tested in the real app. If you spot something wrong, I want to know.</p></section>
+            <div class="notes"><div><b>WHAT'S MADE UP</b>The game, the ads, the prices, the players and every number.</div><div><b>WHAT'S REAL</b>The model design, the SQL patterns and the logic of the tests.</div><div><b>HOW THE SQL RUNS</b>Shown as dbt + BigQuery SQL; the page works out the same results in JavaScript.</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="detail panel" aria-labelledby="detailTitle">
+      <div class="phead"><span class="eyebrow">🔎 DETAILS</span><h3 id="detailTitle"></h3><p id="detailLead"></p><button type="button" class="link uplink" id="bUp">↑ Back to the picture</button></div>
+      <div class="seg" id="seg" role="group" aria-label="Detail view" hidden></div>
+      <div class="dbody" id="dbody"></div>
+    </aside>
+  </main>
+
+  <p class="sr" id="announce" role="status" aria-live="polite"></p>
+  <footer class="foot">
+    <button type="button" id="bBack">◀ Back</button>
+    <div class="footmid"><p id="footCap"></p><small>Made-up data: you + 4,000 fake players. Made-up game, ads and prices. BigQuery-style dbt SQL, run simulated in the page.</small></div>
+    <span class="keys" aria-hidden="true"><kbd>←</kbd> <kbd>→</kbd> move · <kbd>1</kbd>–<kbd>7</kbd> jump</span>
+    <button type="button" class="big fwd" id="bFwd">Next ▶</button>
+  </footer>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const reduced = () => !!(window.genui && genui.reducedMotion) || matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function make(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function rng(a) { return function () { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  const fmt = (n) => n.toLocaleString("en-US");
+  const pct = (v) => (v * 100).toFixed(1) + "%";
+  const money = (v) => "$" + v.toFixed(2);
+  const cents = (v) => "$" + v.toFixed(4);
+
+  // ================= fit the screen: one page, no vertical scroll =================
+  const dq = $("dq");
+  function fit() {
+    const standalone = !window.genui; // inside the chat app the frame sets the size
+    const compact = innerWidth < 760 || (standalone && innerHeight < 560);
+    dq.classList.toggle("standalone", standalone);
+    dq.classList.toggle("compact", compact);
+    // inside the chat app the frame grows to fit us, so aim for the visible chat area: the screen minus browser and app chrome
+    const embedded = Math.round(Math.min(820, Math.max(560, (screen.availHeight || 900) - 250)));
+    dq.style.height = compact ? "auto" : (standalone ? innerHeight : embedded) + "px";
+  }
+  addEventListener("resize", fit); fit();
+
+  // ================= fake crowd: 4,000 players, fixed seed =================
+  const PLAYERS = 4000, DAYS = 28, TODAY = 27, WEEK = 21, YESTERDAY = 26, YOU = 4000, YOU_INSTALL = 20;
+  const TIER_K = [1, 0.5, 0.25];                                // price multiplier by country tier (assumed)
+  const ECPM = { interstitial: 12, rewarded: 18, banner: 0.6 }; // $ per 1,000 ads in tier 1 (assumed)
+  const SONGS_PER_SESSION = 2;                                  // assumed, only for the raw row count
+  const dateOf = (d) => new Date(Date.UTC(2026, 9, 22 + d)).toISOString().slice(0, 10); // day 27 = 2026-11-18
+  const pid = (p) => (p === YOU ? "p_you" : "p_" + String(p + 1).padStart(4, "0"));
+  const key = (p, d) => p * 100 + d;
+  const binOf = (n) => (n <= 2 ? 0 : n <= 5 ? 1 : 2);
+  const BIN_LABEL = ["0–2 ads", "3–5 ads", "6+ ads"], BIN_SQL = ["0-2", "3-5", "6+"];
+  const r = rng(7), players = [], ads = [], sessionsOn = new Map();
+  for (let p = 0; p < PLAYERS; p++) {
+    const install = Math.floor(r() * DAYS), u = r(), tier = u < 0.2 ? 0 : u < 0.5 ? 1 : 2, load = Math.floor(r() * 3);
+    const stick = (0.3 + r() * 0.45) * (1 - 0.15 * load); // built-in link: heavier ad load, fewer come back
+    const pl = { p, install, tier, first: 0 }; players.push(pl);
+    for (let d = install; d < DAYS; d++) {
+      if (d > install && r() > stick / Math.sqrt(d - install + 1)) continue;
+      const sessions = 1 + Math.floor(r() * 3);
+      sessionsOn.set(key(p, d), sessions);
+      const add = (f) => { ads.push({ id: ads.length, p, d, f, rev: (ECPM[f] / 1000) * TIER_K[tier] * (0.7 + 0.6 * r()) }); if (d === install && f !== "banner") pl.first++; };
+      for (let s = 0; s < sessions; s++) {
+        for (let i = load + (r() < 0.5 ? 1 : 0); i > 0; i--) add("interstitial");
+        if (r() < 0.4) add("rewarded");
+        add("banner"); add("banner");
+      }
+    }
+  }
+  let crowdSessions = 0; for (const v of sessionsOn.values()) crowdSessions += v;
+  const crowdEvents = PLAYERS + crowdSessions * (1 + 2 * SONGS_PER_SESSION) + ads.length;
+  const crowdMoney = new Array(7).fill(0), crowdActive = new Array(7).fill(0);
+  for (const a of ads) if (a.d >= WEEK) crowdMoney[a.d - WEEK] += a.rev;
+  for (const k of sessionsOn.keys()) if (k % 100 >= WEEK) crowdActive[(k % 100) - WEEK]++;
+  const PREV = { usd: 0, active: 0 }, crowdMix = { interstitial: [0, 0], rewarded: [0, 0], banner: [0, 0] }; // last week (days 14-20) for "vs last week"; this week's ads by type
+  for (const a of ads) { if (a.d >= WEEK) { crowdMix[a.f][0]++; crowdMix[a.f][1] += a.rev; } else if (a.d >= WEEK - 7) PREV.usd += a.rev; }
+  for (const k of sessionsOn.keys()) if (k % 100 >= WEEK - 7 && k % 100 < WEEK) PREV.active++;
+  const crowdBins = [0, 1, 2].map(() => ({ base: 0, back: 0 }));
+  const cohortKeys = new Set(), cohort20 = [0, 1, 2].map(() => ({ n: 0, back1: 0, back7: 0 }));
+  for (const pl of players) {
+    const b = binOf(pl.first);
+    cohortKeys.add(pl.install * 10 + b);
+    if (pl.install <= TODAY - 7) { crowdBins[b].base++; if (sessionsOn.has(key(pl.p, pl.install + 7))) crowdBins[b].back++; }
+    if (pl.install === YOU_INSTALL) { const c = cohort20[b]; c.n++; if (sessionsOn.has(key(pl.p, pl.install + 1))) c.back1++; if (sessionsOn.has(key(pl.p, pl.install + 7))) c.back7++; }
+  }
+  // one fake player's rows, shown under yours in every table
+  const SAMPLE = [...ads].reverse().find((a) => a.f === "interstitial");
+  const SP = pid(SAMPLE.p), SD = dateOf(SAMPLE.d);
+  const sampleDay = (() => { let n = 0, usd = 0; for (const a of ads) if (a.p === SAMPLE.p && a.d === SAMPLE.d) { n++; usd += a.rev; } return { songs: sessionsOn.get(key(SAMPLE.p, SAMPLE.d)) * SONGS_PER_SESSION, ads: n, usd }; })();
+  const crowdRaw = (full) => [{ cells: [(full ? SD : SD.slice(5)) + " 21:14:05", SP, "ad_impression"] }, { cells: [(full ? SD : SD.slice(5)) + " 21:13:41", SP, "song_end"] }];
+  const crowdAd = (full) => ({ cells: [full ? SD : SD.slice(5), SP, "full", "$" + SAMPLE.rev.toFixed(4)] });
+  const crowdDay = (full) => ({ cells: [full ? SD : SD.slice(5), SP, sampleDay.songs, sampleDay.ads, "$" + sampleDay.usd.toFixed(4)] });
+
+  // ================= one player's week (you) =================
+  const PRICE = { interstitial: 0.012, rewarded: 0.018 }; // made-up dollars per ad
+  const SCREENS = ["sStore", "sHome", "sPlay", "sAd", "sResult", "sLock"];
+  let S, adTimer = 0, installTimer = 0, guideTimer = 0, dayStart = 0;
+  function combined() { // your rows join the crowd's
+    const yourAds = S.ads.map((a) => ({ id: "you" + a.id, p: YOU, d: YOU_INSTALL + a.day, f: a.type, rev: a.usd }));
+    const yourDays = new Map(); S.visited.forEach((d) => yourDays.set(key(YOU, YOU_INSTALL + d), S.sessions.get(d) || 1));
+    const first = S.ads.filter((a) => a.day === 0).length;
+    return { ads: yourAds.length ? ads.concat(yourAds) : ads, yourDays, you: S.installed ? { install: YOU_INSTALL, first, done: [0, 1, 7].map(dayDone) } : null };
+  }
+  // a day's data is complete once you open the game that day or move past it
+  const dayDone = (n) => S.installed && (S.visited.has(n) || S.day > n || (S.day === n && S.over));
+  function show(id, hint, focusEl) {
+    SCREENS.forEach((s) => ($(s).hidden = s !== id));
+    $("hint").textContent = hint;
+    if (focusEl) focusEl.focus({ preventScroll: true }); // the old screen hid the focused button
+  }
+  function clock() {
+    const sec = Math.floor((performance.now() - dayStart) / 1000) + (S.day === 0 ? 19 * 3600 : 8 * 3600);
+    return [Math.floor(sec / 3600) % 24, Math.floor(sec / 60) % 60, sec % 60].map((x) => String(x).padStart(2, "0")).join(":");
+  }
+  function send(name, params) {
+    const ev = { id: "e" + (S.events.length + 1), day: S.day, at: dateOf(YOU_INSTALL + S.day) + " " + clock(), name, params };
+    S.events.push(ev);
+    $("evCount").textContent = String(S.events.length);
+    const log = $("log"); const empty = log.querySelector(".empty"); if (empty) empty.remove();
+    log.querySelectorAll("li.new").forEach((x) => x.classList.remove("new")); // stop the old row's slide so only one row ever moves
+    const li = make("li", "new"); li.append(make("span", "d", ev.at.slice(11)), make("span", "ev ev-" + name, name), make("span", "f", JSON.stringify(params)));
+    log.prepend(li);
+    while (log.children.length > 6) log.lastChild.remove();
+    pulse(name === "ad_impression" ? ["a1", "a2"] : name === "app_install" ? [] : ["a2"]);
+    lightPath(name);
+    refresh(name);
+  }
+  const EV_PATH = { app_install: ["phone", "raw", "stg", "dimp"], session_start: ["phone", "raw", "stg", "fday", "rpt"], song_start: ["phone", "raw"], song_end: ["phone", "raw", "stg", "fday"], ad_impression: ["phone", "raw", "stg", "fad", "fday", "rpt"] };
+  function lightPath(name) {
+    const on = EV_PATH[name] || [];
+    document.querySelectorAll("#epath span").forEach((sp) => {
+      const k = on.indexOf(sp.dataset.n);
+      sp.classList.remove("on"); void sp.offsetWidth;
+      if (k >= 0) { sp.style.animationDelay = k * 0.12 + "s"; sp.classList.add("on"); } // lights up hop by hop
+    });
+    $("epathCap").textContent = name ? name + ": " + EVENT_INFO[name][1] : "Tap Install to send your first event.";
+  }
+  function pulse(ids) { ids.forEach((id) => { const a = $(id); a.classList.remove("pulse"); void a.offsetWidth; a.classList.add("pulse"); }); }
+  function today() { if (!S.days.has(S.day)) S.days.set(S.day, { songs: 0, ads: 0, usd: 0 }); return S.days.get(S.day); }
+  function renderStrip() {
+    const st = $("strip"); st.textContent = "";
+    const missed = (d) => S.installed && !S.visited.has(d) && (d < S.day || (d === S.day && S.over));
+    for (let d = 0; d <= 7; d++) {
+      const yes = S.visited.has(d), no = missed(d);
+      const c = make("div", "cell" + (d === 1 || d === 7 ? " key" : "") + (yes ? " yes" : no ? " no" : "") + (S.installed && d === S.day && !yes && !no ? " now" : ""));
+      c.append(make("span", "", "D" + d), make("i", "", yes ? "✓" : no ? "✗" : "·"));
+      c.setAttribute("role", "img"); c.setAttribute("aria-label", "Day " + d + ": " + (yes ? "played" : no ? "missed" : "not yet"));
+      st.appendChild(c);
+    }
+    const mark = (d) => (S.visited.has(d) ? "✓ came back" : missed(d) ? "✗ didn't" : "…");
+    $("ret").textContent = "D1 " + mark(1) + " · D7 " + mark(7);
+  }
+  function setDayButtons() { [$("bNext"), $("bHomeNext")].forEach((b) => (b.disabled = S.day >= 7)); }
+  function resetStory() {
+    clearInterval(adTimer); clearTimeout(installTimer); clearTimeout(guideTimer); stopGame();
+    S = { day: 0, installed: false, over: false, coins: 0, songs: 0, ads: [], days: new Map(), visited: new Set(), sessions: new Map(), events: [], guided: false };
+    dayStart = performance.now();
+    $("evCount").textContent = "0"; $("toast").hidden = true; lightPath("");
+    $("log").textContent = ""; $("log").appendChild(make("li", "empty", "Waiting for you to install… tap Install on the phone."));
+    $("instBar").style.width = "0"; $("bInstall").disabled = false; $("bInstall").textContent = "Install";
+    $("bOpen").disabled = false; $("bIgnore").disabled = false; setDayButtons();
+    renderStrip(); show("sStore", "👆 Tap Install"); refresh();
+  }
+  $("bInstall").addEventListener("click", () => {
+    const b = $("bInstall");
+    if (S.installed) { openGame(); return; }
+    b.disabled = true; b.textContent = "Installing…"; $("instBar").style.width = "100%"; $("hint").textContent = "⏳ Installing…";
+    installTimer = setTimeout(() => {
+      S.installed = true; send("app_install", { country: "VN", os: "Android" }); renderStrip();
+      b.disabled = false; b.textContent = "Open"; $("hint").textContent = "👆 Open the game";
+      if (document.activeElement === document.body || document.activeElement === b) b.focus({ preventScroll: true }); // only if they have not moved on
+    }, reduced() ? 50 : 900);
+  });
+  function openGame() {
+    S.visited.add(S.day); S.sessions.set(S.day, (S.sessions.get(S.day) || 0) + 1); today();
+    if (S.day === 7) S.over = true;
+    send("session_start", { day: S.day });
+    renderStrip(); setDayButtons();
+    $("homeDay").textContent = "Day " + S.day; $("coins").textContent = "🪙 " + S.coins + " coins";
+    show("sHome", S.day === 0 ? "👆 Play a song" : S.day === 7 ? "🏁 Back on day 7! See the reports (step 4)." : "👋 You came back! That counts for D" + S.day + ".", $("bPlay"));
+  }
+  function nextDay() {
+    if (S.day >= 7) return;
+    S.day++; dayStart = performance.now(); renderStrip(); setDayButtons(); refresh();
+    $("lockDay").textContent = "Day " + S.day + (S.day === 7 ? " · last day" : "");
+    show("sLock", "📅 Day " + S.day + ". Will you come back?", $("bOpen"));
+  }
+  function finishSong(score) {
+    S.songs++; today().songs++; send("song_end", { score });
+    S.coins += Math.round(score / 10);
+    $("resScore").textContent = fmt(score);
+    $("resStars").textContent = score >= 2200 ? "★★★" : score >= 1200 ? "★★☆" : "★☆☆";
+    showAd("interstitial", () => {
+      $("bReward").disabled = false; show("sResult", "🎁 Watch a reward ad? Or go to the next day.", $("bReward"));
+      if (!S.guided) { S.guided = true; guide(); }
+    });
+  }
+  function showAd(type, after) {
+    const rew = type === "rewarded", net = S.ads.length % 2 ? "AdNet B" : "AdNet A";
+    $("adEmoji").textContent = rew ? "🧩" : "🥤"; $("adTitle").textContent = rew ? "PUZZLE POP" : "FIZZ SODA";
+    $("adSub").textContent = rew ? "Watch it all to win 100 coins" : "Tastes like bubbles";
+    $("sAd").classList.toggle("rew", rew);
+    const btn = $("bAdClose"); let left = 3;
+    btn.disabled = true; btn.textContent = "Close in " + left;
+    show("sAd", rew ? "🎁 You chose a reward ad. See the event →" : "📺 Ad after the song. See the event →", $("adTitle"));
+    // An impression counts when the ad is shown, not when it closes.
+    S.ads.push({ id: S.ads.length + 1, day: S.day, type, net, usd: PRICE[type] });
+    const t = today(); t.ads++; t.usd += PRICE[type];
+    send("ad_impression", { ad_type: rew ? "reward" : "full", network: net, usd: PRICE[type] });
+    clearInterval(adTimer);
+    adTimer = setInterval(() => {
+      left--;
+      if (left > 0) { btn.textContent = "Close in " + left; return; }
+      clearInterval(adTimer); btn.disabled = false; btn.textContent = rew ? "✓ Get 100 coins" : "✕ Close";
+      if (document.activeElement === $("adTitle")) btn.focus({ preventScroll: true });
+    }, 1000);
+    btn.onclick = () => { if (!btn.disabled) after(); };
+  }
+  function guide() { // first song done: offer the next step; move on by itself only if you leave it alone
+    $("toast").hidden = false; $("bFwd").classList.add("go");
+    const mark = { el: document.activeElement, n: S.events.length };
+    if (!reduced()) guideTimer = setTimeout(() => {
+      if (step !== 1 || document.activeElement !== mark.el || S.events.length !== mark.n) return;
+      $("toast").hidden = true; go(2, false);
+    }, 3000);
+  }
+  $("tGo").addEventListener("click", () => { clearTimeout(guideTimer); $("toast").hidden = true; go(2, true); });
+  $("tStay").addEventListener("click", () => { clearTimeout(guideTimer); $("toast").hidden = true; });
+  $("bPlay").addEventListener("click", startSong);
+  $("bAgain").addEventListener("click", startSong);
+  $("bHomeNext").addEventListener("click", nextDay);
+  $("bNext").addEventListener("click", nextDay);
+  $("bReward").addEventListener("click", () => {
+    showAd("rewarded", () => { S.coins += 100; $("bReward").disabled = true; show("sResult", "🪙 +100 coins. Reward ads pay more (made-up prices).", $("bNext").disabled ? $("bAgain") : $("bNext")); });
+  });
+  $("bOpen").addEventListener("click", openGame);
+  $("bIgnore").addEventListener("click", () => {
+    if (S.day < 7) { nextDay(); return; }
+    S.over = true; $("bOpen").disabled = true; $("bIgnore").disabled = true; renderStrip(); refresh();
+    $("hint").textContent = "🏁 Week over. You did not come back on day 7.";
+  });
+  $("bRestart").addEventListener("click", () => { resetStory(); $("bInstall").focus(); });
+
+  // ---------- the mini rhythm game: one animation loop, with Pause ----------
+  const cv = $("cv"), ctx = cv.getContext("2d");
+  const FALL = 1.5, WIN = 0.2, LANE = ["#ff74b1", "#57e4ff", "#a8ff7c", "#ffd966"];
+  const G = { notes: [], t: 0, score: 0, combo: 0, playing: false, paused: false, manual: false, flash: [0, 0, 0, 0], last: 0, frame: 0 };
+  let W = 0, H = 0;
+  function size() {
+    const ratio = window.devicePixelRatio || 1; W = cv.clientWidth; H = cv.clientHeight;
+    if (!W || !H) return;
+    cv.width = Math.round(W * ratio); cv.height = Math.round(H * ratio); ctx.setTransform(ratio, 0, 0, ratio, 0, 0); draw();
+  }
+  function startSong() {
+    send("song_start", { song: "neon_nights" });
+    const rr = rng(11 + S.songs * 7); G.notes = [];
+    for (let i = 0; i < 16; i++) G.notes.push({ t: 1.2 + i * 0.6, lane: Math.floor(rr() * 4), hit: false, miss: false });
+    Object.assign(G, { t: 0, score: 0, combo: 0, paused: false, playing: true, manual: reduced() });
+    $("bPause").textContent = "⏸ Pause"; $("bPause").hidden = G.manual;
+    show("sPlay", G.manual ? "🎮 Motion off: hit the lane of the bottom tile" : "🎮 Hit the tiles: tap D F J K", cv);
+    cv.setAttribute("aria-label", G.manual ? "Still tiles. Hit the lane of the bottom tile." : "Falling tiles. Hit them with the lane buttons, or the D, F, J and K keys.");
+    size(); updateScore(); if (G.manual) sayNext(); else run(); // with motion off, tiles wait for you instead of falling
+  }
+  function sayNext() { // motion off: the next lane in words, for screen readers too
+    const n = G.notes.find((x) => !x.hit && !x.miss);
+    if (n) $("hint").textContent = "🎮 Tile " + (G.notes.indexOf(n) + 1) + " of " + G.notes.length + ": lane " + (n.lane + 1) + " (" + "DFJK"[n.lane] + ")";
+  }
+  function stopGame() { G.playing = false; cancelAnimationFrame(G.frame); G.frame = 0; }
+  function run() { if (G.frame) return; G.last = performance.now(); G.frame = requestAnimationFrame(tick); }
+  function tick(now) {
+    G.frame = 0;
+    if (!G.playing || G.paused) return;
+    const dt = Math.min((now - G.last) / 1000, 0.05); G.last = now; G.t += dt;
+    for (const n of G.notes) if (!n.hit && !n.miss && G.t > n.t + WIN) { n.miss = true; G.combo = 0; }
+    for (let i = 0; i < 4; i++) G.flash[i] = Math.max(0, G.flash[i] - dt * 4);
+    draw(); updateScore();
+    if (G.t > G.notes[G.notes.length - 1].t + 0.8) { stopGame(); finishSong(G.score); return; }
+    G.frame = requestAnimationFrame(tick);
+  }
+  function hit(lane) {
+    if (!G.playing || G.paused) return;
+    if (G.manual) {
+      const n = G.notes.find((x) => !x.hit && !x.miss);
+      if (n.lane === lane) { n.hit = true; G.combo++; G.score += 100 + 10 * G.combo; } else { n.miss = true; G.combo = 0; }
+      draw(); updateScore();
+      if (!G.notes.some((x) => !x.hit && !x.miss)) { stopGame(); finishSong(G.score); } else sayNext();
+      return;
+    }
+    let best = null;
+    for (const n of G.notes) if (n.lane === lane && !n.hit && !n.miss && Math.abs(n.t - G.t) <= WIN && (!best || Math.abs(n.t - G.t) < Math.abs(best.t - G.t))) best = n;
+    if (best) { best.hit = true; G.combo++; G.score += 100 + 10 * G.combo; G.flash[lane] = reduced() ? 0 : 1; } else G.combo = 0;
+    updateScore();
+  }
+  function draw() {
+    if (!W) return;
+    ctx.clearRect(0, 0, W, H);
+    const lw = W / 4, hitY = H - 26;
+    for (let i = 0; i < 4; i++) {
+      ctx.fillStyle = i % 2 ? "rgba(255,255,255,.03)" : "rgba(255,255,255,.07)"; ctx.fillRect(i * lw, 0, lw, H);
+      if (G.flash[i] > 0) { ctx.globalAlpha = 0.35 * G.flash[i]; ctx.fillStyle = LANE[i]; ctx.fillRect(i * lw, 0, lw, H); ctx.globalAlpha = 1; }
+    }
+    ctx.fillStyle = "rgba(255,255,255,.75)"; ctx.fillRect(0, hitY, W, 2);
+    const todo = G.notes.filter((n) => !n.hit && !n.miss);
+    for (const n of G.notes) {
+      if (n.hit || (G.manual && n.miss)) continue;
+      const y = G.manual ? hitY - 12 - todo.indexOf(n) * 50 : hitY - ((n.t - G.t) / FALL) * hitY; // manual: next tiles stacked, still
+      if (y < -30 || y > H + 10) continue;
+      ctx.fillStyle = n.miss ? "rgba(255,128,128,.45)" : LANE[n.lane];
+      ctx.globalAlpha = G.manual && todo.indexOf(n) > 0 ? 0.4 : 1; // manual: only the next tile is bright
+      ctx.beginPath(); ctx.roundRect(n.lane * lw + 5, y - 11, lw - 10, 20, 6); ctx.fill(); ctx.globalAlpha = 1;
+    }
+    if (G.paused) { ctx.fillStyle = "#f4f1ff"; ctx.font = "700 16px " + getComputedStyle(cv).fontFamily; ctx.textAlign = "center"; ctx.fillText("Paused", W / 2, H / 2); }
+  }
+  function updateScore() { $("score").textContent = String(G.score); $("combo").textContent = G.combo > 1 ? "combo ×" + G.combo : ""; }
+  function togglePause() {
+    if (!G.playing || G.manual) return;
+    G.paused = !G.paused; $("bPause").textContent = G.paused ? "▶ Resume" : "⏸ Pause";
+    if (G.paused) draw(); else run();
+  }
+  $("bPause").addEventListener("click", togglePause);
+  $("bSkip").addEventListener("click", () => { if (!G.playing) return; stopGame(); finishSong(1200); });
+  document.querySelectorAll("[data-lane]").forEach((b) => {
+    const lane = Number(b.dataset.lane);
+    b.addEventListener("pointerdown", (e) => { e.preventDefault(); hit(lane); });
+    b.addEventListener("click", (e) => { if (e.detail === 0) hit(lane); }); // Enter or Space on the button
+  });
+  cv.addEventListener("pointerdown", (e) => { const rc = cv.getBoundingClientRect(); hit(Math.min(3, Math.floor(((e.clientX - rc.left) / rc.width) * 4))); });
+  const KEYS = { d: 0, f: 1, j: 2, k: 3 };
+  $("sPlay").addEventListener("keydown", (e) => { // only while focus is inside the game screen
+    if (!G.playing) return;
+    const k = e.key.toLowerCase();
+    if (k in KEYS) { hit(KEYS[k]); e.preventDefault(); }
+    else if (k === " " && e.target.tagName !== "BUTTON") { togglePause(); e.preventDefault(); }
+  });
+  document.addEventListener("visibilitychange", () => { if (document.hidden && G.playing && !G.paused) togglePause(); });
+  new ResizeObserver(size).observe(cv);
+
+  // ================= SQL behind each model, report and test (BigQuery-style dbt) =================
+  const RD = "{{ rd }}"; // report_date: 2026-11-18, the last full day, same as the JS
+  const RDSET = "-- report_date = 2026-11-18, the last full day\n{% set rd = \"date('\" ~ var('report_date') ~ \"')\" %}\n";
+  const SQL = {
+    raw: "# models/sources.yml\nsources:\n  - name: game\n    tables:\n      - name: raw_events       # 1 row = 1 event from the phone\n        loaded_at_field: _loaded_at\n        freshness:\n          error_after: {count: 6, period: hour}",
+    bills: "# models/sources.yml\n  - name: ad_networks\n    tables:\n      - name: network_bills    # 1 row = 1 network, 1 day\n        # what each network really paid: our trusted total",
+    stg: "-- stg_events: 1 row = 1 event, repeats removed, UTC\nselect\n  event_id,\n  player_id,\n  timestamp_micros(event_ts)       as event_at,\n  date(timestamp_micros(event_ts)) as event_date,\n  event_name,\n  json_value(params, '$.country')  as country,\n  json_value(params, '$.ad_type')  as ad_type,\n  json_value(params, '$.network')  as network,\n  cast(json_value(params, '$.usd') as numeric) as usd\nfrom {{ source('game', 'raw_events') }}\nwhere true  -- safe for older BigQuery with qualify\nqualify row_number() over (\n  partition by event_id order by event_ts) = 1",
+    dimp: "-- dim_player: 1 row = 1 player; install facts never change\nselect\n  player_id,\n  event_date as install_date,\n  country    as install_country\nfrom {{ ref('stg_events') }}\nwhere event_name = 'app_install'\nqualify row_number() over (\n  partition by player_id order by event_at) = 1",
+    fad: "-- fct_ad_impression: 1 row = 1 ad shown to 1 player\nselect\n  event_id   as impression_id,\n  player_id,\n  event_date as date,\n  ad_type,\n  network,\n  usd        -- an estimate; matched to network_bills daily\nfrom {{ ref('stg_events') }}\nwhere event_name = 'ad_impression'",
+    fday: "-- fct_player_day: 1 row = 1 player on 1 active day\nwith plays as (        -- add up each side first...\n  select player_id, event_date as date,\n    countif(event_name = 'session_start') as sessions,\n    countif(event_name = 'song_end')      as songs\n  from {{ ref('stg_events') }}\n  where event_name in ('session_start', 'song_end')\n  group by 1, 2\n  -- active day = at least 1 session\n  having countif(event_name = 'session_start') > 0\n),\nad_days as (\n  select player_id, date,\n    count(*)                      as ads,\n    countif(ad_type != 'banner')  as full_screen_ads,\n    sum(usd)                      as ad_usd\n  from {{ ref('fct_ad_impression') }}\n  group by 1, 2\n)\nselect p.*,              -- ...then join 1 row to 1 row\n  coalesce(a.ads, 0)             as ads,\n  coalesce(a.full_screen_ads, 0) as full_screen_ads,\n  coalesce(a.ad_usd, 0)          as ad_usd\nfrom plays p\nleft join ad_days a using (player_id, date)",
+    agg: "-- agg_retention: 1 row = install day x day-0 ad group x day n\nwith cohort as (     -- everyone who installed, from dim_player\n  select p.player_id, p.install_date,\n    case when coalesce(d.full_screen_ads, 0) <= 2 then '0-2'\n         when d.full_screen_ads <= 5 then '3-5'\n         else '6+' end as ad_group\n  from {{ ref('dim_player') }} p\n  left join {{ ref('fct_player_day') }} d\n    on d.player_id = p.player_id and d.date = p.install_date\n)\nselect c.install_date, c.ad_group, day_n,\n  count(distinct c.player_id) as cohort_players,\n  count(distinct d.player_id) as players_back\nfrom cohort c\ncross join unnest([1, 7]) as day_n\nleft join {{ ref('fct_player_day') }} d\n  on d.player_id = c.player_id\n and d.date = date_add(c.install_date, interval day_n day)\ngroup by 1, 2, 3",
+    rarp: RDSET + "-- report: ARPDAU per day, 7 days up to report_date\nselect\n  date,\n  sum(ad_usd) / count(*) as arpdau   -- 1 row per active player-day\nfrom {{ ref('fct_player_day') }}\nwhere date between date_sub(" + RD + ", interval 6 day)\n               and " + RD + "\ngroup by date\norder by date",
+    rd7: RDSET + "-- report: share back on day 7, by day-0 ad group\nselect\n  ad_group,\n  sum(players_back) / sum(cohort_players) as d7,\n  max(install_date) as newest_install\nfrom {{ ref('agg_retention') }}\nwhere day_n = 7\n  and install_date <= date_sub(" + RD + ", interval 7 day)\ngroup by ad_group",
+  };
+  const WEEK_SQL = "where date between date_sub(" + RD + ", interval 6 day)\n               and " + RD;
+  Object.assign(SQL, {
+    kRev: RDSET + "-- tile: ad money, the 7 days up to report_date\nselect sum(usd) as ad_usd\nfrom {{ ref('fct_ad_impression') }}\n" + WEEK_SQL + "\n-- 'vs last week' runs the same query 7 days earlier",
+    kArp: RDSET + "-- tile: ARPDAU for the whole week\nselect\n  sum(ad_usd) / count(*) as arpdau  -- money / active player-days\nfrom {{ ref('fct_player_day') }}\n" + WEEK_SQL,
+    kDau: RDSET + "-- tile: players a day (average DAU)\nselect\n  count(*) / 7 as players_a_day  -- 1 row = 1 player on 1 day\nfrom {{ ref('fct_player_day') }}\n" + WEEK_SQL,
+    kD7: RDSET + "-- tile: back on day 7, all ad groups together\nselect\n  sum(players_back) / sum(cohort_players) as d7\nfrom {{ ref('agg_retention') }}\nwhere day_n = 7\n  and install_date <= date_sub(" + RD + ", interval 7 day)  -- old enough",
+    mix: RDSET + "-- chart: each ad type's share of ads and of money\nselect\n  ad_type,\n  count(*)                         as ads,\n  count(*) / sum(count(*)) over () as share_of_ads,\n  sum(usd) / sum(sum(usd)) over () as share_of_money\nfrom {{ ref('fct_ad_impression') }}\n" + WEEK_SQL + "\ngroup by ad_type\norder by share_of_money desc",
+    redo: "{{ config(\n    materialized = 'incremental',\n    incremental_strategy = 'insert_overwrite',  -- swap whole days\n    partition_by = {'field': 'date', 'data_type': 'date'},\n    cluster_by = ['player_id']\n) }}\n" + RDSET + "select event_id as impression_id, player_id, event_date as date,\n  ad_type, network, usd\nfrom {{ ref('stg_events') }}\nwhere event_name = 'ad_impression'\n{% if is_incremental() %}\n  -- each morning: rebuild only the last 3 days, where late money lands\n  and event_date >= date_sub(" + RD + ", interval 2 day)\n{% endif %}",
+    build: "# the scheduler runs this every morning\nset -e                                     # any failure stops the run here\ndbt source freshness                       # no new notes in 6 hours? stop\ndbt build --target stage --target-path run # build + test a copy\ndbt clone --state run --target prod --full-refresh  # all green: replace the live tables\n# a failed test stops before the clone, so yesterday's numbers stay up",
+    alarm: RDSET + "-- alarm: report_date has 30% fewer events than usual (a row = ring)\nwith days as (     -- every day, even one with no rows at all\n  select d as event_date\n  from unnest(generate_date_array(date_sub(" + RD + ", interval 7 day), " + RD + ")) as d\n),\ndaily as (         -- a missing day counts as 0, so an outage rings too\n  select days.event_date, count(e.event_id) as n\n  from days\n  left join {{ ref('stg_events') }} e on e.event_date = days.event_date\n  group by days.event_date\n),\nusual as (select avg(n) as n from daily where event_date < " + RD + ")\nselect d.n, usual.n as usual_n\nfrom daily d cross join usual\nwhere d.event_date = " + RD + "\n  and d.n < 0.7 * usual.n",
+    cheap: "-- top of fct_player_day.sql and fct_ad_impression.sql\n{{ config(\n    partition_by = {'field': 'date', 'data_type': 'date'},  -- one shelf per day\n    cluster_by = ['player_id']           -- sorted by player on each shelf\n) }}\n-- a chart that filters on date reads only those days' shelves",
+    private: "-- in every report model: a code name instead of the real player id\nselect\n  to_hex(sha256(concat(player_id, '{{ env_var(\"DBT_PLAYER_SALT\") }}'))) as player_key,\n  date, ads, ad_usd\nfrom {{ ref('fct_player_day') }}\n-- the salt lives in a secret store, never in the code\n-- phone ad IDs (IDFA / GAID) are never loaded",
+  });
+  const TEST_SQL = {
+    tuniq: "-- test: each ad counted once (rows returned = FAIL)\nselect impression_id, count(*) as copies\nfrom {{ ref('fct_ad_impression') }}\ngroup by impression_id\nhaving count(*) > 1",
+    troll: "-- test: day table money = ads table money (rows = FAIL)\nwith d as (select date, sum(ad_usd) as usd\n           from {{ ref('fct_player_day') }} group by date),\n     a as (select date, sum(usd) as usd\n           from {{ ref('fct_ad_impression') }} group by date)\nselect date, d.usd as day_usd, a.usd as ad_usd\nfrom d full outer join a using (date)\nwhere abs(coalesce(d.usd, 0) - coalesce(a.usd, 0)) > 0.01",
+    tbill: RDSET + "-- test: our ad money matches the network's bill (rows = FAIL)\nwith ours as (select date, sum(usd) as usd\n              from {{ ref('fct_ad_impression') }} group by date),\n     paid as (select date, sum(paid_usd) as usd\n              from {{ source('ad_networks', 'network_bills') }} group by date)\nselect date, ours.usd as ours, paid.usd as paid\nfrom ours full outer join paid using (date)\nwhere ours.usd is null\n   or (paid.usd is null  -- bills arrive late: allow 3 days\n       and date <= date_sub(" + RD + ", interval 3 day))\n   or abs(ours.usd - paid.usd) > 0.02 * abs(paid.usd)  -- no divide: a $0 bill still fails",
+    tyoung: RDSET + "-- test: D7 never counts players under 7 days old\nselect *\nfrom {{ ref('rpt_d7') }}\nwhere newest_install > date_sub(" + RD + ", interval 7 day)",
+  };
+  function paintSql(pre, text) { // tiny highlighter: comments, dbt refs, keywords
+    pre.textContent = "";
+    const KW = /(\{\{[^}]*\}\}|\{%[^%]*%\}|\b(?:select|from|where|join|left|using|group|by|order|with|as|and|count|countif|sum|coalesce|having|qualify|over|partition|row_number|case|when|then|else|end|if|between|date_sub|interval|day|abs|max|on|date_diff|current_date|cast|json_value|timestamp_micros|date|numeric)\b)/i;
+    text.split("\n").forEach((line, i) => {
+      if (i) pre.appendChild(document.createTextNode("\n"));
+      let code = line, note = "";
+      const c = line.search(/--|#/);
+      if (c >= 0 && !/\{[{%]/.test(line.slice(0, c)) && !/'[^']*$/.test(line.slice(0, c))) { code = line.slice(0, c); note = line.slice(c); }
+      code.split(KW).forEach((part, j) => { if (!part) return; if (j % 2) pre.appendChild(make("span", part.startsWith("{") ? "jj" : "kw", part)); else pre.appendChild(document.createTextNode(part)); });
+      if (note) pre.appendChild(make("span", "cm", note));
+    });
+  }
+  const sqlBlock = (text) => { const p = make("pre", "sql"); paintSql(p, text); return p; };
+  const diffBlock = (bad, good) => { const p = make("pre", "sql"); bad.forEach((l) => p.appendChild(make("span", "del", "- " + l))); good.forEach((l) => p.appendChild(make("span", "add", "+ " + l))); return p; };
+
+  // ================= the model graph (drawn twice: step 3 and step 5) =================
+  const NS = "http://www.w3.org/2000/svg", NW = 136, NH = 42, TW = 120, TH = 24;
+  const NODES = {
+    bills: [6, 20, "network_bills", "what networks paid", "src"], raw: [6, 110, "raw_events", "game + ad events", "src"],
+    stg: [158, 110, "stg_events", "clean, no repeats", "stg"],
+    fad: [310, 20, "fct_ad_impression", "1 row = 1 ad", "fct"], fday: [310, 110, "fct_player_day", "1 row = player-day", "fct"], dimp: [310, 200, "dim_player", "who, install day", "dim"],
+    agg: [462, 200, "agg_retention", "comebacks", "agg"],
+    rarp: [614, 110, "ARPDAU report", "money per player", "rpt"], rd7: [614, 200, "D7 report", "back on day 7", "rpt"],
+  };
+  const TESTS = { tbill: [166, 29, "🧪 matches bill", ["bills", "fad"]], tuniq: [470, 29, "🧪 unique ad id", ["fad"]], troll: [470, 74, "🧪 day = ads", ["fad", "fday"]], tyoung: [622, 262, "🧪 7+ days old", ["rd7"]] };
+  const EDGES = [["raw", "stg"], ["stg", "fad"], ["stg", "fday"], ["stg", "dimp"], ["fad", "fday"], ["fday", "agg"], ["dimp", "agg"], ["fday", "rarp"], ["agg", "rd7"]];
+  function sideOf(id) { return NODES[id] || TESTS[id]; }
+  function pathFor(a, b) {
+    const A = sideOf(a), B = sideOf(b), aw = NODES[a] ? NW : TW, ah = NODES[a] ? NH : TH, bw = NODES[b] ? NW : TW, bh = NODES[b] ? NH : TH;
+    if (Math.abs(A[0] - B[0]) < 20) { const x = A[0] + aw / 2; return "M" + x + " " + (A[1] + ah) + " V" + B[1]; } // same column: bottom to top
+    const goRight = B[0] > A[0];
+    const x1 = goRight ? A[0] + aw : A[0], y1 = A[1] + ah / 2, x2 = goRight ? B[0] : B[0] + bw, y2 = B[1] + bh / 2, m = (x1 + x2) / 2;
+    return "M" + x1 + " " + y1 + " C" + m + " " + y1 + " " + m + " " + y2 + " " + x2 + " " + y2;
+  }
+  function makeDag(svg, clickable) {
+    const el = (tag, attrs, parent, text) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text) e.textContent = text; (parent || svg).appendChild(e); return e; };
+    const g = { nodes: {}, subs: {}, tests: {}, flows: {} };
+    const edgeList = EDGES.map((e) => [...e, false]);
+    for (const t in TESTS) TESTS[t][3].forEach((n) => edgeList.push([n, t, true]));
+    edgeList.forEach(([a, b, t]) => { const d = pathFor(a, b); el("path", { class: "edge" + (t ? " t" : ""), d }); g.flows[a + ">" + b] = el("path", { class: "fl", d }); });
+    for (const id in NODES) {
+      const [x, y, label, sub, kind] = NODES[id];
+      const n = el("g", { class: "node k-" + kind + (clickable ? " click" : "") });
+      if (clickable) { n.setAttribute("tabindex", "0"); n.setAttribute("role", "button"); n.setAttribute("aria-label", label + ": show SQL and rows"); }
+      el("rect", { x, y, width: NW, height: NH, rx: 9 }, n);
+      el("text", { class: "nl", x: x + NW / 2, y: y + 18, "text-anchor": "middle" }, n, label);
+      g.subs[id] = el("text", { class: "ns", x: x + NW / 2, y: y + 34, "text-anchor": "middle" }, n, sub);
+      g.nodes[id] = n;
+    }
+    for (const id in TESTS) {
+      const [x, y, label] = TESTS[id];
+      const n = el("g", { class: "test" });
+      el("rect", { x, y, width: TW, height: TH, rx: 12 }, n);
+      el("text", { x: x + TW / 2, y: y + 16, "text-anchor": "middle" }, n, label);
+      g.tests[id] = n;
+    }
+    g.flow = (k, cls) => { const f = g.flows[k]; f.setAttribute("class", "fl"); if (cls) { void f.getBBox(); f.setAttribute("class", "fl " + cls); } };
+    return g;
+  }
+  const D1 = makeDag($("dag1"), true), D2 = makeDag($("dag2"), false);
+
+  // ---------- step 3: run the models ----------
+  function counts() {
+    const ev = S.events.length;
+    return { raw: crowdEvents + ev, bills: DAYS * 2, stg: crowdEvents + ev, dimp: PLAYERS + (S.installed ? 1 : 0),
+      fad: ads.length + S.ads.length, fday: sessionsOn.size + S.visited.size, agg: cohortKeys.size * 2, rarp: 7, rd7: 3 };
+  }
+  const ORDER = [["raw", "bills"], ["stg"], ["fad", "dimp", "tbill", "tuniq"], ["fday", "troll"], ["agg", "rarp"], ["rd7", "tyoung"]];
+  let runTimers = [], ran = false, runChecks = {};
+  function lightNode(id) {
+    if (NODES[id]) { D1.nodes[id].classList.add("done"); D1.subs[id].textContent = fmt(counts()[id]) + " rows"; }
+    else D1.tests[id].classList.add(runChecks[id] ? "pass" : "fail");
+    for (const k in D1.flows) if (k.endsWith(">" + id)) D1.flow(k, "on");
+  }
+  function runModels() {
+    runTimers.forEach(clearTimeout); runTimers = [];
+    for (const id in NODES) { D1.nodes[id].classList.remove("done"); D1.subs[id].textContent = NODES[id][3]; }
+    for (const id in TESTS) D1.tests[id].classList.remove("pass", "fail");
+    runChecks = measure({}, combined()).checks;
+    for (const k in D1.flows) D1.flow(k, "");
+    $("runMsg").textContent = "Running…"; $("bRun").disabled = true;
+    const gap = reduced() ? 0 : 480;
+    ORDER.forEach((grp, i) => runTimers.push(setTimeout(() => {
+      grp.forEach(lightNode);
+      if (i === ORDER.length - 1) {
+        ran = true; $("bRun").disabled = false; $("bRun").textContent = "↺ Run again";
+        $("runMsg").textContent = "✓ Simulated run: 2 sources, 7 models, " + Object.values(runChecks).filter(Boolean).length + " of 4 tests pass. Tap a box →";
+        $("bFwd").classList.add("go"); renderDetail();
+      }
+    }, gap * (i + 1))));
+  }
+  $("bRun").addEventListener("click", runModels);
+  for (const id in NODES) {
+    const pick = () => { sel[3] = id; renderDetail(); reveal(); };
+    D1.nodes[id].addEventListener("click", pick);
+    D1.nodes[id].addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
+  }
+
+  // ---------- step 2: the tables you fill ----------
+  function yourRows(list, map) { return list.map((x) => ({ me: true, cells: map(x) })); }
+  function fillRows(body, rows) { body.textContent = ""; rows.forEach((row) => { const tr = make("tr", row.me ? "me" : "crowd"); row.cells.forEach((c) => tr.appendChild(make("td", "", String(c)))); body.appendChild(tr); }); }
+  const dayRows = (full) => yourRows([...S.days.keys()].sort((x, y) => x - y).filter((d) => S.visited.has(d)).slice(-3), (d) => { const v = S.days.get(d); const dt = dateOf(YOU_INSTALL + d); return [full ? dt : dt.slice(5), "p_you", v.songs, v.ads, "$" + v.usd.toFixed(3)]; });
+  const adRows = (full) => yourRows(S.ads.slice(-3).reverse(), (a) => { const dt = dateOf(YOU_INSTALL + a.day); return [full ? dt : dt.slice(5), "p_you", a.type === "rewarded" ? "reward" : "full", "$" + a.usd.toFixed(3)]; });
+  function renderStored(name) {
+    const tight = $("sbody").clientHeight < 470 && !dq.classList.contains("compact"); // short screens: fewer rows, nothing clipped
+    const nRaw = tight ? 2 : 3, n = tight ? 1 : 3;
+    fillRows($("tRaw"), [...yourRows(S.events.slice(-nRaw).reverse(), (e) => [e.at.slice(5), "p_you", e.name]), crowdRaw(false)[0]]);
+    fillRows($("tAd"), [...adRows(false).slice(0, n), crowdAd(false)]);
+    fillRows($("tDay"), [...dayRows(false).slice(-n), crowdDay(false)]);
+    const flashFirst = (id) => { const tr = $(id).querySelector("tr.me"); if (tr) tr.classList.add("new"); };
+    if (name) flashFirst("tRaw");
+    if (name === "ad_impression") flashFirst("tAd");
+    if (name && name !== "app_install") flashFirst("tDay");
+    const C = counts();
+    const cnt = (id, yours, total) => { const el = $(id); el.textContent = ""; el.append("Yours: ", make("b", "", String(yours)), " · all: " + fmt(total) + " rows"); };
+    cnt("cRaw", S.events.length, C.raw); cnt("cAd", S.ads.length, C.fad); cnt("cDay", S.visited.size, C.fday);
+  }
+
+  // ---------- step 4: reports ----------
+  function reportData() {
+    const m = crowdMoney.slice(), act = crowdActive.slice(), yourDays = new Set();
+    S.ads.forEach((a) => { const d = YOU_INSTALL + a.day; if (d >= WEEK) m[d - WEEK] += a.usd; });
+    S.visited.forEach((d) => { const dd = YOU_INSTALL + d; if (dd >= WEEK) { act[dd - WEEK]++; yourDays.add(dd); } });
+    const bins = crowdBins.map((b) => ({ ...b }));
+    const yourBin = binOf(S.ads.filter((a) => a.day === 0).length);
+    if (dayDone(7)) { bins[yourBin].base++; if (S.visited.has(7)) bins[yourBin].back++; } // you join once your day 7 is complete
+    return { arpdau: m.map((v, i) => v / act[i]), money: m, act, yourDays, bins, yourBin };
+  }
+  const sum = (xs) => xs.reduce((a, b) => a + b, 0);
+  const AD_LABEL = { interstitial: ["Full-screen", "full"], rewarded: ["Reward", "reward"], banner: ["Banner", "banner"] };
+  function dashData() { // every tile on the dashboard, from the same rows as the reports (yours included)
+    const R = reportData(), prev = { ...PREV }, mix = {}, you = { n: 0, usd: 0, full: 0, rew: 0 };
+    for (const f in crowdMix) mix[f] = crowdMix[f].slice();
+    S.ads.forEach((a) => { const d = YOU_INSTALL + a.day; if (d >= WEEK) { mix[a.type][0]++; mix[a.type][1] += a.usd; you.n++; you.usd += a.usd; if (a.type === "rewarded") you.rew++; else you.full++; } else if (d >= WEEK - 7) prev.usd += a.usd; });
+    S.visited.forEach((d) => { if (YOU_INSTALL + d < WEEK && YOU_INSTALL + d >= WEEK - 7) prev.active++; });
+    const usd = sum(R.money), days = sum(R.act), nAds = sum(Object.values(mix).map((x) => x[0]));
+    return { R, usd, days, arpdau: usd / days, dau: days / 7, d7: sum(R.bins.map((b) => b.back)) / sum(R.bins.map((b) => b.base)), you,
+      prev: { usd: prev.usd, days: prev.active, arpdau: prev.usd / prev.active, dau: prev.active / 7 },
+      mix: Object.keys(AD_LABEL).map((f) => ({ f, n: mix[f][0], usd: mix[f][1], sa: mix[f][0] / nAds, sm: mix[f][1] / usd })) };
+  }
+  const delta = (v, was) => { const c = v / was - 1; return { text: (c >= 0 ? "▲ " : "▼ ") + Math.abs(Math.round(c * 100)) + "% vs last week", cls: c >= 0 ? "up" : "down" }; };
+  function bars(el, items, color) { // first draw grows from zero; later draws move in place
+    const max = Math.max(...items.map((x) => x.v));
+    if (el.children.length !== items.length) { el.textContent = ""; items.forEach(() => { const b = make("div"); b.style.background = color; b.append(make("span"), make("em")); el.appendChild(b); }); }
+    items.forEach((it, i) => {
+      const b = el.children[i]; b.className = it.me ? "me" : "";
+      b.children[0].textContent = it.text; b.children[1].textContent = it.label;
+      setTimeout(() => (b.style.height = Math.max(3, (it.v / max) * 100) + "%"), 40); // % of the chart, so charts fill the space
+    });
+  }
+  function takeaways(D) { // the 10-second summary, written from the numbers so it never disagrees with the tiles
+    const R = D.R, lo = Math.min(...R.arpdau), hi = Math.max(...R.arpdau), g = R.bins.map((b) => b.back / b.base), rw = D.mix[1];
+    return [
+      hi / lo < 1.15 ? "💰 Steady: about " + cents(D.arpdau) + " per player a day" : "💰 Moving: " + cents(lo) + " to " + cents(hi) + " per player a day",
+      g[2] < g[0] ? "🔁 More day-0 ads, fewer back: " + Math.round(g[0] * 100) + "% → " + Math.round(g[2] * 100) + "% on day 7" : "🔁 Day-0 ads barely change who is back on day 7",
+      "🎁 Reward ads: " + Math.round(rw.sa * 100) + "% of ads, " + Math.round(rw.sm * 100) + "% of money",
+      "👉 Monday: try fewer day-0 ads on a test group",
+    ];
+  }
+  function renderReports() {
+    const D = dashData(), R = D.R;
+    bars($("barsA"), R.arpdau.map((v, i) => ({ v, text: "$" + v.toFixed(3), label: (WEEK + i - 9) + (R.yourDays.has(WEEK + i) ? "★" : ""), me: R.yourDays.has(WEEK + i) })), "var(--cyan)");
+    bars($("barsB"), R.bins.map((b, i) => ({ v: b.back / b.base, text: Math.round((b.back / b.base) * 100) + "%", label: BIN_LABEL[i], me: S.installed && i === R.yourBin })), "var(--pink)");
+    const tile = (id, value, note) => { $(id).textContent = value; const n = $(id + "D"); n.textContent = note.text; n.className = note.cls || ""; };
+    tile("kRev", money(D.usd), delta(D.usd, D.prev.usd));
+    tile("kArp", cents(D.arpdau), delta(D.arpdau, D.prev.arpdau));
+    tile("kDau", fmt(Math.round(D.dau)), delta(D.dau, D.prev.dau));
+    tile("kD7", pct(D.d7), { text: "installs to " + dateOf(TODAY - 7).slice(5) });
+    const mx = $("mix");
+    if (!mx.children.length) D.mix.forEach((m) => { const bar = (k) => { const b = make("span", "mb " + k); b.appendChild(make("i")); return b; }; mx.append(make("span", "mt", AD_LABEL[m.f][0]), make("span", "mk", "ads"), bar("n"), make("em"), make("span", "mk", "money"), bar("m"), make("em")); });
+    const widths = D.mix.flatMap((m) => [m.sa, m.sm]);
+    mx.querySelectorAll("em").forEach((e, i) => (e.textContent = Math.round(widths[i] * 100) + "%"));
+    mx.querySelectorAll(".mb i").forEach((b, i) => setTimeout(() => (b.style.width = widths[i] * 100 + "%"), 40));
+    const ul = $("takeaways"); ul.textContent = "";
+    takeaways(D).forEach((t, i) => ul.appendChild(make("li", i === 3 ? "act" : "", t)));
+    return D;
+  }
+
+  // ---------- step 5: break it ----------
+  const billOk = (ours, paid) => Math.abs(ours - paid) <= 0.02 * Math.abs(paid); // same rule as the SQL test
+  function measure(bug, C) {
+    const base = C.ads;
+    const rows = bug.dup ? base.concat(base.filter((a) => a.d === YESTERDAY)) : base; // the resent file keeps its ids
+    const bill = new Array(DAYS).fill(0);
+    for (const a of base) bill[a.d] += a.rev * 0.988; // networks pay 1.2% below the estimate (assumed)
+    const sessionsOf = (p, d) => sessionsOn.get(key(p, d)) ?? C.yourDays.get(key(p, d)) ?? 1;
+    let detail = 0, rollup = 0, rewarded = 0;
+    const perDay = new Array(DAYS).fill(0);
+    for (const a of rows) {
+      if (a.d < WEEK) continue;
+      const v = a.rev * (bug.fan ? sessionsOf(a.p, a.d) : 1); // fan-out: one copy per session that day
+      detail += a.rev; rollup += v; perDay[a.d] += a.rev; if (a.f === "rewarded") rewarded += v;
+    }
+    let daysOk = true;
+    for (let d = WEEK; d < DAYS; d++) if (!billOk(perDay[d], bill[d])) daysOk = false;
+    let activeDays = crowdActive.reduce((s2, v) => s2 + v, 0);
+    for (const k of C.yourDays.keys()) if (k % 100 >= WEEK) activeDays++;
+    const active = (p, d) => sessionsOn.has(key(p, d)) || C.yourDays.has(key(p, d));
+    const cohort = C.you ? players.concat([{ p: YOU, install: C.you.install, first: C.you.first, you: true }]) : players;
+    const counted = (pl, n) => !pl.you || (bug.young && n === 7) || C.you.done[n === 1 ? 1 : 2]; // you count once your day n is complete (the bug skips that rule)
+    // day-0 full-screen ads as the (maybe bugged) fct_player_day counts them
+    const firstSeen = (pl) => pl.first * (bug.fan ? sessionsOf(pl.p, pl.install) : 1) * (bug.dup && pl.install === YESTERDAY ? 2 : 1);
+    const last7 = bug.young ? TODAY : TODAY - 7; // the bug lets players too new to reach day 7 into the D7 report
+    const groups = [0, 1, 2].map(() => ({ base: 0, back: 0 }));
+    let binMoved = false;
+    for (const pl of cohort) {
+      const b = binOf(firstSeen(pl));
+      if (b !== binOf(pl.first)) binMoved = true;
+      if (pl.install <= last7 && counted(pl, 7)) { groups[b].base++; if (active(pl.p, pl.install + 7)) groups[b].back++; }
+    }
+    const rate = (n, last) => { let b2 = 0, back = 0; for (const pl of cohort) if (pl.install <= last && counted(pl, n)) { b2++; if (active(pl.p, pl.install + n)) back++; } return back / b2; };
+    return {
+      // D1 always uses installs up to yesterday: the D7 filter bug does not touch it
+      revenue: rollup, arpdau: rollup / activeDays, d1: rate(1, TODAY - 1), d7: rate(7, last7), share: rewarded / rollup,
+      groups: groups.map((g) => g.back / g.base), binMoved,
+      checks: { tuniq: new Set(rows.map((a) => a.id)).size === rows.length, troll: Math.abs(rollup - detail) < 0.01, tbill: daysOk, tyoung: last7 <= TODAY - 7 },
+    };
+  }
+  const BUGS = {
+    fan: { name: "🐛 Double count", at: "fday", models: ["fday"], edges: [], where: "fct_player_day.sql · last select (the plays step above stays)",
+      bad: ["select p.*,", "  count(a.impression_id)         as ads,", "  countif(a.ad_type != 'banner') as full_screen_ads,", "  coalesce(sum(a.usd), 0)        as ad_usd", "from plays p", "left join {{ ref('stg_events') }} s      -- 1 row per session...", "  on s.player_id = p.player_id and s.event_date = p.date", " and s.event_name = 'session_start'", "left join {{ ref('fct_ad_impression') }} a  -- ...x every ad that day", "  on a.player_id = p.player_id and a.date = p.date", "group by p.player_id, p.date, p.sessions, p.songs"],
+      good: ["select p.*,", "  coalesce(a.ads, 0)             as ads,", "  coalesce(a.full_screen_ads, 0) as full_screen_ads,", "  coalesce(a.ad_usd, 0)          as ad_usd", "from plays p", "left join ad_days a using (player_id, date)  -- ads added up first: 1 row to 1 row"] },
+    dup: { name: "🐛 File loaded twice", at: "raw", note: ", let through by stg_events", models: ["raw", "stg", "fad", "fday"], edges: ["raw>stg", "stg>fad", "fad>fday"], where: "stg_events.sql",
+      bad: ["from {{ source('game', 'raw_events') }}", "where true", "-- no repeat filter: the 2nd copy of each event stays"],
+      good: ["from {{ source('game', 'raw_events') }}", "where true", "qualify row_number() over (", "  partition by event_id order by event_ts) = 1"] },
+    young: { name: "🐛 Too-new players", at: "rd7", models: ["rd7"], edges: [], where: "rpt_d7.sql",
+      bad: ["where day_n = 7", "-- age filter missing: players under 7 days count as not back"],
+      good: ["where day_n = 7", "  and install_date <= date_sub(" + RD + ", interval 7 day)"] },
+  };
+  const FLOW = ["raw", "stg", "fad", "fday", "agg", "rarp", "rd7"];
+  function polluted(bugSet, m, clean) { // which models and links carry bad data: from the data, not a fixed list
+    const P = new Set(), E = new Set();
+    Object.keys(bugSet).filter((b) => bugSet[b]).forEach((b) => { BUGS[b].models.forEach((id) => P.add(id)); BUGS[b].edges.forEach((e) => E.add(e)); });
+    if (m.binMoved) { P.add("agg"); E.add("fday>agg"); }
+    if (Math.abs(m.arpdau / clean.arpdau - 1) > 0.005) { P.add("rarp"); E.add("fday>rarp"); }
+    if (Math.abs(m.d7 - clean.d7) > 0.005 || m.groups.some((g, i) => Math.abs(g - clean.groups[i]) > 0.005)) { P.add("rd7"); if (P.has("agg")) E.add("agg>rd7"); }
+    return { P, E };
+  }
+  const GQ = [
+    ["Ad money, last 7 days", (m) => m.revenue, money, "rel"], ["ARPDAU, last 7 days", (m) => m.arpdau, cents, "rel"],
+    ["Back on day 1 (D1)", (m) => m.d1, pct, "pt"], ["Back on day 7 (D7)", (m) => m.d7, pct, "pt"], ["Reward ads' share of money", (m) => m.share, pct, "pt"],
+  ];
+  const near = (got, exp, t) => (t === "rel" ? Math.abs(got / exp - 1) <= 0.005 : Math.abs(got - exp) <= 0.005);
+  const bugs = { fan: false, dup: false, young: false };
+  let prevPass = { tuniq: true, troll: true, tbill: true, tyoung: true }, B5 = null;
+  function renderBreak() {
+    const C = combined(), m = measure(bugs, C), clean = measure({}, C);
+    const on = Object.keys(bugs).filter((b) => bugs[b]);
+    const per = {}; on.forEach((b) => { const mb = measure({ [b]: true }, C); per[b] = { mb, pb: polluted({ [b]: true }, mb, clean) }; });
+    const caught = on.filter((b) => Object.values(per[b].mb.checks).some((ok) => !ok)).length;
+    $("caught").textContent = caught + "/" + on.length;
+    const lights = $("lights"); lights.textContent = "";
+    Object.values(m.checks).forEach((ok) => lights.appendChild(make("i", ok ? "" : "bad")));
+    lights.setAttribute("aria-label", Object.values(m.checks).filter(Boolean).length + " of 4 tests pass");
+    const { P, E } = polluted(bugs, m, clean);
+    for (const id in NODES) { D2.nodes[id].setAttribute("class", "node done k-" + NODES[id][4] + (P.has(id) ? " bad" : "")); D2.subs[id].textContent = NODES[id][3]; }
+    on.forEach((b) => D2.nodes[BUGS[b].at].classList.add("bug"));
+    for (const k in D2.flows) D2.flow(k, E.has(k) ? "red" : "");
+    P.forEach((id) => (D2.subs[id].textContent = "⚠ bad data")); // say it in words, not only in red
+    on.forEach((b) => (D2.subs[BUGS[b].at].textContent = "🐛 bug starts here"));
+    const chA = m.arpdau / clean.arpdau - 1, chD = m.d7 - clean.d7;
+    const mark = (id) => (on.some((b) => BUGS[b].at === id) ? "🐛 " : "⚠ ");
+    if (P.has("rarp")) D2.subs.rarp.textContent = mark("rarp") + cents(m.arpdau) + " (" + (chA > 0 ? "+" : "") + Math.round(chA * 100) + "%)";
+    if (P.has("rd7")) D2.subs.rd7.textContent = mark("rd7") + (Math.abs(chD) > 0.005 ? pct(m.d7) + " (was " + pct(clean.d7) + ")" : "ad groups shifted");
+    if (P.has("agg")) D2.subs.agg.textContent = mark("agg") + "players moved group";
+    for (const t in TESTS) {
+      const ok = m.checks[t], g = D2.tests[t];
+      g.setAttribute("class", "test " + (ok ? "pass" : "fail"));
+      if (!ok && prevPass[t]) { void g.getBBox(); g.classList.add("flashfail"); }
+      for (const n of TESTS[t][3]) D2.flow(n + ">" + t, !ok && P.has(n) ? "red" : "");
+    }
+    prevPass = { ...m.checks };
+    let ratioHides = false;
+    const gq = GQ.map(([q, get, f, t], idx) => { const got = get(m), exp = get(clean), ok = near(got, exp, t); if (idx === 4 && ok && on.some((b) => b !== "young")) ratioHides = true; return [q, f(exp), f(got), ok]; });
+    const tile = (id, txt, bad) => { const e = $(id); e.textContent = txt; e.className = bad ? "bad" : "ok"; };
+    tile("impA", P.has("rarp") ? cents(clean.arpdau) + " → " + cents(m.arpdau) + " (" + (chA > 0 ? "+" : "") + Math.round(chA * 100) + "%)" : cents(m.arpdau) + " ✓", P.has("rarp"));
+    tile("impD", P.has("rd7") ? (Math.abs(chD) > 0.005 ? pct(clean.d7) + " → " + pct(m.d7) : "groups shifted") : pct(m.d7) + " ✓", P.has("rd7"));
+    const passing = Object.values(m.checks).filter(Boolean).length; tile("impT", passing + " of 4", passing < 4);
+    $("verdict").textContent = on.length === 0 ? "✓ All 4 tests green. Add a bug above." : "🛡️ Bugs caught: " + caught + " of " + on.length + "." + (ratioHides ? " The reward share still looks fine: a share can hide a wrong total." : "");
+    document.querySelectorAll(".cart").forEach((c) => c.setAttribute("aria-pressed", String(bugs[c.dataset.bug])));
+    const pass = Object.values(m.checks).filter(Boolean).length, pill = $("dTests");
+    pill.textContent = pass === 4 ? "✓ 4/4 tests · 07:00" : "⚠ " + pass + "/4 tests: numbers on hold"; pill.className = "pill keep " + (pass === 4 ? "ok" : "bad");
+    B5 = { on, per, gq, clean, pass };
+  }
+  document.querySelectorAll(".cart").forEach((c) => c.addEventListener("click", () => { bugs[c.dataset.bug] = !bugs[c.dataset.bug]; if (bugs[c.dataset.bug]) $("bFwd").classList.add("go"); renderBreak(); renderDetail(); }));
+  $("reset").addEventListener("click", () => { for (const k in bugs) bugs[k] = false; renderBreak(); renderDetail(); });
+
+  // ================= details panel: what you see on the left, explained on the right =================
+  const sel = { 2: "fday", 3: "fday", 4: "sum", 6: "recap" }, seg = { 3: "sql", 5: "story" };
+  const GRAIN = {
+    raw: "1 row = 1 event, exactly as the phone sent it", bills: "1 row = 1 network, 1 day: what it really paid", stg: "1 row = 1 event, repeats removed, UTC time",
+    fad: "1 row = 1 ad shown to 1 player", fday: "1 row = 1 player on 1 active day", dimp: "1 row = 1 player; install facts never change",
+    agg: "1 row = install day × day-0 ad group × day n (1 or 7)", rarp: "1 row = 1 day: money per active player", rd7: "1 row = 1 ad group: share back on day 7",
+  };
+  const EVENT_INFO = {
+    app_install: ["You installed the game. The company now knows a new player exists.", "raw_events → stg_events → dim_player (your install day and country)"],
+    session_start: ["You opened the game. An open is what makes a day count as active.", "raw_events → stg_events → fct_player_day (sessions) → D1 and D7"],
+    song_start: ["You started a song.", "raw_events only. No fact table uses it yet."],
+    song_end: ["You finished a song.", "raw_events → stg_events → fct_player_day (songs)"],
+    ad_impression: ["An ad was shown. It pays a tiny estimated amount.", "raw_events → stg_events → fct_ad_impression → fct_player_day (ads, $) → ARPDAU report"],
+  };
+  const NODE_ROWS = {
+    raw: () => [["time (UTC)", "player", "event"], [...yourRows(S.events.slice(-3).reverse(), (e) => [e.at, "p_you", e.name]), crowdRaw(true)[0]]],
+    bills: () => { const day = ads.reduce((s2, a) => (a.d === TODAY ? s2 + a.rev : s2), 0) * 0.988; return [["date", "network", "paid $"], [{ cells: [dateOf(TODAY), "AdNet A", money(day * 0.6)] }, { cells: [dateOf(TODAY), "AdNet B", money(day * 0.4)] }]]; },
+    stg: () => [["event_at", "event", "ad_type", "usd"], [...yourRows(S.events.slice(-3).reverse(), (e) => [e.at.slice(5), e.name, e.params.ad_type || "", e.params.usd != null ? String(e.params.usd) : ""]), { cells: [SD.slice(5) + " 21:14:05", "ad_impression", "full", SAMPLE.rev.toFixed(4)] }]],
+    fad: () => [["date", "player", "ad", "$"], [...adRows(true), crowdAd(true)]],
+    fday: () => [["date", "player", "songs", "ads", "$"], [...dayRows(true), crowdDay(true)]],
+    dimp: () => [["player", "install_date", "country"], [...(S.installed ? [{ me: true, cells: ["p_you", dateOf(YOU_INSTALL), "VN"] }] : []), { cells: [pid(0), dateOf(players[0].install), ["US", "BR", "VN"][players[0].tier]] }]],
+    agg: () => { const yb = binOf(S.ads.filter((a) => a.day === 0).length); return [["install_date", "ad_group", "day_n", "cohort", "back"], [0, 1, 2].flatMap((b) => [1, 7].map((n) => { const inN = S.installed && b === yb && dayDone(n), c = cohort20[b]; return { me: inN, cells: [dateOf(YOU_INSTALL), BIN_SQL[b], n, c.n + (inN ? 1 : 0), (n === 1 ? c.back1 : c.back7) + (inN && S.visited.has(n) ? 1 : 0)] }; }))]; },
+    rarp: () => { const R = reportData(); return [["date", "arpdau"], R.arpdau.map((v, i) => ({ me: R.yourDays.has(WEEK + i), cells: [dateOf(WEEK + i), cents(v)] }))]; },
+    rd7: () => [["ad_group", "d7"], reportData().bins.map((b, i) => ({ cells: [BIN_SQL[i], pct(b.back / b.base)] }))],
+  };
+  const DATES = "Nov 12–18, 2026 (UTC)";
+  const METRIC = { // step 4: what each tile means, how it's worked out, and what to watch for
+    kRev: { name: "Ad money (7 days)", what: "All the money ads made this week. Each ad's money is an estimate; the network's bill is the final word.", how: "add up usd for every ad shown", from: "fct_ad_impression (1 row = 1 ad)", file: "TILE QUERY · reads fct_ad_impression",
+      now: (D) => money(D.usd) + " · " + delta(D.usd, D.prev.usd).text, rows: (D) => [["week", "ad money"], [{ cells: ["Nov 12–18", money(D.usd)] }, { cells: ["Nov 5–11", money(D.prev.usd)] }]],
+      you: (D) => "You this week: " + D.you.n + " ads · " + cents(D.you.usd) + " (your day 0, Nov 11, counts in last week)", watch: "A day's money can still change for 3 days as late bills land, so the morning run redoes those days (step 6)." },
+    kArp: { name: "ARPDAU", what: "Ad money per player per day: what one active player earns us on an average day.", how: "ad money ÷ active player-days (busy days count more)", from: "fct_player_day (1 row = 1 player on 1 day)", file: "TILE QUERY · reads fct_player_day",
+      now: (D) => cents(D.arpdau) + " · " + delta(D.arpdau, D.prev.arpdau).text, rows: (D) => [["week", "ad money", "player-days", "arpdau"], [{ cells: ["Nov 12–18", money(D.usd), fmt(D.days), cents(D.arpdau)] }, { cells: ["Nov 5–11", money(D.prev.usd), fmt(D.prev.days), cents(D.prev.arpdau)] }]],
+      watch: "A ratio hides size: double the money and double the players looks the same. Read it next to the ad money tile." },
+    kDau: { name: "Players a day (DAU)", what: "How many different players open the game on an average day this week.", how: "active player-days ÷ 7", from: "fct_player_day (1 row = 1 player on 1 day)", file: "TILE QUERY · reads fct_player_day",
+      now: (D) => fmt(Math.round(D.dau)) + " · " + delta(D.dau, D.prev.dau).text, rows: (D) => [["week", "player-days", "players a day"], [{ cells: ["Nov 12–18", fmt(D.days), fmt(Math.round(D.dau))] }, { cells: ["Nov 5–11", fmt(D.prev.days), fmt(Math.round(D.prev.dau))] }]],
+      you: (D) => "You played on " + D.R.yourDays.size + " of these 7 days (★ in ARPDAU by day).", watch: "Opening the game twice in a day still counts once: that is the 1 row per player per day grain." },
+    kD7: { name: "Back on day 7 (D7)", what: "Of the players who installed, the share who played again 7 days later.", how: "players back on day 7 ÷ players who installed 7+ days ago", from: "agg_retention (install day × ad group × day n)", file: "TILE QUERY · reads agg_retention",
+      now: (D) => pct(D.d7) + " · installs up to " + dateOf(TODAY - 7), rows: (D) => [["ad_group", "players", "back", "d7"], [...D.R.bins.map((b, i) => ({ cells: [BIN_SQL[i], fmt(b.base), fmt(b.back), pct(b.back / b.base)] })), { cells: ["all", fmt(sum(D.R.bins.map((b) => b.base))), fmt(sum(D.R.bins.map((b) => b.back))), pct(D.d7)] }]],
+      you: () => youD7(), watch: "Players under 7 days old are left out: they cannot be back yet (the 🐛 Too-new players bug in step 5)." },
+    rarp: { name: "ARPDAU by day", what: "The same ARPDAU, one bar per day. Flat bars mean ARPDAU stayed steady; money and player counts can still change.", how: "each day: ad money ÷ players active that day", from: "fct_player_day (1 row = 1 player on 1 day)", file: "SQL · models/rpt_arpdau.sql",
+      now: (D) => "lowest " + cents(Math.min(...D.R.arpdau)) + " · highest " + cents(Math.max(...D.R.arpdau)), rows: () => NODE_ROWS.rarp(),
+      you: () => "★ marks the days you played; your rows are in those bars.", watch: "A sudden jump is a reason to check the data first (step 5), then the business." },
+    rd7: { name: "Back on day 7, by day-0 ads", what: "New players split by how many full-screen ads they saw on day 0, then the share back on day 7.", how: "each ad group: players back on day 7 ÷ players in the group", from: "agg_retention (install day × ad group × day n)", file: "SQL · models/rpt_d7.sql",
+      now: (D) => D.R.bins.map((b, i) => BIN_SQL[i] + ": " + pct(b.back / b.base)).join(" · "), rows: () => NODE_ROWS.rd7(),
+      you: () => youD7(), watch: "A link, not proof: players who would leave anyway might also see more ads. A fair test checks it (step 6, 🧪 Next quest). We built this link into the fake data." },
+    mix: { name: "Ads vs money, by ad type", what: "For each kind of ad: its share of all ads shown, and its share of the money.", how: "count and sum(usd) per ad_type ÷ the week's totals", from: "fct_ad_impression (1 row = 1 ad)", file: "CHART QUERY · reads fct_ad_impression",
+      now: (D) => D.mix.map((m) => AD_LABEL[m.f][0] + " " + Math.round(m.sm * 100) + "% of money").join(" · "), rows: (D) => [["ad_type", "ads", "share_of_ads", "share_of_money"], D.mix.map((m) => ({ cells: [AD_LABEL[m.f][1], fmt(m.n), pct(m.sa), pct(m.sm)] }))],
+      you: (D) => "You this week: " + D.you.full + " full-screen, " + D.you.rew + " reward (the phone shows no banners).", watch: "Shares always add up to 100%, so they can look fine while the total is wrong (step 5 shows this)." },
+  };
+  const youD7 = () => { const R = reportData(); return !S.installed ? "Play to join a group." : "You: " + BIN_LABEL[R.yourBin] + " on day 0 · " + (S.visited.has(7) ? "back on day 7 ✓" : dayDone(7) ? "not back on day 7 ✗" : "you join when your day 7 is done"); };
+  const LV = { // step 6: each stop and power-up, first like you're 11, then what really happens
+    mail: { t: "📬 06:00 · Notes arrive", lead: "Yesterday's notes from every phone land in one table.", kid: "Like a mailbox: all night, letters pile up. At 6 the robot opens the box.", real: "Phones send events all day. A loader copies them into raw_events in BigQuery. A freshness check stops the run if nothing new arrived in 6 hours.", file: "SOURCE · models/sources.yml", code: SQL.raw, guess: "6 hours is a guess: set it from when data really arrives." },
+    redo: { t: "🔁 06:10 · Redo the last 3 days", lead: "Ad money arrives late, so recent days get fixed.", kid: "Like a friend who pays you back a few days late: you fix your money notebook for those days, not the whole year.", real: "fct_ad_impression rebuilds only the last 3 days each morning (an incremental model). Older days stay as they are, so the run is quick and cheap.", file: "SQL · models/fct_ad_impression.sql (top)", code: SQL.redo, guess: "3 days is a guess: set it from how late bills really arrive." },
+    build: { t: "⚙️ 06:30 · Build + test", lead: "Every model runs in order, then the tests check it.", kid: "Like a teacher checking homework before it goes on the wall. One mistake, and it doesn't go up.", real: "dbt builds every model and runs its tests in the order of the step 3 graph, on a copy first. Only when every test passes is the copy made live, table by table. A red test stops the run before that, so the dashboard keeps yesterday's good numbers. If the copy step itself breaks halfway, the alarm rings and that step is run again. This is called write, check, publish.", file: "COMMANDS · the scheduler", code: SQL.build },
+    ready: { t: "📊 07:00 · Reports ready", lead: "Fresh numbers before anyone starts work.", kid: "Like the school bus: it leaves at 7 every day, so everyone can count on it.", real: "The dashboard in step 4 reads the report tables. It shows when the data was last updated, so no one trusts old numbers by mistake.", guess: "07:00 is a guess: set it from when the bills land." },
+    boss: { t: "🧑‍💼 Monday · The boss decides", lead: "Numbers only matter if someone acts on them.", kid: "Like a team captain picking the next play: more ads or fewer, country by country.", real: "Every Monday the live-ops lead looks at ARPDAU (money) and D7 (who comes back) for each country, then sets how often full-screen ads show. The dashboard is built for that one meeting." },
+    alarm: { t: "🚨 Alarm", lead: "Quiet on normal days, loud when numbers look wrong.", kid: "Like a smoke alarm: you forget it's there until it beeps.", real: "It rings when our ad money is off the network's bill by more than 2% (the 🧪 matches bill test), or when a day has 30% fewer rows than usual.", file: "TEST · tests/alarm_rows_dropped.sql", code: SQL.alarm, guess: "2% and 30% are guesses: set them from past data." },
+    cheap: { t: "💸 Cheap", lead: "Charts read a few days, not all of history.", kid: "Like a library sorted by date: to read Monday, you open only Monday's shelf.", real: "Fact tables are split by date (partitions) and sorted by player inside (clustering). A 7-day chart reads 7 days, so the bill stays small as data grows.", file: "CONFIG · models/fct_*.sql", code: SQL.cheap },
+    private: { t: "🔒 Private", lead: "Reports never show who a player is.", kid: "Like a secret code name: the dashboard sees player 8f3a…, never your name or your phone.", real: "Report tables swap player IDs for a scrambled code (a salted hash). The salt is kept secret, outside the code. Phone advertising IDs are not kept at all.", file: "SQL · report models", code: SQL.private },
+    handover: { t: "📘 Hand over", lead: "The team can run it without me.", kid: "Like a game guide: someone new can beat the level without calling the person who made it.", real: "A one-page guide: what runs when, what each alarm means, what to do, who to ask. Plus docs for every model and the tests from step 5. It works when the team fixes the next alarm alone." },
+    next: { t: "🧪 Next quest: a fair test", lead: "Do fewer ads really bring players back?", kid: "Like a coin toss for each new player: heads get fewer ads, tails get the usual. Two weeks later, compare who came back.", real: "The D7 chart shows a link, not a cause. An A/B test with random groups shows whether fewer ads raise D7, and how much ad money that costs." },
+  };
+  const fileOf = (id) => (id === "raw" || id === "bills" ? "SOURCE · models/sources.yml" : "SQL · models/" + (id === "rarp" ? "rpt_arpdau" : id === "rd7" ? "rpt_d7" : NODES[id][2]) + ".sql");
+  function table(cols, rows) {
+    const t = make("table", "dtable"), th = make("thead"), hr = make("tr"), tb = make("tbody");
+    cols.forEach((c) => { const h = make("th", "", c); h.scope = "col"; hr.appendChild(h); }); th.appendChild(hr); t.append(th, tb);
+    rows.forEach((row) => { const tr = make("tr", row.me ? "me" : "crowd"); row.cells.forEach((c, i) => { const td = make("td", row.cls && row.cls[i] ? row.cls[i] : "", String(c)); tr.appendChild(td); }); tb.appendChild(tr); });
+    return t;
+  }
+  const cap = (text) => make("div", "cap", text);
+  function renderDetail() {
+    const body = $("dbody"), segEl = $("seg");
+    const keepScroll = body.dataset.view === step + ":" + (sel[step] || "") + ":" + (seg[step] || "") ? body.scrollTop : 0;
+    const segFocus = segEl.contains(document.activeElement) ? document.activeElement.dataset.id : null;
+    body.textContent = ""; segEl.textContent = "";
+    let title = "", lead = "", segs = null;
+    if (step === 1) {
+      const ev = S.events[S.events.length - 1];
+      title = ev ? "Latest event: " + ev.name : "No events yet";
+      lead = ev ? EVENT_INFO[ev.name][0] : "Tap Install on the phone. Every big moment becomes a row of data.";
+      if (ev) {
+        body.append(cap("THE NOTE YOUR PHONE SENT (JSON)"));
+        const micros = Date.parse(ev.at.replace(" ", "T") + "Z") * 1000; // raw_events keeps time as microseconds, params as JSON text
+        const pre = make("pre", "sql"); pre.textContent = JSON.stringify({ event_id: ev.id, player_id: "p_you", event_ts: micros, event_name: ev.name, params: JSON.stringify(ev.params) }, null, 2); body.appendChild(pre);
+        body.appendChild(make("p", "sub", "event_ts = microseconds since 1970 (" + ev.at + " UTC). stg_events turns it into a time with timestamp_micros() and reads params with json_value()."));
+      }
+      body.append(cap("WORDS TO KNOW"));
+      const w = make("div", "words");
+      [["Event", "a note the phone sends"], ["Ad money", "from ads only, not shop buys"], ["ARPDAU", "ad money ÷ active players that day"], ["D7", "share of new players back on day 7"], ["Clock", "one time zone, UTC"]].forEach(([a, b]) => { const s2 = make("span"); s2.append(make("b", "", a), ": " + b); w.appendChild(s2); });
+      body.appendChild(w);
+    } else if (step === 2) {
+      const id = sel[2];
+      title = NODES[id][2]; lead = GRAIN[id] + ". Tap another table on the left to switch.";
+      body.append(cap(fileOf(id)), sqlBlock(SQL[id]));
+      if (id === "fday") body.append(make("p", "sub", "The trick: add up ads per player-day first, then join 1 row to 1 row. Joining raw rows would copy money (see step 5)."));
+    } else if (step === 3) {
+      const id = sel[3];
+      title = NODES[id][2]; lead = GRAIN[id] + (ran ? " · " + fmt(counts()[id]) + " rows" : " · press Run to fill it");
+      segs = [["sql", "SQL"], ["rows", "Rows"]];
+      if (seg[3] === "rows") { const [cols, rows] = NODE_ROWS[id](); body.append(cap("SAMPLE ROWS · pink = yours"), table(cols, rows)); }
+      else body.append(cap(fileOf(id)), sqlBlock(SQL[id]));
+    } else if (step === 4) {
+      const id = sel[4], D = dashData(), dl = make("dl", id === "sum" ? "recap" : "dl");
+      if (id === "sum") {
+        const T = takeaways(D), g = D.R.bins.map((b) => pct(b.back / b.base));
+        title = "Summary: what this dashboard says"; lead = "Three facts and one decision. Each line points to the tile that proves it.";
+        [[T[0], "ARPDAU by day: lowest " + cents(Math.min(...D.R.arpdau)) + ", highest " + cents(Math.max(...D.R.arpdau)) + ". Ad money " + money(D.usd) + " this week."],
+         [T[1], "Back on day 7 by day-0 ads: 0–2 ads " + g[0] + " · 3–5 ads " + g[1] + " · 6+ ads " + g[2] + ". A link, not proof."],
+         [T[2], "Ads vs money: " + D.mix.map((m) => AD_LABEL[m.f][0] + " " + Math.round(m.sa * 100) + "% of ads, " + Math.round(m.sm * 100) + "% of money").join(" · ") + "."],
+         [T[3], "Who: the live-ops lead. What: fewer full-screen ads on day 0 for a random half, for 2 weeks. Then compare D7 and ad money (step 6, 🧪 Next quest)."]].forEach(([k, v]) => dl.append(make("dt", "", k), make("dd", "", v)));
+        body.append(cap("THE PROOF"), dl, cap("WHY THIS DASHBOARD CAN EXIST"),
+          make("p", "dtext", "We keep 1 row per ad, with the player on it. With only one total per day, the day-7 chart by day-0 ads is impossible: there are no players inside a daily total. Each ad's money is an estimate, so every day we match it to the network's bill (within 2%)."),
+          cap("CAN WE TRUST IT?"), make("p", B5.pass === 4 ? "dtext ok-line" : "dtext bad-line", B5.pass === 4 ? "✓ All 4 tests passed in this morning's run." : "✗ " + B5.pass + " of 4 tests pass: you turned on bugs in step 5. In real life the dashboard keeps yesterday's numbers until they're fixed."));
+      } else {
+        const M = METRIC[id];
+        title = M.name; lead = M.what;
+        [["Formula", M.how], ["Reads", M.from], ["Dates", DATES], ["Now", M.now(D)]].forEach(([k, v]) => dl.append(make("dt", "", k), make("dd", "", v)));
+        body.append(dl, cap(M.file), sqlBlock(SQL[id]));
+        const [cols, rows] = M.rows(D); body.append(cap("WHAT IT RETURNS"), table(cols, rows));
+        if (M.you) body.append(make("p", "you", M.you(D)));
+        body.append(make("p", "fine", "⚠ Watch out: " + M.watch));
+      }
+    } else if (step === 5) {
+      const { on, per, gq } = B5;
+      title = on.length ? on.map((b) => BUGS[b].name).join(" + ") : "No bugs yet";
+      lead = on.length ? "Red shows where bad data starts and flows. The test that catches it flashes." : "Turn on a bug on the left. Each one breaks a different model.";
+      segs = [["story", "What broke"], ["sql", "Bad SQL vs fix"], ["checks", "Test questions"]];
+      if (seg[5] === "checks") {
+        body.append(cap("KNOWN ANSWERS VS WHAT THE MODEL SAYS"), table(["question", "should be", "model", "ok"], gq.map(([q, e, g, ok]) => ({ cells: [q, e, g, ok ? "✓" : "✗"], cls: [0, 0, 0, ok ? "ok" : "ng"] }))));
+        body.append(make("p", "sub", "\"Should be\" comes from the bug-free model. In real life: money vs the network's bill, D7 vs a small hand count."));
+      } else if (!on.length) {
+        body.append(make("p", "calm", "✓ No bugs. Every test is green."), cap("HOW TO READ THE GRAPH"));
+        const dl = make("dl", "dl");
+        [["Dark red box", "where the bug starts"], ["Red box", "a model or report fed bad data"], ["Red dots", "the path the bad data takes"], ["Red pill", "the test that catches it"]].forEach(([k, v]) => dl.append(make("dt", "", k), make("dd", "", v)));
+        body.append(dl, make("p", "sub", "Try 🐛 Double count first: it is the trap the day table avoids."));
+      }
+      else on.forEach((b) => {
+        const Bg = BUGS[b], { mb, pb } = per[b];
+        const failing = Object.keys(TESTS).filter((t) => !mb.checks[t]);
+        if (seg[5] === "sql") {
+          body.append(cap(Bg.name.toUpperCase() + " · " + Bg.where), diffBlock(Bg.bad, Bg.good));
+          if (failing.length) body.append(cap("THE TEST THAT FAILS"), sqlBlock(TEST_SQL[failing[0]]));
+          return;
+        }
+        const paths = [], walk = (id, trail) => { const next = [...pb.E].filter((e) => e.startsWith(id + ">")).map((e) => e.split(">")[1]); if (!next.length) paths.push(trail); next.forEach((n) => walk(n, trail.concat(n))); };
+        walk(Bg.at, [Bg.at]);
+        const safe = ["rarp", "rd7"].filter((id) => !pb.P.has(id)).map((id) => NODES[id][2]);
+        const box = make("div", "story"); box.appendChild(make("h4", "", Bg.name));
+        const dl = make("dl", "dl");
+        [["Starts in", NODES[Bg.at][2] + (Bg.note || "")], ["Bad data flows", paths.map((t) => t.map((id) => NODES[id][2]).join(" → "))], ["Still safe", safe.length ? safe.join(", ") : "nothing"], ["Caught by", failing.map((t) => TESTS[t][2]).join(", ")]].forEach(([k, v]) => {
+          const dd = make("dd"); [].concat(v).forEach((line) => dd.appendChild(make("div", "", line))); dl.append(make("dt", "", k), dd); // one branch per line
+        });
+        box.appendChild(dl); body.appendChild(box);
+      });
+    } else if (step === 7) {
+      title = "How I built it"; // the long read has no side panel
+    } else if (sel[6] !== "recap") {
+      const L = LV[sel[6]], kid = make("div", "kid");
+      title = L.t; lead = L.lead;
+      kid.append(make("span", "", "🧒"), make("p", "", L.kid)); body.appendChild(kid);
+      if (sel[6] === "build") body.appendChild(make("p", B5.pass === 4 ? "dtext ok-line" : "dtext bad-line", B5.pass === 4 ? "✓ This morning: 4 of 4 tests pass, so the reports go out." : "✗ This morning: " + B5.pass + " of 4 tests pass (your bugs from step 5), so the reports wait and yesterday's numbers stay up."));
+      body.append(cap("WHAT REALLY HAPPENS"), make("p", "dtext", L.real));
+      if (L.code) body.append(cap(L.file), sqlBlock(L.code));
+      if (L.guess) body.append(make("p", "fine", L.guess));
+    } else {
+      title = "Recap: the answer in one place"; lead = "What to say when someone asks you to explain it.";
+      const dl = make("dl", "recap");
+      [["Fact tables and grain", "fct_ad_impression: 1 row = 1 ad shown to 1 player. fct_player_day: 1 row = 1 player on 1 active day."],
+       ["Rollup", "agg_retention: 1 row = install day × day-0 ad group × day n."],
+       ["Dimensions", "dim_player (install day, country), plus date, ad type and network lookups. Later: app version, song."],
+       ["How we check", "4 tests (unique ad id, day = ads, matches the bill, 7+ days old), 5 test questions with known answers, a daily match to the network's bill, and a small hand count for D7."],
+       ["Hard choice", "1 row per ad, not 1 total per day: only then can D7 be split by ads seen. Its money is an estimate, so it is matched to the bill daily."],
+       ["Trap handled", "Joining ads to sessions copies money (+134%). Add up each side first, then join 1 row to 1 row."],
+       ["Who decides", "The live-ops lead, every Monday: more ads or fewer, per country."]].forEach(([k, v]) => dl.append(make("dt", "", k), make("dd", "", v)));
+      body.appendChild(dl);
+    }
+    $("detailTitle").textContent = title; $("detailLead").textContent = lead;
+    segEl.hidden = !segs;
+    if (segs) segs.forEach(([id, label]) => {
+      const b = make("button", "", label); b.type = "button"; b.dataset.id = id; b.setAttribute("aria-pressed", String(id === seg[step]));
+      b.addEventListener("click", () => { seg[step] = id; renderDetail(); }); segEl.appendChild(b);
+      if (id === segFocus) b.focus({ preventScroll: true }); // the old button was replaced: keep keyboard focus on the new one
+    });
+    body.dataset.view = step + ":" + (sel[step] || "") + ":" + (seg[step] || "");
+    body.scrollTop = keepScroll;
+    document.querySelectorAll("[data-sel]").forEach((c) => c.setAttribute("aria-pressed", String(sel[Number(c.closest(".slide").dataset.step)] === c.dataset.sel)));
+    for (const id in NODES) D1.nodes[id].classList.toggle("sel", id === sel[3]);
+    syncLists();
+  }
+  document.querySelectorAll("[data-sel]").forEach((c) => {
+    const pick = () => { sel[Number(c.closest(".slide").dataset.step)] = c.dataset.sel; renderDetail(); reveal(); };
+    c.addEventListener("click", pick);
+    c.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
+  });
+
+  // small screens stack the panels: after a pick, bring its explanation into view
+  const announce = (t) => { $("announce").textContent = ""; setTimeout(() => ($("announce").textContent = t), 30); };
+  const reveal = () => { announce("Details: " + $("detailTitle").textContent); if (dq.classList.contains("compact")) document.querySelector(".detail .phead").scrollIntoView({ block: "start", behavior: reduced() ? "auto" : "smooth" }); };
+  // small screens: the graph gets too small to read, so the same models also show as a list
+  const LIST_ORDER = ["raw", "bills", "stg", "fad", "fday", "dimp", "agg", "rarp", "rd7"];
+  LIST_ORDER.forEach((id) => {
+    const b = make("button"); b.type = "button"; b.dataset.id = id; b.append(make("b", "", NODES[id][2]), make("small", "", NODES[id][3]));
+    b.addEventListener("click", () => { sel[3] = id; renderDetail(); reveal(); }); $("list1").appendChild(b);
+  });
+  [...LIST_ORDER.map((id) => ["n", id]), ...Object.keys(TESTS).map((id) => ["t", id])].forEach(([k, id]) => { const d = make("div"); d.dataset.k = k; d.dataset.id = id; d.append(make("b", "", k === "n" ? NODES[id][2] : TESTS[id][2]), make("small")); $("list2").appendChild(d); });
+  function syncLists() {
+    $("list1").querySelectorAll("button").forEach((b) => { b.setAttribute("aria-pressed", String(b.dataset.id === sel[3])); b.lastChild.textContent = D1.subs[b.dataset.id].textContent; });
+    $("list2").querySelectorAll("div").forEach((d) => {
+      const id = d.dataset.id, g = d.dataset.k === "n" ? D2.nodes[id] : D2.tests[id], c = g.getAttribute("class") || "";
+      const bad = /\b(bad|bug|fail)\b/.test(c);
+      d.className = bad ? "bad" : "";
+      d.lastChild.textContent = d.dataset.k === "t" ? (/fail/.test(c) ? "✗ fails: caught a bug" : "✓ passes") : bad ? D2.subs[id].textContent : "✓ " + D2.subs[id].textContent;
+    });
+  }
+
+  // ================= one page: a stepper, Back / Next, arrow keys =================
+  const STEPS = [null,
+    { name: "Play", title: "Play: your taps make data", lead: "Play a song on the phone. Each big moment sends the company a note, called an event." },
+    { name: "Stored", title: "Stored: notes become fact rows", lead: "Notes land in a raw table, then get sorted into fact tables. Keep playing: pink rows (yours) appear live." },
+    { name: "Models", title: "Models: data flows left to right", lead: "Each box is a small SQL step. Press Run, then tap a box to see its SQL." },
+    { name: "Reports", title: "Reports: a dashboard built on the models", lead: "Read the summary first. Tap any tile or chart to see what it means and the SQL behind it." },
+    { name: "Break it", title: "Break it: follow the bad data", lead: "Add a bug. Red shows where it starts and flows; the catching test flashes." },
+    { name: "Level up", title: "Level up: it runs by itself", lead: "Every morning a robot runs the whole graph. Tap a stop or a power-up to see how." },
+    { name: "How I built it", title: "How I built it: behind this demo", lead: "The gritty details: the idea, the fake data, the stack, five versions, the checks, and what I'm not sure about." }];
+  let step = 1;
+  const seen = new Set([1]);
+  function go(n, focus) {
+    n = Math.max(1, Math.min(7, n));
+    if (n !== step) $("bFwd").classList.remove("go");
+    step = n; seen.add(n);
+    document.querySelectorAll(".slide").forEach((s2) => (s2.hidden = Number(s2.dataset.step) !== n));
+    const phone = n <= 2; // play while the tables fill
+    $("main").classList.toggle("wide", n === 7); // the long read takes the full width
+    $("phoneCol").hidden = !phone; $("sbody").classList.toggle("nophone", !phone);
+    if (!phone && G.playing && !G.paused) togglePause();
+    document.querySelectorAll(".stepper button").forEach((b) => { const k = Number(b.dataset.go); b.setAttribute("aria-current", k === n ? "step" : "false"); b.classList.toggle("seen", seen.has(k) && k !== n); });
+    $("stageTitle").textContent = n + " · " + STEPS[n].title; $("stageLead").textContent = STEPS[n].lead;
+    $("footCap").textContent = "Step " + n + " of 7 · " + STEPS[n].name;
+    $("bBack").disabled = n === 1;
+    $("bFwd").textContent = n === 7 ? "↺ Back to start" : "Next: " + STEPS[n + 1].name + " ▶";
+    if (n === 4) renderReports();
+    if (n === 6) playMorning();
+    renderDetail();
+    try { history.replaceState(null, "", "#step-" + n); } catch (e) { /* sandboxed frames may block history */ }
+    if (focus) $("stageTitle").focus({ preventScroll: true }); // keyboard users land on the new step
+    if (dq.classList.contains("compact") && focus) $("stageTitle").scrollIntoView({ block: "start", behavior: reduced() ? "auto" : "smooth" }); // small screens scroll: show the new step's top
+  }
+  document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => go(Number(b.dataset.go), true)));
+  $("bBack").addEventListener("click", () => go(step - 1, true));
+  $("bFwd").addEventListener("click", () => go(step === 7 ? 1 : step + 1, true));
+  $("bAnswer").addEventListener("click", () => { sel[6] = "recap"; go(6, true); });
+  function playMorning() { const m = $("map"); m.classList.remove("run"); void m.offsetWidth; if (!reduced()) m.classList.add("run"); $("bMorning").hidden = reduced(); } // the robot walks, stops light up, the sun rises
+  $("bMorning").addEventListener("click", playMorning);
+  // step 7: the chapter rail jumps through the read and shows where you are
+  const read = $("read"), chs = [...read.querySelectorAll(".ch")], railBtns = [...document.querySelectorAll(".rail button")];
+  $("statAds").textContent = fmt(ads.length);
+  function markChapter() {
+    const atEnd = read.scrollTop + read.clientHeight >= read.scrollHeight - 4;
+    let cur = chs[0]; chs.forEach((c) => { if (c.offsetTop - read.scrollTop < read.clientHeight * 0.35) cur = c; });
+    if (atEnd) cur = chs[chs.length - 1];
+    railBtns.forEach((b) => b.setAttribute("aria-current", String(b.dataset.ch === cur.id)));
+  }
+  read.addEventListener("scroll", markChapter); markChapter();
+  railBtns.forEach((b) => b.addEventListener("click", () => { read.scrollTo({ top: $(b.dataset.ch).offsetTop - 4, behavior: reduced() ? "auto" : "smooth" }); }));
+  $("bUp").addEventListener("click", () => { $("stageTitle").focus({ preventScroll: true }); $("stageTitle").scrollIntoView({ block: "start", behavior: reduced() ? "auto" : "smooth" }); });
+  document.addEventListener("keydown", (e) => {
+    if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+    const t = e.target;
+    if (/INPUT|TEXTAREA|SELECT/.test(t.tagName) || (t.closest && t.closest("#sPlay") && G.playing)) return;
+    if (e.key === "ArrowRight") { go(step + 1, true); e.preventDefault(); }
+    else if (e.key === "ArrowLeft") { go(step - 1, true); e.preventDefault(); }
+    else if (/^[1-7]$/.test(e.key)) { go(Number(e.key), true); e.preventDefault(); }
+  });
+
+  function refresh(name) {
+    dq.classList.toggle("rm", reduced()); // the host's motion switch, not only the OS one
+    renderStored(name);
+    if (ran) for (const id in NODES) D1.subs[id].textContent = fmt(counts()[id]) + " rows";
+    renderReports(); renderBreak(); renderDetail();
+  }
+
+  // Self-check: clean data passes every test, each bug alone fails one, and the built-in ad link shows.
+  resetStory();
+  const C0 = combined();
+  console.assert(Object.values(measure({}, C0).checks).every(Boolean), "clean model should pass all tests");
+  ["fan", "dup", "young"].forEach((b) => console.assert(Object.values(measure({ [b]: true }, C0).checks).some((ok) => !ok), b + " should be caught"));
+  console.assert(crowdBins[0].back / crowdBins[0].base > crowdBins[2].back / crowdBins[2].base, "heavier day-0 ad load should come back less");
+  { const D = dashData(), m0 = measure({}, C0); console.assert(Math.abs(D.arpdau - m0.arpdau) < 1e-12 && Math.abs(D.d7 - m0.d7) < 1e-12 && Math.abs(D.usd - m0.revenue) < 1e-9, "dashboard tiles should match the model's numbers"); console.assert(Math.abs(sum(D.mix.map((x) => x.sm)) - 1) < 1e-9 && Math.abs(sum(D.mix.map((x) => x.sa)) - 1) < 1e-9, "ad type shares should add to 100%"); }
+  console.assert(!billOk(5, 0) && billOk(0, 0) && billOk(100, 99) && !billOk(110, 100), "bill rule: $0 payout with ad money fails, 1% gap passes, 10% fails");
+  for (let mask = 0; mask < 8; mask++) { // every shown number is a real number, clean and with each bug mix
+    const m = measure({ fan: !!(mask & 1), dup: !!(mask & 2), young: !!(mask & 4) }, C0);
+    console.assert([m.revenue, m.arpdau, m.d1, m.d7, m.share, ...m.groups].every(Number.isFinite), "non-finite metric for bug mask " + mask);
+  }
+  const fromHash = () => Number((location.hash.match(/step-([1-7])/) || [])[1]) || 0; // deep link: #step-3
+  addEventListener("hashchange", () => { const n = fromHash(); if (n && n !== step) go(n, false); });
+  go(fromHash() || 1, false);
+})();
+</script>
+</body></html>
