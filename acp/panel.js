@@ -1,38 +1,59 @@
-// AI-edit panel, added by scripts/stage to demos with "acp": true in demo.json.
+// AI-edit panel, added by scripts/stage to every demo, first thing in the <head> of index.html.
 // On the public site it explains how to start scripts/acp-bridge.
 // On the bridge's local preview (127.0.0.1) it chats with your own ACP agent.
 (() => {
+  // The panel never floats over the demo: the page becomes a shell with the demo in a frame
+  // and a strip of its own below it, so no layout (full-screen apps, fixed buttons) can be covered.
+  if (window.name === "acp-demo") return; // inside our frame: the demo runs as built
   const me = document.currentScript;
   const name = me?.dataset.demo || "";
   const repo = me?.dataset.repo || "this demo's GitHub repo";
   const local = location.hostname === "127.0.0.1"; // the bridge serves only 127.0.0.1 (wrangler dev uses localhost)
-  const host = document.createElement("div");
-  const root = host.attachShadow({ mode: "open" });
-  root.innerHTML = `<style>
-    :host { all: initial; }
+  window.stop(); // scripts/stage puts this script first in <head>, so none of the demo has loaded or run yet
+  const head = document.createElement("head");
+  head.innerHTML = `<meta name="viewport" content="width=device-width, initial-scale=1"><style>
+    html, body { margin: 0; height: 100%; }
+    body { display: grid; grid-template: 1fr auto / 1fr auto; background: #111; }
     * { box-sizing: border-box; font: 14px/1.4 system-ui, sans-serif; }
-    .fab { position: fixed; right: 16px; bottom: 16px; z-index: 2147483647; padding: 10px 14px;
-      border: 0; border-radius: 999px; background: #111; color: #fff; cursor: pointer; }
-    .box { position: fixed; right: 16px; bottom: 64px; z-index: 2147483647; width: min(380px, calc(100vw - 32px));
-      max-height: 70vh; display: flex; flex-direction: column; gap: 8px; padding: 12px;
-      background: #fff; color: #111; border: 1px solid #ccc; border-radius: 12px; box-shadow: 0 8px 24px #0003; }
+    .demo { grid-area: 1 / 1; width: 100%; height: 100%; border: 0; background: #fff; }
+    .bar { grid-area: 2 / 1 / 3 / 3; display: flex; justify-content: flex-end; padding: 4px 8px; }
+    .bar .fab { padding: 6px 14px; border: 1px solid #555; border-radius: 999px; background: #222; color: #fff; }
+    .box { grid-area: 1 / 2; width: min(380px, 100vw); min-height: 0; display: flex; flex-direction: column; gap: 8px; padding: 12px;
+      overflow: auto; background: #fff; color: #111; border-left: 1px solid #ccc; }
+    @media (max-width: 700px) {
+      body { grid-template: 1fr auto auto / 1fr; }
+      .box { grid-area: 2 / 1; width: auto; max-height: 50vh; border: 0; border-top: 1px solid #ccc; }
+      .bar { grid-area: 3 / 1; }
+    }
     .box[hidden] { display: none; }
     .log { overflow: auto; flex: 1; display: flex; flex-direction: column; gap: 6px; min-height: 80px; }
     .you { align-self: flex-end; background: #e8f0ff; padding: 6px 10px; border-radius: 10px; white-space: pre-wrap; }
     .bot { white-space: pre-wrap; }
     .info { color: #555; font-size: 12px; }
     .err { color: #b00020; }
+    p { margin: 0; }
     code { font-family: ui-monospace, monospace; font-size: 12px; background: #f2f2f2; padding: 2px 4px; border-radius: 4px; word-break: break-all; }
     form, .row { display: flex; gap: 6px; flex-wrap: wrap; }
     textarea { flex: 1; min-height: 40px; resize: vertical; padding: 6px; border: 1px solid #bbb; border-radius: 8px; }
     button { padding: 6px 10px; border: 1px solid #888; border-radius: 8px; background: #f7f7f7; color: #111; cursor: pointer; }
     button:disabled { opacity: .5; cursor: default; }
-  </style>
-  <button class="fab" aria-expanded="false" aria-controls="box">Edit with AI</button>
-  <div class="box" id="box" role="dialog" aria-label="Edit this demo with your AI agent" hidden></div>`;
-  document.body.append(host);
-  const fab = root.querySelector(".fab");
-  const box = root.querySelector(".box");
+  </style>`;
+  const body = document.createElement("body");
+  body.innerHTML = `<iframe class="demo" name="acp-demo" title="Demo" allow="fullscreen; autoplay; clipboard-write"></iframe>
+  <div class="box" id="box" role="dialog" aria-label="Edit this demo with your AI agent" hidden></div>
+  <div class="bar"><button class="fab" aria-expanded="false" aria-controls="box">Edit with AI</button></div>`;
+  document.documentElement.replaceChildren(head, body);
+  const frame = body.querySelector(".demo");
+  frame.onload = () => {
+    try { // keep the tab title and address bar in step with the demo
+      document.title = frame.contentDocument.title;
+      history.replaceState(null, "", frame.contentWindow.location.href);
+      frame.contentWindow.focus(); // keyboard controls work without a first click
+    } catch { /* the demo navigated to another site */ }
+  };
+  frame.src = location.href;
+  const fab = body.querySelector(".fab");
+  const box = body.querySelector(".box");
   const key = `acp-open-${name}`;
   const toggle = (open) => {
     box.hidden = !open;
@@ -98,7 +119,7 @@
     else if (m.type === "info") add(el("div", "info", m.text));
     else if (m.type === "error") add(el("div", "info err", m.text));
     else if (m.type === "busy") setBusy(m.busy);
-    else if (m.type === "reload" && !m.replay) { sessionStorage.setItem(key, "1"); location.reload(); }
+    else if (m.type === "reload" && !m.replay) frame.contentWindow.location.reload(); // the chat stays put
     else if (m.type === "permission") {
       const p = add(el("div", "info", `Allow: ${m.title}?`));
       if (m.answered) return;
