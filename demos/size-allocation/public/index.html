@@ -1,0 +1,639 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sizes That Sell: a fashion retail data demo</title>
+<meta name="description" content="A fashion retail demo: send each store the sizes its own customers buy, instead of one size mix for every store. All data is made up.">
+<style>
+  :root {
+    --page: #0B0E12; --panel: #10151C; --card: #141B24; --line: #2A333E; --ink: #E6EDF3; --soft: #C3CBD3; --muted: #97A1AC;
+    --blue: #5BB8F5; --orange: #F0884A; --green: #4CC38A; --grey: #6E7681;
+    --sans: Inter, -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", Roboto, Arial, sans-serif;
+    --serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--ink); font: 16px/1.6 var(--sans); }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 24px 24px 72px; }
+  a { color: var(--blue); }
+  .kicker { font-size: 12px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: var(--blue); margin: 0 0 8px; }
+  /* Hero */
+  .hero { position: relative; overflow: hidden; border-radius: 14px; padding: 30px 40px 26px; background: radial-gradient(120% 140% at 85% 0%, #1E3247 0%, #142231 45%, #0F1822 100%); }
+  .hero h1 { margin: 0 0 12px; font-size: clamp(40px, 7vw, 72px); line-height: 1.02; font-weight: 800; letter-spacing: -.02em;
+    background: linear-gradient(90deg, #FFFFFF 0%, #D9EEFF 55%, #BFC6CD 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .hero .by { font-size: 14px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: center; position: relative; z-index: 1; }
+  .hero .by b { color: var(--ink); }
+  .hero .lede { font: 18px/1.6 var(--serif); color: var(--soft); max-width: 60ch; margin: 0 0 14px; position: relative; z-index: 1; }
+  #motif { position: absolute; right: 24px; top: 14px; width: min(400px, 40%); height: auto; }
+  .stars { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .btn { font: 600 14px var(--sans); color: var(--ink); background: #1B2735; border: 1px solid var(--blue); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+  .btn:hover { background: #22344A; }
+  .btn.ghost { border-color: var(--line); background: transparent; }
+  .btn:disabled { opacity: .45; cursor: default; }
+  /* Tabs */
+  [role=tablist] { display: flex; flex-wrap: wrap; gap: 8px; margin: 24px 0 0; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+  [role=tab] { text-align: left; font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 16px; min-width: 150px; cursor: pointer; }
+  [role=tab] b { display: block; font-size: 15px; }
+  [role=tab] span { display: block; font-size: 13px; color: var(--muted); }
+  [role=tab][aria-selected=true] { border-color: var(--blue); background: #132233; }
+  [role=tab][aria-selected=true] b { color: var(--blue); }
+  [role=tabpanel] { margin-top: 18px; background: var(--panel); border-radius: 14px; padding: 36px clamp(18px, 5vw, 64px) 44px; }
+  .inner { max-width: 880px; margin: 0 auto; }
+  h2 { font-size: clamp(26px, 3.6vw, 36px); line-height: 1.15; margin: 0 0 14px; font-weight: 800; }
+  h3 { font-size: 21px; line-height: 1.25; margin: 40px 0 10px; }
+  h4 { font-size: 16px; margin: 0 0 6px; }
+  p, li, dd { color: var(--soft); }
+  p { max-width: 66ch; margin: 0 0 12px; }
+  .serif p, .serif li, p.serif { font-family: var(--serif); font-size: 17px; line-height: 1.7; }
+  .note { font-size: 14px; color: var(--muted); }
+  .mono, td.num, .kpi strong { font-family: var(--mono); }
+  /* Cards */
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .card p:last-child { margin-bottom: 0; }
+  .card.blue { border-left: 4px solid var(--blue); } .card.orange { border-left: 4px solid var(--orange); } .card.grey { border-left: 4px solid var(--grey); }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin: 20px 0 8px; }
+  .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .kpi span, .kpi em { display: block; font-size: 13px; color: var(--muted); font-style: normal; }
+  .kpi strong { display: block; font-size: 32px; line-height: 1.2; margin: 4px 0 2px; }
+  .kpi.win strong { color: var(--blue); }
+  .moves { list-style: none; padding: 0; margin: 0; }
+  .moves li { display: flex; justify-content: space-between; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); color: var(--ink); }
+  .moves li:last-child { border-bottom: 0; }
+  .moves b { font-family: var(--mono); white-space: nowrap; }
+  .up { color: var(--blue); } .down { color: var(--orange); }
+  /* Controls and tables */
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin: 12px 0 16px; }
+  .controls label { display: block; font-weight: 600; font-size: 14px; color: var(--ink); }
+  .controls output { font-family: var(--mono); font-weight: 400; color: var(--blue); }
+  .hint { display: block; font-size: 13px; color: var(--muted); margin-top: 2px; }
+  input[type=range] { width: 100%; accent-color: var(--blue); }
+  input[type=number], select { font: inherit; color: var(--ink); background: #0D1218; border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; }
+  input[type=number] { width: 7em; }
+  input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--blue); vertical-align: -3px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; color: var(--soft); }
+  th { color: var(--ink); }
+  td.num, th.num { text-align: right; }
+  .better { color: var(--blue); font-weight: 700; }
+  #controls { grid-template-columns: 1fr 1fr; }
+  .ends { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .lbl { display: block; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+  .strip { display: flex; align-items: center; gap: 18px; background: #132233; border: 1px solid var(--blue); border-radius: 10px; padding: 12px 16px; margin: 12px 0 0; }
+  .strip .lbl { margin: 0; }
+  .strip p { margin: 0; flex: 1; color: var(--ink); }
+  .big { display: block; font: 700 28px var(--mono); color: var(--blue); }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  .hbar { display: grid; grid-template-columns: 72px 1fr 70px; align-items: center; gap: 8px; margin: 6px 0; font-size: 14px; color: var(--soft); }
+  .hbar b { font-family: var(--mono); text-align: right; color: var(--ink); font-weight: 600; }
+  .track { display: block; height: 14px; background: #0D1218; border-radius: 7px; overflow: hidden; }
+  .fill { display: block; height: 100%; border-radius: 7px; transition: width .25s; }
+  .fill.grey { background: var(--grey); } .fill.blue { background: var(--blue); }
+  .badge { display: inline-block; font: 700 13px var(--mono); color: #0B0E12; background: var(--blue); border-radius: 6px; padding: 1px 7px; margin-left: 6px; letter-spacing: 0; vertical-align: 1px; }
+  #scatter svg { width: 100%; height: auto; }
+  details summary { cursor: pointer; color: var(--blue); font-weight: 600; font-size: 14px; }
+  .roles { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 12px; }
+  .role { display: flex; gap: 8px; align-items: center; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px 5px 6px; font-size: 14px; color: var(--soft); }
+  .role svg { flex: none; } .role b { color: var(--ink); font-weight: 600; }
+  .storebar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 8px; }
+  .storebar .note { margin: 0; }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--muted); margin: 8px 0; }
+  .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; vertical-align: -1px; margin-right: 5px; }
+  svg { display: block; max-width: 100%; }
+  #chart svg { width: 100%; height: auto; }
+  dl { margin: 0; } dt { font-weight: 700; color: var(--ink); } dd { margin: 0 0 10px; }
+  .golden li { margin-bottom: 8px; }
+  .mark { font-weight: 700; margin-right: 6px; }
+  .pass { color: var(--green); } .fail { color: var(--orange); }
+  /* Timeline (How I built it) */
+  .timeline { list-style: none; margin: 28px 0 0; padding: 0; position: relative; }
+  .timeline::before { content: ""; position: absolute; left: 9px; top: 8px; bottom: 8px; width: 2px; background: linear-gradient(var(--blue), #2A4A66); }
+  .timeline > li { position: relative; padding: 0 0 40px 48px; }
+  .timeline > li::before { content: ""; position: absolute; left: 0; top: 2px; width: 20px; height: 20px; border-radius: 50%; background: #C9D3DC; box-shadow: 0 0 12px rgba(91,184,245,.55); }
+  .timeline h3 { margin: 6px 0 12px; font-size: clamp(22px, 3vw, 30px); font-family: var(--sans); }
+  .timeline table { font-family: var(--sans); font-size: 15px; }
+  .serif .kicker, #tour .kicker { font: 700 12px/1.4 var(--sans); letter-spacing: .22em; color: var(--blue); margin: 0 0 8px; }
+  .steps td:first-child, .steps th:first-child { white-space: nowrap; }
+  .scores { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .scores div { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; text-align: center; min-width: 86px; }
+  .scores b { display: block; font: 700 22px var(--mono); color: var(--ink); }
+  .scores span { font-size: 12px; color: var(--muted); }
+  .scores .final b { color: var(--blue); }
+  footer { margin-top: 28px; color: var(--muted); font-size: 14px; text-align: center; }
+  /* Tour */
+  #tour { position: fixed; left: 16px; bottom: 16px; z-index: 50; width: min(440px, calc(100% - 32px)); background: rgba(16, 22, 30, .97); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px 14px; box-shadow: 0 12px 40px rgba(0,0,0,.55); }
+  #tour h2 { font: 700 22px/1.25 var(--serif); margin: 0 0 8px; }
+  #tour p { font: 16px/1.6 var(--serif); color: var(--soft); margin: 0 0 14px; }
+  #tour .row { display: flex; gap: 8px; justify-content: space-between; align-items: center; }
+  #tour .row div { display: flex; gap: 8px; }
+  .tour-target { outline: 3px solid var(--blue); outline-offset: 6px; border-radius: 10px; box-shadow: 0 0 0 9px rgba(91,184,245,.15); scroll-margin-top: 24px; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+  @media (max-width: 720px) { #motif { position: relative; right: auto; top: auto; width: 100%; max-width: 360px; margin: 14px 0 0; } .timeline > li { padding-left: 34px; } .steps thead { display: none; } .steps tr { display: block; border-bottom: 1px solid var(--line); padding: 8px 0; } .steps th, .steps td { display: block; border: 0; padding: 2px 0; } .steps td::before { content: attr(data-label) ": "; color: var(--muted); } .kpis { grid-template-columns: 1fr 1fr; gap: 8px; } .kpi { padding: 10px 12px; } .kpi strong { font-size: 24px; } .hero { padding: 24px 20px 20px; } .wrap { padding: 12px 12px 56px; } [role=tab] { flex: 1 1 140px; min-width: 0; } .pair, #controls { grid-template-columns: 1fr; } .strip { flex-direction: column; align-items: flex-start; gap: 6px; } }
+  /* The demo site adds an "Edit with AI" button at the bottom-right (max z-index), so lift the tour card above it on narrow screens. */
+  @media (max-width: 640px) { #tour { bottom: 68px; padding: 12px 14px 10px; } #tour h2 { font-size: 19px; margin-bottom: 6px; } #tour p { font-size: 15px; line-height: 1.5; margin-bottom: 10px; } }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <svg class="stars" id="stars" aria-hidden="true"></svg>
+    <p class="kicker" style="position:relative;z-index:1">A fashion retail data demo</p>
+    <h1 style="position:relative;z-index:1">Sizes That Sell</h1>
+    <p class="lede" id="hero-answer">Today a clothing brand sends all 40 stores the same mix of sizes, so stores run out of the sizes their customers want. Giving each store its own size mix cuts missed sales from <strong id="hero-base">…</strong> to <strong id="hero-curve">…</strong>, without raising any store's stock target. <strong>All data here is made up.</strong></p>
+    <p class="by"><span>By <b>Tony Pham</b></span><span>Built with <b>Claude Code</b></span><span>Reviewed by <b>OpenAI GPT-6-Astra</b></span><button class="btn" id="tour-open" type="button">▶ Take the 1-minute tour</button></p>
+    <svg id="motif" viewBox="0 0 400 160" role="img" aria-label="Size patterns learned from the data: Tokyo customers buy mostly S and M, Chicago customers buy mostly L and XL."></svg>
+  </header>
+
+  <div role="tablist" aria-label="Demo sections">
+    <button role="tab" id="tab-numbers" aria-controls="panel-numbers" aria-selected="true"><b>The numbers</b><span>Try it yourself</span></button>
+    <button role="tab" id="tab-why" aria-controls="panel-why" aria-selected="false" tabindex="-1"><b>Who benefits</b><span>And why it works</span></button>
+    <button role="tab" id="tab-built" aria-controls="panel-built" aria-selected="false" tabindex="-1"><b>How I built it</b><span>The gritty details</span></button>
+  </div>
+
+  <!-- TAB 1: THE NUMBERS -->
+  <section role="tabpanel" id="panel-numbers" aria-labelledby="tab-numbers" tabindex="0">
+    <div class="inner">
+      <p class="kicker">The numbers</p>
+      <h2>What happens if each store gets its own size mix?</h2>
+      <p class="serif" id="lede">A clothing brand with 40 stores sends every store the same mix of sizes, but customers in Tokyo buy smaller sizes than customers in Chicago. If each store gets its own size mix instead, it misses <strong id="lede-result">fewer</strong> sales, and no store's stock target goes up. A stock target is the number of items a store should have right after a delivery, and a style is one design, such as a black T-shirt.</p>
+      <div class="kpis" id="kpis" aria-live="polite">
+        <div class="kpi"><span>Sales missed today (same mix everywhere)</span><strong id="k-base">…</strong><em>of what customers wanted</em></div>
+        <div class="kpi win"><span>Sales missed with each store's own mix</span><strong id="k-curve">…</strong><em>same stock targets</em></div>
+        <div class="kpi win"><span>Extra items sold in one season</span><strong id="k-avoided">…</strong><em>26 weeks, all 40 stores</em></div>
+        <div class="kpi win"><span>Extra profit in one season</span><strong id="k-money">…</strong><em id="k-money-note">at an assumed profit per item</em><em>before extra delivery costs (M = million)</em></div>
+      </div>
+      <p class="note">A missed sale is a customer who wanted an item in their size, but the store had none left. These numbers follow the settings further down.</p>
+
+      <div id="monday">
+        <h3>What should the planner change this Monday?</h3>
+        <p>Keep each store's total stock target the same, but change how it is split between sizes. Below are the three biggest target increases and the three biggest target decreases across all stores.</p>
+        <div class="grid" id="moves">
+          <div class="card blue"><h4>Raise the target for</h4><ul class="moves" id="more"></ul></div>
+          <div class="card orange"><h4>Lower the target for</h4><ul class="moves" id="fewer"></ul></div>
+        </div>
+        <p class="note" style="margin-top:10px">Numbers are the change in a store's stock target for that size, added up across its 60 styles. The actual delivery is the target minus what is still on the shelf, so it can be smaller.</p>
+      </div>
+
+      <div id="try">
+        <h3>Does it still win if you change the rules?</h3>
+        <p class="note" style="font-size:15px">Both plans follow the same rules. Only the size split differs.</p>
+        <div class="controls" id="controls">
+          <div><label for="lead">Delivery every <output id="lead-out" for="lead"></output></label><input id="lead" type="range" min="1" max="8" step="1" value="4"><span class="ends"><span>◀ small, often</span><span>big, rare ▶</span></span></div>
+          <div><label for="safety">Safety stock <output id="safety-out" for="safety"></output></label><input id="safety" type="range" min="0" max="50" step="5" value="10"><span class="ends"><span>◀ none</span><span>extra "just in case" ▶</span></span></div>
+          <div><label for="margin">Profit per item ($)</label><input id="margin" type="number" min="0" max="500" step="1" value="20"><span class="hint">Your guess, before delivery costs.</span></div>
+          <div><label><input id="correct" type="checkbox" checked> Fix the "sold out" mistake</label><span class="hint">Off = sold-out sizes look unpopular.</span></div>
+        </div>
+
+        <div class="strip" id="strip">
+          <div><span class="lbl">Extra items sold</span><strong class="big" id="extra"></strong></div>
+          <p id="take"></p>
+        </div>
+
+        <div class="pair">
+          <div class="card"><h4 class="lbl">Missed sales <span class="badge" id="cut"></span></h4>
+            <div class="hbar"><span>Same mix</span><span class="track"><span class="fill grey" id="mB"></span></span><b id="mBv"></b></div>
+            <div class="hbar"><span>Own mix</span><span class="track"><span class="fill blue" id="mK"></span></span><b id="mKv"></b></div>
+            <p class="note">Customers who wanted their size, but it had run out.</p></div>
+          <div class="card"><h4 class="lbl">Left over at season end</h4>
+            <div class="hbar"><span>Same mix</span><span class="track"><span class="fill grey" id="lB"></span></span><b id="lBv"></b></div>
+            <div class="hbar"><span>Own mix</span><span class="track"><span class="fill blue" id="lK"></span></span><b id="lKv"></b></div>
+            <p class="note">Items still unsold, usually sold at a discount.</p></div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <h4 class="lbl">The trade-off</h4>
+          <div id="scatter"></div>
+          <div class="legend" aria-hidden="true"><span><b style="color:var(--grey)">■</b> Same mix</span><span><b style="color:var(--blue)">●</b> Own mix</span><span>Big, labelled = your setting · k = thousand</span></div>
+          <p class="note">Each dot is one setting. More stock moves you right and down. The own mix moves you down at every setting.</p>
+        </div>
+
+        <details style="margin-top:12px">
+          <summary>See all numbers</summary>
+          <table>
+            <caption class="sr">Results of one season for both plans</caption>
+            <thead><tr><th scope="col">One season</th><th scope="col" class="num">Same mix</th><th scope="col" class="num">Own mix</th></tr></thead>
+            <tbody id="results"></tbody>
+          </table>
+          <p class="note" style="margin-top:8px">Each delivery tops a store back up to its target, so the plan that sells more also gets more delivered: <span id="extra-delivered"></span> more items this season.</p>
+        </details>
+      </div>
+
+      <div id="one-store">
+        <h3>Look at one store</h3>
+        <p class="note" style="font-size:15px">Where did this store run short, and where did stock pile up?</p>
+        <div class="roles">
+          <span class="role"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="10" fill="#132233"/><path d="M6 15V9l5-3 5 3v6z" fill="none" stroke="#5BB8F5" stroke-width="1.5"/></svg><b>Store manager</b> what ran out</span>
+          <span class="role"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="10" fill="#132233"/><path d="M7 11l3 3 5-6" fill="none" stroke="#5BB8F5" stroke-width="1.8"/></svg><b>Planner</b> check one store first</span>
+          <span class="role"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="10" fill="#132233"/><path d="M6 14h3V9H6zm4 0h3V6h-3zm4 0h3v-3h-3z" fill="#5BB8F5"/></svg><b>Area manager</b> compare cities</span>
+        </div>
+        <div id="store-pick" class="storebar"><label for="store">Store</label> <select id="store"></select><span class="note">follows the sliders above</span></div>
+        <div id="chart"></div>
+        <div class="legend" aria-hidden="true"><span><i style="background:var(--orange)"></i>Missed sales: customers left without their size</span><span><i style="background:#8B95A1"></i>Left unsold at season end</span><span>Top bar = same mix, bottom bar = own mix</span></div>
+        <p id="store-take" style="color:var(--ink);margin-top:6px"></p>
+        <p class="note">One size can have both: it sold out between deliveries, and still had items left at the end.</p>
+        <table style="margin-top:8px">
+          <caption class="sr">Missed sales and items left unsold per size for the chosen store over one season</caption>
+          <thead><tr><th scope="col" rowspan="2">Size</th><th scope="colgroup" colspan="2" class="num">Missed sales</th><th scope="colgroup" colspan="2" class="num">Left unsold</th></tr>
+            <tr><th scope="col" class="num">Same</th><th scope="col" class="num">Own</th><th scope="col" class="num">Same</th><th scope="col" class="num">Own</th></tr></thead>
+          <tbody id="store-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 2: WHO BENEFITS -->
+  <section role="tabpanel" id="panel-why" aria-labelledby="tab-why" tabindex="0" hidden>
+    <div class="inner">
+      <p class="kicker">Who benefits</p>
+      <h2>Who gains, and why does it work?</h2>
+
+      <h3 style="margin-top:20px">Why does one size mix fail?</h3>
+      <p>A <strong>style</strong> is one design, such as a black crew-neck T-shirt, and each store sells 60 styles in six sizes, from XS to XXL. Every Monday, the head of planning sets each store's stock target for every style and size. Today, every store's target uses the same size mix, for example 34% size M and 16% size S.</p>
+      <div class="grid">
+        <div class="card orange"><h4>Tokyo store</h4><p>Customers buy more S than the mix sends, so size S sells out soon after each delivery and those sales are lost.</p></div>
+        <div class="card orange"><h4>Chicago store</h4><p>Customers buy more L and XL, so those sell out while the extra S items sit unsold until the end-of-season sale.</p></div>
+      </div>
+
+      <h3>Who is better off, and how?</h3>
+      <div class="grid">
+        <div class="card"><h4>Head of planning</h4><p>A short list of size changes to make each Monday, instead of one mix for every store.</p></div>
+        <div class="card"><h4>Store teams</h4><p>Fewer customers told "we don't have your size", and less unsold stock to move at the end of the season.</p></div>
+        <div class="card"><h4>Supply chain</h4><p>A way to test how often to deliver, and how much safety stock to send, before changing the delivery schedule. Safety stock means extra items sent in case customers want more than forecast.</p></div>
+        <div class="card"><h4>Finance</h4><p>An estimate of extra profit, which they can compare with the cost of the extra deliveries before approving the change.</p></div>
+      </div>
+
+      <h3>How do we know what each store needs?</h3>
+      <div class="grid">
+        <div class="card blue"><h4>Use each store's own size pattern</h4><p>First, forecast how many items of each style a store will sell. Then split that number by the store's own size pattern, learned from last season's sales across all its styles.</p></div>
+        <div class="card grey"><h4>Option I did not choose: a forecast for every single size</h4><p>A single style in a single size sells only a few items a week. Forecasts that small are mostly guesswork, so I forecast per style and then split by size.</p></div>
+      </div>
+      <div class="card orange" style="margin-top:12px">
+        <h4>The mistake to avoid: "sold out" is not "nobody wanted it"</h4>
+        <p>When a size sells out, its sales drop to zero, and if you treat that zero as "no demand", the size looks unpopular. Then you send even fewer next time, so the problem gets worse every season.</p>
+        <p>The fix measures how fast each size sold while it was on the shelf. If a size was never sent at all, it borrows that store's pattern from its other sizes. <span id="trap-note"></span></p>
+      </div>
+
+      <h3>Why can you trust these numbers?</h3>
+      <p>A planner will only act on numbers they trust, so this demo gives each number one meaning and checks its own answers.</p>
+      <dl>
+        <dt>Missed sales</dt><dd>Items customers wanted in weeks when their size had run out.</dd>
+        <dt>Sold, out of delivered</dt><dd>Items sold divided by items delivered to the store, where a higher number means a smaller share of the stock was left unsold.</dd>
+        <dt>Left over at the end</dt><dd>Items still in the store when the season ends, which may need to be sold at a discount.</dd>
+      </dl>
+      <h4 style="margin-top:16px">Five questions with known answers</h4>
+      <p>Questions 1 to 4 are counted straight from the raw made-up data each time the page loads. Question 5 checks that the plan at the starting settings still gives the expected total, and any changed answer needs investigating.</p>
+      <ol class="golden" id="golden"></ol>
+
+      <h3>What does this demo not show yet?</h3>
+      <ul>
+        <li>All data is made up, so the results show how the method works, not what a real brand would gain.</li>
+        <li>In this demo, stores can always be topped up, but a real warehouse can run short of some sizes.</li>
+        <li>The sold-out fix is an estimate: for example, it assumes a size that sold out in a week was on the shelf for half that week.</li>
+        <li>The profit figure leaves out the cost of the extra deliveries.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- TAB 3: HOW I BUILT IT -->
+  <section role="tabpanel" id="panel-built" aria-labelledby="tab-built" tabindex="0" hidden>
+    <div class="inner">
+      <p class="kicker">How I built it</p>
+      <h2>Behind Sizes That Sell</h2>
+      <ol class="timeline serif">
+        <li>
+          <p class="kicker">01 · The idea</p>
+          <h3>Based on real fashion retail work</h3>
+          <p>From January to September 2026, I worked part-time as a Business Analyst (Data &amp; Performance) at LSOUL, a fashion brand. I combined 9+ data sources from three markets (Vietnam, Thailand and China) into one data hub. I also ran daily, weekly and monthly business performance reports for leadership, which flagged weak sales channels and stockout risks.</p>
+          <p>This demo explores a question that kind of reporting raises: when sizes keep running out, how should stock be split between stores? It is not a copy of any LSOUL project. No LSOUL data, screens or code are used, and every store, style and number here is made up.</p>
+        </li>
+        <li>
+          <p class="kicker">02 · The plan</p>
+          <h3>A consulting plan before any code</h3>
+          <p>The proposal used a consulting method: start with the answer and the person who decides, then work through six steps. Each step answers one plain question.</p>
+          <table class="steps">
+            <caption class="sr">The six planning steps</caption>
+            <thead><tr><th scope="col">Step</th><th scope="col">The question</th><th scope="col">In this demo</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">1 · Goal</th><td data-label="Question">Who decides what, and when?</td><td data-label="In this demo">The head of planning sets stock targets by size each Monday.</td></tr>
+              <tr><th scope="row">2 · Meaning</th><td data-label="Question">What does each number mean?</td><td data-label="In this demo">Missed sales, sold out of delivered, and leftover stock, each defined once.</td></tr>
+              <tr><th scope="row">3 · Data</th><td data-label="Question">What does one row describe?</td><td data-label="In this demo">One store, style and size for one week, with sales and stock.</td></tr>
+              <tr><th scope="row">4 · Build</th><td data-label="Question">What is the simplest method that works?</td><td data-label="In this demo">Forecast per style and store, then split by the store's size pattern.</td></tr>
+              <tr><th scope="row">5 · Check</th><td data-label="Question">How do we know it is right?</td><td data-label="In this demo">Test on a season the method never saw, against today's plan, plus five questions with known answers.</td></tr>
+              <tr><th scope="row">6 · Operate</th><td data-label="Question">Who runs it after I leave?</td><td data-label="In this demo">A weekly refresh, an alert for late data, and a one-page guide (planned, not built).</td></tr>
+            </tbody>
+          </table>
+          <p style="margin-top:12px">The plan also named one hard decision (per style, not per size) and one trap (sold out is not no demand). Both appear in the "Who benefits" tab.</p>
+        </li>
+        <li>
+          <p class="kicker">03 · The data</p>
+          <h3>Made-up data that behaves like a real brand</h3>
+          <p>The browser creates the data from a fixed starting number, so every visit shows the same results. There are 40 stores in 12 cities, and cities lean towards smaller or larger sizes. Each store sells 60 styles over two 26-week seasons: one season to learn from and one to test on.</p>
+          <p>In the first season, every store got the same size mix, just like the brand's current plan. That creates realistic sell-outs for the method to learn from. A real version would add the steps this demo skips: collecting daily store files, cleaning them, and storing one row per store, style and size each day.</p>
+        </li>
+        <li>
+          <p class="kicker">04 · The build</p>
+          <h3>Built with Claude Code</h3>
+          <p>I chose the idea, set the direction and asked for each change. Claude Code, running Anthropic's Claude Opus 5.5, wrote the page in plain HTML and JavaScript, with no libraries and no server. The work went through five stages: plan, build, verify, review and ship.</p>
+          <p>A self-check file runs automatic checks on the logic, for example that both plans use the same stock targets. To prove the tests work, Claude Code also broke the logic on purpose and confirmed that the tests failed.</p>
+        </li>
+        <li>
+          <p class="kicker">05 · The review</p>
+          <h3>Checked by a second AI</h3>
+          <p>OpenAI's GPT-6-Astra, used through Codex with medium reasoning, reviewed the page without editing it. It scored each version against a 100-point checklist covering plain language, honesty, layout, accessibility and privacy, and Claude Code fixed every finding before the next round.</p>
+          <p>In this project, the separate reviewer caught overclaims, unclear labels and a chart that was hard to read on phones. The scores for each round are below.</p>
+          <div aria-label="Review scores by round" id="scores"></div>
+        </li>
+        <li>
+          <p class="kicker">06 · The stack</p>
+          <h3>Simple on purpose</h3>
+          <p>The page is three small files hosted on Cloudflare Pages and published from GitHub, the site where the code is stored. There is no server, no cookies and no tracking. Your browser only remembers whether you have already seen the tour.</p>
+        </li>
+        <li>
+          <p class="kicker">07 · Next</p>
+          <h3>What I would do with real data</h3>
+          <ul>
+            <li>Use the brand's real daily sales and stock counts instead of made-up data.</li>
+            <li>Refresh the numbers every week before the Monday meeting, with an alert if a store's data is late.</li>
+            <li>Use the real profit per item from finance instead of an assumed one.</li>
+            <li>For new stores with no history, borrow the size pattern of similar stores.</li>
+            <li>Write a one-page guide, so the planning team can run it without me.</li>
+          </ul>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <footer>A data demo by Tony Pham. Every store, style and number on this page is made up, and no real company data is used.</footer>
+</div>
+
+<div id="tour" role="dialog" aria-labelledby="tour-title" aria-describedby="tour-text" hidden>
+  <p class="kicker" id="tour-count">The tour</p>
+  <h2 id="tour-title"></h2>
+  <p id="tour-text"></p>
+  <div class="row">
+    <button class="btn ghost" id="tour-skip" type="button">Skip tour</button>
+    <div><button class="btn ghost" id="tour-back" type="button">Back</button><button class="btn" id="tour-next" type="button">Next</button></div>
+  </div>
+</div>
+
+<script src="alloc.js"></script>
+<script>
+(function () {
+  const A = window.Alloc;
+  const data = A.generate();
+  const models = { true: A.learn(data, true), false: A.learn(data, false) };
+  const $ = (id) => document.getElementById(id);
+  const n0 = (x) => Math.round(x).toLocaleString('en-US');
+  const pct = (x) => (x * 100).toFixed(1) + '%';
+  const usd = (x) => '$' + (x >= 1e6 ? (x / 1e6).toFixed(1) + 'M' : n0(x));
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Review rounds for the "How I built it" tab.
+  const SCORES = { 'Previous version (single page)': [76, 91, 99, 100], 'This version (tabs and tour)': [83, 100, 100, 87, 100] };
+  $('scores').innerHTML = Object.entries(SCORES).map(([v, rounds]) => `<p class="note" style="margin:10px 0 4px">${v}</p><div class="scores">` +
+    rounds.map((s, i) => `<div class="${s === 100 ? 'final' : ''}"><b>${s}</b><span>Round ${i + 1}</span></div>`).join('') + '</div>').join('');
+
+  data.stores.forEach((s, i) => { const o = document.createElement('option'); o.value = i; o.textContent = s.name; $('store').appendChild(o); });
+
+  // Hero motif: the size patterns the method learned for two stores, drawn as constellations.
+  (function motif() {
+    const tokyo = models.true.storeCurve[0], chicago = models.true.storeCurve[data.stores.length - 1];
+    const x = (z) => 40 + z * 64, y = (v) => 128 - v * 230;
+    const line = (c) => c.map((v, z) => `${x(z)},${y(v)}`).join(' ');
+    const dots = (c, col) => c.map((v, z) => `<circle cx="${x(z)}" cy="${y(v)}" r="4" fill="${col}"/>`).join('');
+    const peak = (c) => c.indexOf(Math.max(...c));
+    $('motif').innerHTML =
+      `<polyline points="${line(tokyo)}" fill="none" stroke="var(--blue)" stroke-width="1.6" opacity=".9"/>${dots(tokyo, 'var(--blue)')}` +
+      `<polyline points="${line(chicago)}" fill="none" stroke="var(--orange)" stroke-width="1.6" opacity=".9"/>${dots(chicago, 'var(--orange)')}` +
+      `<text x="${x(peak(tokyo))}" y="${y(Math.max(...tokyo)) - 10}" text-anchor="middle" font-size="12" fill="var(--blue)">Tokyo</text>` +
+      `<text x="${x(peak(chicago))}" y="${y(Math.max(...chicago)) - 10}" text-anchor="middle" font-size="12" fill="var(--orange)">Chicago</text>` +
+      data.sizes.map((s, z) => `<text x="${x(z)}" y="152" text-anchor="middle" font-size="11" fill="var(--muted)">${s}</text>`).join('');
+    let st = '';
+    for (let i = 0; i < 90; i++) { const h = Math.abs(Math.sin(i * 12.9898) * 43758.5453) % 1, k = Math.abs(Math.sin(i * 78.233) * 12345.678) % 1; st += `<circle cx="${(h * 100).toFixed(2)}%" cy="${(k * 100).toFixed(2)}%" r="${(0.6 + (i % 3) * 0.5).toFixed(1)}" fill="#C9D6E2" opacity="${(0.15 + (i % 5) * 0.08).toFixed(2)}"/>`; }
+    $('stars').innerHTML = st;
+  })();
+
+  // Text in SVG sits in viewBox units, so scale it up when a chart is drawn narrow (phones).
+  const textScale = (el, W) => Math.max(1, Math.min(2.2, W / Math.max(1, el.clientWidth || W)));
+
+  // Store chart: for each size, missed sales go left (orange) and items left unsold go right (grey).
+  // Top bar = same mix, bottom bar = own mix. Both sides are real counts from the season replay.
+  function chart(st, b, k) {
+    const sz = data.sizes, B = b.bySize[st], K = k.bySize[st];
+    const f = textScale($('chart'), 640), W = 640, labX = 40 * f, mid = labX + (W - labX) / 2, T = 24 * f, rowH = 36 * f, barH = 11 * f, H = T + rowH * 6 + 6;
+    const room = Math.min(mid - labX, W - mid) - 56 * f; // same space each side, with room for the number labels
+    const max = Math.max(1, ...B.lost, ...B.leftover, ...K.lost, ...K.leftover), sc = (v) => (v / max) * room;
+    let g = `<text x="${mid - 12}" y="${14 * f}" text-anchor="end" font-size="${12 * f}" fill="var(--orange)">◀ missed sales</text><text x="${mid + 12}" y="${14 * f}" font-size="${12 * f}" fill="#8B95A1">left unsold ▶</text>`;
+    g += `<line x1="${mid}" x2="${mid}" y1="${T - 4}" y2="${T + rowH * 6}" stroke="var(--line)"/>`;
+    sz.forEach((s, z) => {
+      const y = T + z * rowH;
+      g += `<text x="${labX}" y="${y + rowH / 2 + 4 * f}" text-anchor="end" font-size="${13 * f}" fill="var(--ink)">${s}</text>`;
+      [[B, y + 3 * f, 1], [K, y + 3 * f + barH + 4 * f, 0.55]].forEach(([P, yy, op]) => {
+        const lw = sc(P.lost[z]), rw = sc(P.leftover[z]);
+        g += `<rect x="${mid - lw}" y="${yy}" width="${Math.max(0.5, lw)}" height="${barH}" rx="2" fill="var(--orange)" opacity="${op}"/>`;
+        g += `<rect x="${mid}" y="${yy}" width="${Math.max(0.5, rw)}" height="${barH}" rx="2" fill="#8B95A1" opacity="${op}"/>`;
+        if (P.lost[z] >= max * 0.06) g += `<text x="${mid - lw - 4}" y="${yy + barH - 1}" text-anchor="end" font-size="${10 * f}" fill="var(--soft)">${n0(P.lost[z])}</text>`;
+        if (P.leftover[z] >= max * 0.06) g += `<text x="${mid + rw + 4}" y="${yy + barH - 1}" font-size="${10 * f}" fill="var(--soft)">${n0(P.leftover[z])}</text>`;
+      });
+    });
+    const top = (arr) => arr.indexOf(Math.max(...arr));
+    const bm = top(B.lost), bl = top(B.leftover);
+    const name = data.stores[st].name;
+    const take = `${name}, same mix: ${n0(B.lost[bm])} customers missed size ${sz[bm]}, and ${n0(B.leftover[bl])} size ${sz[bl]} items were left unsold. ` +
+      `Own mix: no size has more than ${n0(Math.max(...K.lost))} missed sales or ${n0(Math.max(...K.leftover))} items left unsold.`;
+    $('store-take').textContent = take;
+    $('store-table').innerHTML = sz.map((s, z) => `<tr><th scope="row">${s}</th><td class="num">${n0(B.lost[z])}</td><td class="num">${n0(K.lost[z])}</td><td class="num">${n0(B.leftover[z])}</td><td class="num">${n0(K.leftover[z])}</td></tr>`).join('');
+    const desc = sz.map((s, z) => `${s}: missed sales ${n0(B.lost[z])} same mix, ${n0(K.lost[z])} own mix; left unsold ${n0(B.leftover[z])} same mix, ${n0(K.leftover[z])} own mix`).join('; ');
+    $('chart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(name)} over one season. ${esc(desc)}.">${g}</svg>`;
+  }
+
+  // Trade-off chart: every slider setting as a dot. Filled in the background, then cached per fix setting.
+  const grid = { true: {}, false: {} };
+  let filling = null;
+  function fillGrid(correct) {
+    if (filling === correct) return;
+    filling = correct;
+    const todo = [];
+    for (let L = 1; L <= 8; L++) for (let s = 0; s <= 50; s += 5) if (!grid[correct][`${L}_${s}`]) todo.push([L, s]);
+    (function step() {
+      if (filling !== correct) return;
+      for (let i = 0; i < 4 && todo.length; i++) {
+        const [L, s] = todo.shift(), o = { leadTime: L, safety: s / 100 };
+        const b = A.simulate(data, models[correct], 'baseline', o), k = A.simulate(data, models[correct], 'curve', o);
+        grid[correct][`${L}_${s}`] = [b.leftover, b.lostPct, k.leftover, k.lostPct];
+      }
+      scatter(correct, null);
+      if (todo.length) setTimeout(step, 0); else filling = null;
+    })();
+  }
+  let current = null;
+  function scatter(correct, now) {
+    if (now) current = now;
+    if (!current) return;
+    const f = textScale($('scatter'), 640), W = 640, H = 300 + 40 * (f - 1), L = 48 * f, R = 14, T = 12 * f, B = 40 * f;
+    const yMax = correct ? 0.3 : 0.36; // fit the data: missed sales stay under 30% with the fix on
+    const X = (v) => L + (W - L - R) * Math.min(v, 350000) / 350000, Y = (v) => T + (H - T - B) * (1 - Math.min(v, yMax) / yMax);
+    let g = '<defs><marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#E6EDF3"/></marker></defs>';
+    for (const t of [0, 0.1, 0.2, 0.3]) g += `<line x1="${L}" x2="${W - R}" y1="${Y(t)}" y2="${Y(t)}" stroke="var(--line)"/><text x="${L - 6}" y="${Y(t) + 4}" text-anchor="end" font-size="${11 * f}" fill="var(--muted)">${t * 100}%</text>`;
+    for (const t of [0, 100000, 200000, 300000]) g += `<text x="${X(t)}" y="${H - B + 16 * f}" text-anchor="middle" font-size="${11 * f}" fill="var(--muted)">${t ? t / 1000 + 'k' : 0}</text>`;
+    g += `<text x="${(L + W - R) / 2}" y="${H - 4}" text-anchor="middle" font-size="${12 * f}" fill="var(--soft)">Left unsold at season end (items, k = thousand)</text>`;
+    g += `<text x="${16 * f}" y="${(T + H - B) / 2}" text-anchor="middle" font-size="${12 * f}" fill="var(--soft)" transform="rotate(-90 ${16 * f} ${(T + H - B) / 2})">Missed sales</text>`;
+    g += `<text x="${L + 8}" y="${H - B - 8}" font-size="${12 * f}" fill="var(--green)">↙ better</text>`;
+    const sq = (x, y, r, extra) => `<rect x="${x - r}" y="${y - r}" width="${2 * r}" height="${2 * r}" ${extra}/>`;
+    for (const v of Object.values(grid[correct])) g += sq(X(v[0]), Y(v[1]), 2.4 * f, 'fill="var(--grey)" opacity=".5"') + `<circle cx="${X(v[2])}" cy="${Y(v[3])}" r="${2.6 * f}" fill="var(--blue)" opacity=".5"/>`;
+    const [bx, by, kx, ky] = current;
+    g += `<line x1="${X(bx)}" y1="${Y(by)}" x2="${X(kx)}" y2="${Y(ky) - 9 * f}" stroke="#E6EDF3" stroke-width="1.5" marker-end="url(#arr)"/>`;
+    g += sq(X(bx), Y(by), 6.5 * f, 'fill="var(--grey)" stroke="#E6EDF3" stroke-width="1.5"') + `<circle cx="${X(kx)}" cy="${Y(ky)}" r="${7 * f}" fill="var(--blue)" stroke="#E6EDF3" stroke-width="1.5"/>`;
+    const tag = (x, y, txt, col) => x > W * 0.72 ? `<text x="${x - 12 * f}" y="${y + 4 * f}" text-anchor="end" font-size="${12 * f}" fill="${col}">${txt}</text>` : `<text x="${x + 12 * f}" y="${y + 4 * f}" font-size="${12 * f}" fill="${col}">${txt}</text>`;
+    g += tag(X(bx), Y(by), 'Same mix', 'var(--ink)') + tag(X(kx), Y(ky), 'Own mix', 'var(--blue)');
+    $('scatter').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Your setting: same mix misses ${pct(by)} with ${n0(bx)} items left over; own mix misses ${pct(ky)} with ${n0(kx)} left over. Faint dots show every other setting.">${g}</svg>`;
+  }
+
+  function moves(leadTime, safety, model) {
+    const m = A.mondayMoves(data, model, { leadTime, safety });
+    const li = (x, cls) => `<li><span>${esc(x.store)}, size ${esc(x.size)}</span><b class="${cls}">${x.delta > 0 ? '+' : '−'}${n0(Math.abs(x.delta))}</b></li>`;
+    $('more').innerHTML = m.more.map((x) => li(x, 'up')).join('');
+    $('fewer').innerHTML = m.fewer.map((x) => li(x, 'down')).join('');
+  }
+
+  function render() {
+    const leadTime = +$('lead').value, safety = +$('safety').value / 100, correct = $('correct').checked;
+    const margin = Math.max(0, Math.min(500, Math.round(+$('margin').value) || 0));
+    if ($('margin').value !== '' && +$('margin').value !== margin) $('margin').value = margin;
+    $('lead-out').textContent = leadTime === 1 ? 'week' : `${leadTime} weeks`;
+    $('safety-out').textContent = `${Math.round(safety * 100)}%`;
+    const m = models[correct];
+    const b = A.simulate(data, m, 'baseline', { leadTime, safety }), k = A.simulate(data, m, 'curve', { leadTime, safety });
+    const extra = b.lost - k.lost;
+    const cut = b.lostPct > 0 ? 1 - k.lostPct / b.lostPct : 0;
+    $('lede-result').textContent = `${Math.round(cut * 100)}% fewer`;
+    $('extra-delivered').textContent = n0(k.received - b.received);
+    $('k-base').textContent = $('hero-base').textContent = pct(b.lostPct);
+    $('k-curve').textContent = $('hero-curve').textContent = pct(k.lostPct);
+    $('k-avoided').textContent = n0(extra);
+    $('k-money').textContent = usd(extra * margin);
+    $('k-money-note').textContent = `at an assumed $${margin} profit per item`;
+    $('extra').textContent = '+' + n0(extra);
+    $('take').textContent = `Missed sales fall from ${pct(b.lostPct)} to ${pct(k.lostPct)}. Items left unsold: ${n0(k.leftover)} with the own mix, against ${n0(b.leftover)}.`;
+    $('cut').textContent = `−${Math.round(cut * 100)}%`;
+    const wM = (v) => `${Math.min(100, (v / 0.36) * 100)}%`, wL = (v) => `${Math.min(100, (v / 350000) * 100)}%`;
+    $('mB').style.width = wM(b.lostPct); $('mK').style.width = wM(k.lostPct); $('mBv').textContent = pct(b.lostPct); $('mKv').textContent = pct(k.lostPct);
+    $('lB').style.width = wL(b.leftover); $('lK').style.width = wL(k.leftover);
+    $('lBv').textContent = n0(b.leftover); $('lKv').textContent = n0(k.leftover);
+    grid[correct][`${leadTime}_${Math.round(safety * 100)}`] = [b.leftover, b.lostPct, k.leftover, k.lostPct];
+    scatter(correct, [b.leftover, b.lostPct, k.leftover, k.lostPct]);
+    fillGrid(correct);
+    const row = (label, bv, kv, fmt, lowerIsBetter) => {
+      const better = lowerIsBetter === null ? false : lowerIsBetter ? kv < bv : kv > bv;
+      return `<tr><th scope="row">${label}</th><td class="num">${fmt(bv)}</td><td class="num${better ? ' better' : ''}">${fmt(kv)}</td></tr>`;
+    };
+    $('results').innerHTML = [
+      row('Missed sales (items)', b.lost, k.lost, n0, true),
+      row('Missed sales (share)', b.lostPct, k.lostPct, pct, true),
+      row('Sold, out of delivered', b.sellThrough, k.sellThrough, pct, false),
+      row('Left over at the end', b.leftover, k.leftover, n0, true),
+      row('Items delivered', b.received, k.received, n0, null),
+    ].join('');
+    const other = A.simulate(data, models[!correct], 'curve', { leadTime, safety });
+    $('trap-note').textContent = correct
+      ? `With the current settings on the Numbers tab, skipping this fix would miss ${n0(other.lost - k.lost)} more sales.`
+      : `With the current settings on the Numbers tab, this fix would save ${n0(k.lost - other.lost)} more sales.`;
+    moves(leadTime, safety, m);
+    chart(+$('store').value, b, k);
+  }
+
+  $('golden').innerHTML = A.answerGolden(data).map((g) =>
+    `<li><span class="mark ${g.pass ? 'pass' : 'fail'}">${g.pass ? '✓ Correct' : '✗ Changed'}</span>${esc(g.q)} <span class="mono">${esc(typeof g.answer === 'number' ? n0(g.answer) : g.answer)}</span></li>`).join('');
+
+  let queued = false;
+  const schedule = () => { if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; render(); }); } };
+  ['lead', 'safety', 'margin', 'correct', 'store'].forEach((id) => $(id).addEventListener('input', schedule));
+  window.addEventListener('resize', schedule);
+
+  // Tabs (WAI-ARIA tabs pattern: arrow keys, Home and End move between tabs).
+  const tabs = [...document.querySelectorAll('[role=tab]')];
+  function showTab(id, focus) {
+    tabs.forEach((t) => {
+      const on = t.id === id;
+      t.setAttribute('aria-selected', on);
+      t.tabIndex = on ? 0 : -1;
+      $(t.getAttribute('aria-controls')).hidden = !on;
+      if (on && focus) t.focus();
+    });
+    if (id === 'tab-numbers') schedule(); // the chart measures its width, so redraw once visible
+  }
+  tabs.forEach((t, i) => {
+    t.addEventListener('click', () => showTab(t.id));
+    t.addEventListener('keydown', (e) => {
+      const j = { ArrowRight: (i + 1) % tabs.length, ArrowLeft: (i - 1 + tabs.length) % tabs.length, Home: 0, End: tabs.length - 1 }[e.key];
+      if (j !== undefined) { e.preventDefault(); showTab(tabs[j].id, true); }
+    });
+  });
+
+  // First-visit tour, in plain words. Each step can switch tab and highlight one part of the page.
+  const TOUR_KEY = 'sizes-that-sell-tour-seen';
+  const steps = [
+    { tab: 'tab-numbers', target: null, title: 'Welcome',
+      text: () => 'This page shows how a clothing brand could sell more by sending each store the sizes its own customers buy. All the data is made up. This tour takes about a minute, and you can skip it at any time.' },
+    { tab: 'tab-numbers', target: '#kpis', title: 'The result in four numbers',
+      text: () => `Today the brand misses ${$('k-base').textContent} of sales, because sizes run out. With each store's own size mix, it misses ${$('k-curve').textContent}. The last two boxes turn that into extra items sold and extra profit.` },
+    { tab: 'tab-numbers', target: '#moves', title: 'What the planner changes',
+      text: () => 'This is the decision itself. Each Monday, the planner raises stock targets for sizes a store keeps running out of, and lowers them for sizes that sit unsold.' },
+    { tab: 'tab-numbers', target: '#controls', title: 'Try different rules',
+      text: () => 'Move these sliders to change how often stores get deliveries and how much spare stock they keep. The bars and the dot chart below update straight away.' },
+    { tab: 'tab-numbers', target: '#store-pick', title: 'Look at one store',
+      text: () => 'Pick a store. For each size, orange shows customers who left without their size, and grey shows items left unsold. Try a Tokyo store, then a Chicago store.' },
+    { tab: 'tab-why', target: '#tab-why', title: 'Who benefits, and why',
+      text: () => 'This tab explains who gains from the change and why the method works. It also shows one common mistake: treating "sold out" as "nobody wanted it".' },
+    { tab: 'tab-built', target: '#tab-built', title: 'How I built it',
+      text: () => 'This tab shows how the demo was planned, built and checked, including the AI tools used. That is the end of the tour. You can restart it any time with the tour button at the top.' },
+  ];
+  let ti = -1, lastFocus = null;
+  const clearTarget = () => document.querySelectorAll('.tour-target').forEach((e) => e.classList.remove('tour-target'));
+  function drawStep() {
+    const s = steps[ti];
+    showTab(s.tab);
+    clearTarget();
+    render(); // make sure numbers in the step text are current
+    const el = s.target && document.querySelector(s.target);
+    if (el) { el.classList.add('tour-target'); el.scrollIntoView({ block: 'start', behavior: reduceMotion ? 'auto' : 'smooth' }); }
+    else window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+    $('tour-count').textContent = `The tour · ${ti + 1} / ${steps.length}`;
+    $('tour-title').textContent = s.title;
+    $('tour-text').textContent = s.text();
+    $('tour-back').disabled = ti === 0;
+    $('tour-next').textContent = ti === steps.length - 1 ? 'Finish' : 'Next';
+    $('tour-next').focus({ preventScroll: true });
+  }
+  function openTour() {
+    lastFocus = document.activeElement; ti = 0; $('tour').hidden = false;
+    document.body.style.paddingBottom = `${$('tour').offsetHeight + 32}px`; // lets the last targets scroll above the card
+    drawStep();
+  }
+  function closeTour() {
+    clearTarget();
+    $('tour').hidden = true;
+    document.body.style.paddingBottom = '';
+    try { localStorage.setItem(TOUR_KEY, '1'); } catch (e) { /* private mode: the tour just shows again next time */ }
+    showTab('tab-numbers');
+    (lastFocus && lastFocus !== document.body ? lastFocus : $('tour-open')).focus();
+  }
+  $('tour-open').addEventListener('click', openTour);
+  $('tour-skip').addEventListener('click', closeTour);
+  $('tour-back').addEventListener('click', () => { if (ti > 0) { ti--; drawStep(); } });
+  $('tour-next').addEventListener('click', () => { if (ti < steps.length - 1) { ti++; drawStep(); } else closeTour(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('tour').hidden) closeTour(); });
+
+  $('store').value = 0;
+  render();
+  let seen = false;
+  try { seen = localStorage.getItem(TOUR_KEY) === '1'; } catch (e) { seen = false; }
+  if (!seen) setTimeout(openTour, 500);
+})();
+</script>
+</body>
+</html>
