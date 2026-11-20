@@ -1,0 +1,164 @@
+{
+  "ideas": [
+    {
+      "chapter": 1,
+      "idea": "Men and women are very different (from different planets); accept your partner's differences",
+      "verdict": "RED",
+      "reason": "Big reviews of many studies show men and women are alike on most psychological traits, and gender is not split into two clear types. Accepting that your partner is different from you is fine advice, but the differences are between individual people, not between sexes.",
+      "gender_framing": "no",
+      "sources": [
+        {"url": "https://www.apa.org/pubs/journals/releases/amp-606581.pdf", "title": "Hyde (2005) The Gender Similarities Hypothesis, American Psychologist", "status": "read"},
+        {"url": "https://pubmed.ncbi.nlm.nih.gov/23088230/", "title": "Carothers & Reis (2013) Men and women are from Earth: examining the latent structure of gender, JPSP", "status": "snippet"}
+      ]
+    },
+    {
+      "chapter": 2,
+      "idea": "Unsolicited advice ('Mr Fix-It') can feel like criticism",
+      "verdict": "GREEN",
+      "reason": "Studies find advice you did not ask for is rated as worse and followed less often, and support that is obvious can make a stressed person feel less capable. Support works best when it is wanted or barely noticed.",
+      "gender_framing": "no",
+      "sources": [
+        {"url": "https://pubmed.ncbi.nlm.nih.gov/11138764/", "title": "Bolger, Zuckerman & Kessler (2000) Invisible support and adjustment to stress, JPSP", "status": "snippet"},
+        {"url": "http://www.lisaguntzviller.com/wp-content/uploads/2012/04/MacGeorge-Feng-Guntzviller-Communication-Yearbook-in-press.pdf", "title": "MacGeorge, Feng & Guntzviller, Advice: Expanding the communication paradigm (Communication Yearbook)", "status": "snippet"}
+      ]
+    },
+    {
+      "chapter": 3,
+      "idea": "Withdraw to 'the cave' when stressed rather than talking it out",
+      "verdict": "AMBER",
+      "reason": "A short break (at least 20 minutes) when your heart is racing during a fight helps, but going quiet without saying when you will come back is the 'demand–withdraw' pattern, and research links that pattern to unhappier relationships. Women tend to push and men tend to pull back on average, but this depends a lot on who wants the change.",
+      "gender_framing": "mixed",
+      "sources": [
+        {"url": "https://www.gottman.com/blog/manage-conflict-part-4/", "title": "Gottman Institute: Manage Conflict Part 4 (flooding and self-soothing breaks)", "status": "read"},
+        {"url": "https://pubmed.ncbi.nlm.nih.gov/2213491/", "title": "Christensen & Heavey (1990) Gender and social structure in the demand/withdraw pattern of marital conflict, JPSP", "status": "snippet"},
+        {"url": "https://www.researchgate.net/publication/263347858_A_Meta-Analytical_Review_of_the_DemandWithdraw_Pattern_of_Interaction_and_its_Associations_with_Individual_Relational_and_Communicative_Outcomes", "title": "Schrodt et al. (2014) Meta-analysis of the demand/withdraw pattern, Communication Monographs", "status": "snippet"}
+      ]
+    },
+    {
+      "chapter": 4,
+      "idea": "People are motivated when they feel needed and appreciated (men) or cared for (women)",
+      "verdict": "GREEN",
+      "reason": "Saying thank you and showing you notice your partner's effort strengthens relationships, and feeling understood, valued and cared for is a core driver of closeness. This is true for everyone, not split by sex.",
+      "gender_framing": "no",
+      "sources": [
+        {"url": "https://compass.onlinelibrary.wiley.com/doi/abs/10.1111/j.1751-9004.2012.00439.x", "title": "Algoe (2012) Find, Remind, and Bind: The Functions of Gratitude in Everyday Relationships", "status": "snippet"},
+        {"url": "https://www.sas.rochester.edu/psy/people/faculty/reis_harry/assets/pdf/ReisClarkHolmes_2004.pdf", "title": "Reis, Clark & Holmes (2004) Perceived partner responsiveness as an organizing construct", "status": "snippet"}
+      ]
+    },
+    {
+      "chapter": 5,
+      "idea": "Men and women speak different languages; 'you never' is a feeling, not a fact",
+      "verdict": "AMBER",
+      "reason": "Treating 'you never' as a sign of hurt is sensible, and Gottman's work shows sweeping 'you always/never' attacks (criticism) do more harm than a specific complaint. But linguists find men and women do not really speak different languages; the overlap is huge.",
+      "gender_framing": "no",
+      "sources": [
+        {"url": "https://www.gottman.com/blog/the-four-horsemen-recognizing-criticism-contempt-defensiveness-and-stonewalling/", "title": "Gottman Institute: The Four Horsemen (criticism vs complaint)", "status": "read"},
+        {"url": "https://en.wikipedia.org/wiki/The_Myth_of_Mars_and_Venus", "title": "Deborah Cameron (2007) The Myth of Mars and Venus (book summary)", "status": "snippet"}
+      ]
+    },
+    {
+      "chapter": 6,
+      "idea": "Rubber band: people pull away for independence and then come back closer",
+      "verdict": "AMBER",
+      "reason": "Research agrees everyone feels a push and pull between wanting closeness and wanting independence. But a strong habit of pulling away matches 'avoidant attachment', which is linked to lower satisfaction, so it is not always healthy and it is not a male trait.",
+      "gender_framing": "no",
+      "sources": [
+        {"url": "https://en.wikipedia.org/wiki/Relational_dialectics", "title": "Relational dialectics theory (Baxter & Montgomery) overview", "status": "snippet"},
+        {"url": "https://adultattachment.faculty.ucdavis.edu/wp-content/uploads/sites/66/2015/09/Shaver_2006_Attachment-theory-individual-psychodynamics-and-relationship-functioning.pdf", "title": "Shaver & Mikulincer (2006) Attachment theory, individual psychodynamics and relationship functioning", "status": "snippet"}
+      ]
+    },
+    {
+      "chapter": 7,
+      "idea": "Waves: when someone is at a low point they need listening, not fixing",
+      "verdict": "AMBER",
+      "reason": "Listening, affection and showing you accept their feelings usually helps someone who is upset, and dismissing feelings makes things worse. But some people do want practical help, so the best move is to ask what they need.",
+      "gender_framing": "no",
+      "sources": [
+        {"url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9382965/", "title": "Interpersonal Emotion Regulation: an Experience Sampling Study (PMC)", "status": "snippet"},
+        {"url": "https://online.ucpress.edu/collabra/article/10/1/90797/199794/May-I-Help-You-The-Relationship-Between", "title": "May I Help You? Interpersonal emotion regulation and wellbeing in daily life, Collabra", "status": "snippet"}
+      ]
+    },
+    {
+      "chapter": 8,
+      "idea": "Love tank: each partner has specific love needs that must be filled",
+      "verdict": "AMBER",
+      "reason": "Showing love often matters, but research on the similar 'love languages' idea finds people value all kinds of love, not one special type, and matching on a type does not predict happiness. Think of it as a balanced diet, not one tank.",
+      "gender_framing": "no",
+      "sources": [
+        {"url": "https://www.psychologicalscience.org/publications/observer/teaching-current-directions-love-languages.html", "title": "APS Observer: Empirical Evidence Is My Love Language (on Impett, Park & Muise 2024)", "status": "read"},
+        {"url": "https://journals.sagepub.com/doi/10.1177/09637214231217663", "title": "Impett, Park & Muise (2024) Evaluating Love Languages From a Relationship Science Perspective, Current Directions in Psychological Science", "status": "snippet"}
+      ]
+    },
+    {
+      "chapter": 9,
+      "idea": "Arguments escalate because of how we talk, not what we argue about",
+      "verdict": "GREEN",
+      "reason": "Gottman's long-term studies of couples found that criticism, contempt, defensiveness and stonewalling predict break-ups much better than the topic of the fight.",
+      "gender_framing": "no",
+      "sources": [
+        {"url": "https://www.gottman.com/blog/the-four-horsemen-recognizing-criticism-contempt-defensiveness-and-stonewalling/", "title": "Gottman Institute: The Four Horsemen", "status": "read"}
+      ]
+    },
+    {
+      "chapter": 10,
+      "idea": "Small, frequent kind acts count as much as big ones",
+      "verdict": "GREEN",
+      "reason": "Couples who stayed married responded to each other's small everyday bids for attention about 86% of the time versus 33% for couples who divorced, and small daily thanks gives a measurable boost. The book's 'every act scores one point' rule itself is not tested.",
+      "gender_framing": "no",
+      "sources": [
+        {"url": "https://www.gottman.com/blog/turn-toward-instead-of-away/", "title": "Gottman Institute: Turn Towards Instead of Away (bids research)", "status": "read"},
+        {"url": "https://compass.onlinelibrary.wiley.com/doi/abs/10.1111/j.1751-9004.2012.00439.x", "title": "Algoe (2012) Find, Remind, and Bind (cites Algoe, Gable & Maisel 2010 'It's the little things')", "status": "snippet"}
+      ]
+    },
+    {
+      "chapter": 11,
+      "idea": "Love Letter: write out anger, sadness, fear, regret and love before talking",
+      "verdict": "AMBER",
+      "reason": "Naming feelings in words calms the brain's alarm system, and a 21-minute writing task where couples looked at a fight as a neutral outsider stopped their relationship quality from dropping. General expressive writing only helps a little, and Gray's exact letter format has not been tested.",
+      "gender_framing": "no",
+      "sources": [
+        {"url": "https://faculty.wcas.northwestern.edu/eli-finkel/documents/InPress_FinkelSlotterLuchiesWaltonGross_PSci.pdf", "title": "Finkel et al. (2013) A Brief Intervention to Promote Conflict Reappraisal Preserves Marital Quality Over Time, Psychological Science", "status": "read"},
+        {"url": "https://pubmed.ncbi.nlm.nih.gov/17576282/", "title": "Lieberman et al. (2007) Putting feelings into words: affect labeling disrupts amygdala activity", "status": "snippet"},
+        {"url": "https://psycnet.apa.org/record/2006-20202-001", "title": "Frattaroli (2006) Experimental disclosure and its moderators: A meta-analysis", "status": "snippet"}
+      ]
+    },
+    {
+      "chapter": 12,
+      "idea": "Ask directly; say 'Would you...' not 'Could you...'",
+      "verdict": "GREY",
+      "reason": "Asking clearly for what you want makes sense, but no study found tests whether 'would' works better than 'could' with a partner; linguists treat both as normal polite requests.",
+      "gender_framing": "no",
+      "sources": [
+        {"url": "https://www.stanford.edu/~clark/1980s/Clark,%20H.H.%20_%20Schunk,%20D.H.%20_Polite%20responses%20to%20polite%20requests_%201980.pdf", "title": "Clark & Schunk (1980) Polite responses to polite requests (strangers, not couples)", "status": "snippet"}
+      ]
+    },
+    {
+      "chapter": 13,
+      "idea": "Love has seasons; keep practising the skills",
+      "verdict": "GREEN",
+      "reason": "The happiness boost from getting married fades back to normal within a few years on average, and couples who keep doing everyday upkeep (being positive, reassuring each other, sharing tasks) stay more committed and satisfied.",
+      "gender_framing": "no",
+      "sources": [
+        {"url": "https://journals.sagepub.com/doi/10.1177/0265407591082004", "title": "Stafford & Canary (1991) Maintenance strategies and romantic relationship type, gender and relational characteristics", "status": "snippet"},
+        {"url": "https://pubmed.ncbi.nlm.nih.gov/12635914/", "title": "Lucas et al. (2003) Reexamining adaptation and the set point model of happiness: marital status", "status": "snippet"}
+      ]
+    }
+  ],
+  "missed": [
+    {
+      "finding": "Attachment styles (secure, anxious, avoidant)",
+      "why_it_matters": "Much of what Gray puts down to being male or female (pulling away, needing reassurance) is better explained by each person's attachment style, which applies to any gender and to friends, family and work.",
+      "url": "https://adultattachment.faculty.ucdavis.edu/wp-content/uploads/sites/66/2015/09/Shaver_2006_Attachment-theory-individual-psychodynamics-and-relationship-functioning.pdf"
+    },
+    {
+      "finding": "Perceived partner responsiveness",
+      "why_it_matters": "Feeling understood, valued and cared for by the other person is one of the strongest single predictors of closeness; it replaces many of the book's separate men/women rules with one skill.",
+      "url": "https://www.sas.rochester.edu/psy/people/faculty/reis_harry/assets/pdf/ReisClarkHolmes_2004.pdf"
+    },
+    {
+      "finding": "Contempt is the strongest predictor of break-up",
+      "why_it_matters": "Gottman found eye-rolling, mockery and feeling superior do the most damage; the book does not name contempt as the thing to stop first.",
+      "url": "https://www.gottman.com/blog/the-four-horsemen-recognizing-criticism-contempt-defensiveness-and-stonewalling/"
+    }
+  ]
+}
