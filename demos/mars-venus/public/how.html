@@ -19,6 +19,7 @@
     .glance b { display: block; font-size: 38px; font-weight: 500; font-variant-numeric: tabular-nums; }
     .lights { display: flex; height: 12px; margin: 6px 0 6px; border: 1px solid var(--faint); }
     .lights span { display: block; height: 100%; }
+    .lights[hidden], .lights-key[hidden] { display: none; }
     .lights-key { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--dim); margin-bottom: 40px; }
     .lights-key i { margin-right: 6px; vertical-align: -1px; }
     .steps { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
@@ -53,16 +54,17 @@
     <p class="lede" data-i18n="how.lede"></p>
 
     <div class="glance">
-      <div><b data-k="reviews">124</b><span class="label" data-i18n="how.reviews"></span></div>
-      <div><b data-k="quotes">43</b><span class="label" data-i18n="how.quotes"></span></div>
-      <div><b data-k="ideas">13</b><span class="label" data-i18n="how.ideas"></span></div>
-      <div><b data-k="moments">52</b><span class="label" data-i18n="how.moments"></span></div>
+      <div><b data-k="reviews">—</b><span class="label" data-i18n="how.reviews"></span></div>
+      <div><b data-k="quotes">—</b><span class="label" data-i18n="how.quotes"></span></div>
+      <div><b data-k="ideas">—</b><span class="label" data-i18n="how.ideas"></span></div>
+      <div><b data-k="moments">—</b><span class="label" data-i18n="how.moments"></span></div>
     </div>
-    <div class="lights" id="lights" role="img" data-i18n-aria="how.lightsAria"></div>
+    <div class="lights" id="lights" role="img" data-i18n-aria="how.lightsAria" hidden></div>
     <div class="lights-key" id="lightsKey"></div>
+    <p class="lights-key" id="dataFail" hidden data-i18n="how.dataFail"></p>
 
     <ol class="steps">
-      <li data-n="1"><h2 data-i18n="how.s1.title"></h2><p data-i18n="how.s1.p1"></p><p data-i18n="how.s1.p2"></p></li>
+      <li data-n="1"><h2 data-i18n="how.s1.title"></h2><p data-i18n="how.s1.p1Fallback" data-i18n-loaded="how.s1.p1"></p><p data-i18n="how.s1.p2"></p></li>
       <li data-n="2"><h2 data-i18n="how.s2.title"></h2><p data-i18n="how.s2.p1"></p><p data-i18n="how.s2.p2"></p></li>
       <li data-n="3"><h2 data-i18n="how.s3.title"></h2><p data-i18n="how.s3.p1"></p>
         <figure><img class="tall" src="img/how-1-idea-map.jpg" data-i18n-alt="how.s3.alt" alt="" loading="lazy"><figcaption data-i18n="how.s3.cap"></figcaption></figure></li>
@@ -100,25 +102,31 @@
     // Words come from i18n.js (English + Vietnamese); numbers come from the same data file the game uses.
     const I18N = window.I18N || { en: {} }, q = new URLSearchParams(location.search).get("lang");
     const L = ["en", "vi"].includes(q) && I18N[q] ? q : (navigator.language || "").toLowerCase().startsWith("vi") && I18N.vi ? "vi" : "en";
-    const T = (k) => (I18N[L] && I18N[L][k]) ?? I18N.en[k] ?? k;
+    const T = (k, v = {}) => String((I18N[L] && I18N[L][k]) ?? I18N.en[k] ?? k).replace(/\{(\w+)\}/g, (_, n) => (n in v ? v[n] : `{${n}}`));
+    const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    // Same rule as the game: language-file text may only use <b>, <i> and <br>; everything else is escaped.
+    const rich = (k, v = {}) => esc(T(k, Object.fromEntries(Object.entries(v).map(([a, b]) => [a, `\u0000${esc(b)}\u0001`]))))
+      .replace(/&lt;(\/?(?:b|i)|br)&gt;/g, "<$1>").replace(/\u0000(.*?)\u0001/g, (_, x) => x.replace(/&amp;(amp|lt|gt|quot|#39);/g, "&$1;"));
     const langQ = "?lang=" + L;
     document.documentElement.lang = L; document.title = T("how.title");
-    document.querySelectorAll("[data-i18n]").forEach((el) => { el.innerHTML = T(el.dataset.i18n); });
+    document.querySelectorAll("[data-i18n]").forEach((el) => { el.innerHTML = rich(el.dataset.i18n); });
     document.querySelectorAll("[data-i18n-alt]").forEach((el) => { el.alt = T(el.dataset.i18nAlt); });
     document.querySelectorAll("[data-i18n-aria]").forEach((el) => { el.setAttribute("aria-label", T(el.dataset.i18nAria)); });
     document.querySelectorAll("[data-href]").forEach((el) => { el.href = el.dataset.href + langQ; });
     document.getElementById("langSwitch").setAttribute("aria-label", T("lang.switch"));
     document.getElementById("langSwitch").innerHTML = ["en", "vi"].map((k) => `<a href="?lang=${k}" lang="${k}" ${k === L ? 'aria-current="true"' : ""}>${k.toUpperCase()}</a>`).join("<span>|</span>");
-    fetch("data/content.json").then((r) => r.json()).then((c) => {
+    fetch("data/content.json").then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); }).then((c) => {
       const n = { reviews: c.reviewsRead, quotes: c.quotesChecked, ideas: c.ideas.length, moments: c.ideas.reduce((a, i) => a + i.scenarios.length, 0) };
+      if (!Object.values(n).every(Number.isFinite)) throw new Error("bad data");
       document.querySelectorAll("[data-k]").forEach((el) => { el.textContent = n[el.dataset.k]; });
-      document.querySelectorAll("[data-i18n]").forEach((el) => { el.innerHTML = el.innerHTML.replace(/\{(\w+)\}/g, (m, k) => (k in n ? n[k] : m)); });
+      document.querySelectorAll("[data-i18n-loaded]").forEach((el) => { el.innerHTML = rich(el.dataset.i18nLoaded, n); });
+      document.getElementById("lights").hidden = false;
       const order = ["GREEN", "AMBER", "RED", "GREY"], key = { GREEN: "plan.keyGreen", AMBER: "plan.keyAmber", RED: "plan.keyRed", GREY: "plan.keyGrey" };
       const col = { GREEN: "#69db7c", AMBER: "#ffc078", RED: "#ff6b6b", GREY: "#adb5bd" };
       const count = Object.fromEntries(order.map((k) => [k, c.ideas.filter((i) => i.light === k).length]));
       document.getElementById("lights").innerHTML = order.map((k) => `<span style="width:${(count[k] / c.ideas.length) * 100}%;background:${col[k]}"></span>`).join("");
-      document.getElementById("lightsKey").innerHTML = order.map((k) => `<span><i class="dot ${k}"></i>${count[k]} ${T(key[k])}</span>`).join("");
-    }).catch(() => {});
+      document.getElementById("lightsKey").innerHTML = order.map((k) => `<span><i class="dot ${k}"></i>${count[k]} ${esc(T(key[k]))}</span>`).join("");
+    }).catch(() => { document.getElementById("dataFail").hidden = false; }); // numbers stay as "—" and the text stays number-free
     // The same starfield as the game, without motion if the reader prefers less.
     const cv = document.getElementById("stars"), cx = cv.getContext("2d"), still = matchMedia("(prefers-reduced-motion: reduce)").matches;
     let W, H, s = [];

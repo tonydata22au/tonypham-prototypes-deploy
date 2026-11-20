@@ -15,11 +15,17 @@
   const param = new URLSearchParams(location.search).get("lang");
   const L = ["en", "vi"].includes(param) && I18N[param] ? param : (navigator.language || "").toLowerCase().startsWith("vi") && I18N.vi ? "vi" : "en";
   const T = (k, v = {}) => String((I18N[L] && I18N[L][k]) ?? I18N.en[k] ?? k).replace(/\{(\w+)\}/g, (_, n) => (n in v ? v[n] : `{${n}}`));
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  // Text from the language files may only use <b>, <i> and <br>: escape everything, then switch back on just those tags.
+  // Blank values ({n}, {name}...) are escaped and fenced off first, so a value can never add a tag.
+  const rich = (k, v = {}) => esc(T(k, Object.fromEntries(Object.entries(v).map(([a, b]) => [a, `\u0000${esc(b)}\u0001`]))))
+    .replace(/&lt;(\/?(?:b|i)|br)&gt;/g, (m, t) => (m.includes("\u0000") ? m : `<${t}>`))
+    .replace(/\u0000(.*?)\u0001/g, (_, x) => x.replace(/&amp;(amp|lt|gt|quot|#39);/g, "&$1;"));
   const langQ = `?lang=${L}`;
   document.documentElement.lang = L;
   document.title = T("meta.title");
   const md = document.querySelector('meta[name="description"]'); if (md) md.content = T("meta.desc");
-  document.querySelectorAll("[data-i18n]").forEach((el) => { el.innerHTML = T(el.dataset.i18n); });
+  document.querySelectorAll("[data-i18n]").forEach((el) => { el.innerHTML = rich(el.dataset.i18n); });
   const sw = $("#langSwitch");
   if (sw) sw.setAttribute("aria-label", T("lang.switch"));
   if (sw) sw.innerHTML = ["en", "vi"].map((k) => `<a href="?lang=${k}" lang="${k}" ${k === L ? 'aria-current="true"' : ""}>${k.toUpperCase()}</a>`).join("<span>|</span>");
@@ -27,7 +33,6 @@
   const LIGHT = (k) => T(`light.${k}`);
   const NAME = (side) => T(`planet.${side}`);
   const other = (side) => (side === "mars" ? "venus" : "mars");
-  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
   // ---------- icons (thin line, 24px grid)
   const P = {
@@ -151,7 +156,7 @@
           ${coach ? `<div class="coach">${icon("hand").replace("<svg", '<svg class="hand"')}<span class="label">${esc(T("card.coach"))}</span></div>` : ""}
         </div>
       </div>
-      <div class="rounds">${round("left", left)}<span class="or label">${T("card.or")}</span>${round("right", right)}</div>`;
+      <div class="rounds">${round("left", left)}<span class="or label">${rich("card.or")}</span>${round("right", right)}</div>`;
     active = { left, right, onPick };
     panel.querySelectorAll(".round").forEach((b) => b.addEventListener("click", () => pick(b.dataset.side)));
     drag($("#card"));
@@ -217,7 +222,7 @@
     setFace(P_EL.mars, "calm"); setFace(P_EL.venus, "calm"); layout();
     step(T("start.step")); signal(T("start.from"), T("start.question"));
     panel.innerHTML = `
-      <span class="label">${T("start.tap")}</span>
+      <span class="label">${rich("start.tap")}</span>
       <div class="pickrow">
         <button class="pickbtn" data-side="mars"><i class="pm"></i>${esc(T("start.mars"))}<small>${esc(T("start.marsNote"))}</small></button>
         <button class="pickbtn" data-side="venus"><i class="pv"></i>${esc(T("start.venus"))}<small>${esc(T("start.venusNote"))}</small></button>
@@ -321,8 +326,9 @@
   }
 
   // ---------- the moments: 2 per habit (1 each when more than 3 are picked), all from the other planet
-  // A moment is {chapter, idx}: idx points into the scenario list, which has the same order in every language.
-  const sidePool = (ch) => idea(ch).scenarios.map((s, idx) => ({ chapter: ch, idx, for: s.for })).filter((m) => m.for === S.side);
+  // A moment is {chapter, id}. The id (e.g. "3-venus-1") is the same in every language, so text is looked up by id, never by position.
+  const sidePool = (ch) => idea(ch).scenarios.filter((s) => s.for === S.side).map((s) => ({ chapter: ch, id: s.id }));
+  const scenario = (i, id) => tx(i).scenarios.find((s) => s.id === id) || i.scenarios.find((s) => s.id === id);
   function launch() {
     const k = perHabit();
     S.picks.sort((a, b) => a - b);
@@ -334,7 +340,7 @@
   }
   function next() {
     if (S.i >= S.deck.length) return debrief();
-    const m = S.deck[S.i++], i = idea(m.chapter), w = tx(i), sc = w.scenarios[m.idx], flip = Math.random() < 0.5;
+    const m = S.deck[S.i++], i = idea(m.chapter), w = tx(i), sc = scenario(i, m.id), flip = Math.random() < 0.5;
     const good = { text: sc.good, good: true }, miss = { text: sc.miss, good: false };
     step(T("moment.step", { i: S.i, n: S.deck.length })); setFace(them(), ["low", "calm", "quiet"][Math.floor(Math.random() * 3)]); setFace(me(), "calm");
     moment({ who: other(S.side), prompt: sc.prompt, label: w.name, cardIcon: i.icon, left: flip ? good : miss, right: flip ? miss : good,
@@ -351,16 +357,16 @@
     const I = S.content.ideas, gems = I.filter((i) => i.reader.score < 30 && i.light === "GREEN"), both = I.filter((i) => i.reader.score > 50 && i.light === "GREEN");
     panel.innerHTML = `
       <span class="label">${esc(T("res.label", { name: NAME(S.side) }))}</span>
-      <div class="row spread"><div class="score">${got}/${total}</div><span class="label" style="text-align:right">${T("res.stats", { km: S.orbit })}</span></div>
+      <div class="row spread"><div class="score">${got}/${total}</div><span class="label" style="text-align:right">${rich("res.stats", { km: S.orbit })}</span></div>
       <div class="bars">${S.picks.map((c) => `<div class="bar"><span>${esc(tx(idea(c)).name)}</span><span>${S.score[c].good}/${S.score[c].n}</span><i style="--w:${Math.round(ratio(S.score[c]) * 100)}%"></i></div>`).join("")}</div>
       <div class="move"><span class="label">${esc(T("res.today"))}</span><b>${esc(tx(idea(weakest)).actions[S.side])}</b></div>
       <span class="label">${esc(T("res.mapTitle"))}</span>
       ${starMap()}
-      <div class="insight"><i class="dot GREEN" style="margin-top:6px"></i><span>${T("res.both", { n: both.length })} <button class="link" data-receipt="${both[0].chapter}">${esc(tx(both[0]).name)}</button></span></div>
-      <div class="insight"><i class="dot GREEN" style="margin-top:6px"></i><span>${T("res.gems", { n: gems.length })}</span></div>
+      <div class="insight"><i class="dot GREEN" style="margin-top:6px"></i><span>${rich("res.both", { n: both.length })} <button class="link" data-receipt="${both[0].chapter}">${esc(tx(both[0]).name)}</button></span></div>
+      <div class="insight"><i class="dot GREEN" style="margin-top:6px"></i><span>${rich("res.gems", { n: gems.length })}</span></div>
       <div class="row" style="margin-top:14px"><button class="btn solid" id="again">${esc(T("res.again"))}</button><button class="btn" id="share">${esc(T("res.share"))}</button></div>
       <p style="margin-top:12px"><a class="link" href="how.html${langQ}">${esc(T("how.link"))}</a></p>
-      <p class="foot">${T("res.foot", { reviews: S.content.reviewsRead, quotes: S.content.quotesChecked, date: esc(S.content.readOn) })}</p>`;
+      <p class="foot">${rich("res.foot", { reviews: S.content.reviewsRead, quotes: S.content.quotesChecked, date: S.content.readOn })}</p>`;
     panel.scrollTop = 0;
     panel.querySelectorAll(".star").forEach((s) => { s.addEventListener("click", () => openSheet(+s.dataset.ch, true)); s.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openSheet(+s.dataset.ch, true); } }); });
     $("#again").addEventListener("click", start);

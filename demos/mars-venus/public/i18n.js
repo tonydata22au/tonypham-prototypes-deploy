@@ -171,7 +171,9 @@ window.I18N = {
   "how.h2": "Few reviews name one idea; most talk about the whole book.",
   "how.h3": "I tested in a phone-size browser, not on every phone. A native Vietnamese speaker has not checked the translation yet.",
   "how.h4": "This is a game, not therapy.",
-  "how.play": "Play the game ▶"
+  "how.play": "Play the game ▶",
+  "how.s1.p1Fallback": "I read reader reviews on Goodreads, StoryGraph, Google Play and Amazon, and matched popular quotes to the chapter they come from.",
+  "how.dataFail": "The live numbers didn't load. Reload the page to see them."
  },
  "vi": {
   "meta.title": "Vuốt chọn cách đáp · Sao Hỏa/Sao Kim",
@@ -304,8 +306,10 @@ window.I18N = {
   "how.ideas": "ý đã xem xét",
   "how.moments": "tình huống đã viết",
   "how.lightsAria": "Đèn kết quả nghiên cứu cho 13 ý",
+  "how.dataFail": "Mình chưa tải được số liệu mới nhất. Bạn tải lại trang để xem nhé.",
   "how.s1.title": "Nghe độc giả nói gì",
   "how.s1.p1": "Mình đọc {reviews} bài đánh giá trên Goodreads, StoryGraph, Google Play và Amazon. Mình cũng tìm chương gốc cho {quotes} trích dẫn được nhiều người thích.",
+  "how.s1.p1Fallback": "Mình đọc bài đánh giá trên Goodreads, StoryGraph, Google Play và Amazon. Mình cũng tìm chương gốc cho các trích dẫn được nhiều người thích.",
   "how.s1.p2": "Lúc đầu mình đoán sai chương của 21 trong 43 trích dẫn, nên mình mở sách ra đối chiếu từng câu.",
   "how.s2.title": "Xem nghiên cứu nói gì",
   "how.s2.p1": "Mỗi ý được gắn một màu đèn. Xanh lá là nghiên cứu ủng hộ, cam là ủng hộ một phần, đỏ là nghiên cứu không đồng tình, còn xám là chưa tìm thấy nghiên cứu kiểm tra nhận định này.",
