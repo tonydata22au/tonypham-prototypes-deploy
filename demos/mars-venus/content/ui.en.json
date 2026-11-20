@@ -170,5 +170,7 @@
  "how.h2": "Few reviews name one idea; most talk about the whole book.",
  "how.h3": "I tested in a phone-size browser, not on every phone. A native Vietnamese speaker has not checked the translation yet.",
  "how.h4": "This is a game, not therapy.",
- "how.play": "Play the game ▶"
+ "how.play": "Play the game ▶",
+ "how.s1.p1Fallback": "I read reader reviews on Goodreads, StoryGraph, Google Play and Amazon, and matched popular quotes to the chapter they come from.",
+ "how.dataFail": "The live numbers didn't load. Reload the page to see them."
 }

@@ -25,9 +25,13 @@ def build():
         sides = [x["for"] for x in i["scenarios"]]
         assert sides.count("mars") == 2 and sides.count("venus") == 2, f"ch{ch}: two moments for each planet"
         assert set(i["why"]) == set(i["actions"]) == {"mars", "venus"}, f"ch{ch}: why and actions need a mars and a venus line"
+        ids = [x.get("id", "") for x in i["scenarios"]]
+        assert len(set(ids)) == len(ids), f"ch{ch}: moment IDs must be unique"
         for sc in i["scenarios"]:
+            assert re.fullmatch(rf"{ch}-{sc['for']}-\d+", sc.get("id", "")), f"ch{ch}: moment ID {sc.get('id')!r} must look like {ch}-{sc['for']}-1"
             for k in ("prompt", "good", "miss"):
-                assert sc[k] and len(sc[k].split()) <= 9, f"ch{ch} {sc['area']} {k}: keep it to 9 words or fewer"
+                check_tags(f"ch{ch} {sc['id']} {k}", sc[k])
+                assert sc[k] and len(sc[k].split()) <= 9, f"ch{ch} {sc['id']} {k}: keep it to 9 words or fewer"
         out.append({**{k: i[k] for k in ("chapter", "name", "bookTitle", "icon", "why", "actions", "scenarios")},
                     "reader": {"rank": r["rank"], "score": r["score"], "quoteLikes": r["quote_likes"], "mentions": r["mentions"]},
                     "light": s["verdict"], "lightReason": s["reason"], "sources": srcs,
@@ -37,9 +41,23 @@ def build():
     return {"version": 1, "method": method, "readOn": rank["read_on"], "reviewsRead": rank["reviews_read"],
             "quotesChecked": rank["quotes_checked"], "ideas": out}
 
+ALLOWED_TAGS = {"<b>", "</b>", "<i>", "</i>", "<br>"}
+
+def check_tags(where, text):
+    """Only <b>, <i> and <br> may appear, correctly paired. The app escapes everything else (see rich() in app.js)."""
+    stack = []
+    for tag in re.findall(r"<[^>]*>", text):
+        assert tag in ALLOWED_TAGS, f"{where}: tag {tag!r} is not allowed (only <b>, <i>, <br>)"
+        if tag in ("<b>", "<i>"): stack.append(tag)
+        elif tag != "<br>":
+            assert stack and stack.pop() == tag.replace("/", ""), f"{where}: {tag} closes nothing or the wrong tag"
+    assert not stack, f"{where}: {stack} not closed"
+    assert "<" not in re.sub(r"<(/?b|/?i|br)>", "", text), f"{where}: stray '<' in text"
+
 def check_pair(where, en, vi):
     """A translation must keep every {blank} and HTML tag, and must not be empty."""
     assert isinstance(vi, str) and vi.strip(), f"{where}: Vietnamese text is missing"
+    check_tags(where + " (en)", en); check_tags(where + " (vi)", vi)
     for pat, what in ((r"\{\w+\}", "blanks"), (r"<[^>]+>", "HTML tags")):
         assert sorted(re.findall(pat, en)) == sorted(re.findall(pat, vi)), f"{where}: {what} differ: {en!r} vs {vi!r}"
 
@@ -62,13 +80,21 @@ def add_vietnamese(c):
         for k in ("name", "bookTitle", "lightReason"): check_pair(f"ch{ch} {k}", i[k] if k != "lightReason" else i["lightReason"], v[k])
         for k in ("why", "actions"):
             for side in ("mars", "venus"): check_pair(f"ch{ch} {k}.{side}", i[k][side], v[k][side])
-        assert len(v["scenarios"]) == len(i["scenarios"]), f"ch{ch}: Vietnamese needs {len(i['scenarios'])} moments in the same order"
-        for n, (se, sv) in enumerate(zip(i["scenarios"], v["scenarios"])):
+        vs = {x.get("id"): x for x in v["scenarios"]}
+        en_ids = [x["id"] for x in i["scenarios"]]
+        assert len(vs) == len(v["scenarios"]), f"ch{ch}: Vietnamese moment IDs must be unique"
+        assert set(vs) == set(en_ids), f"ch{ch}: Vietnamese moment IDs {sorted(vs)} must match English {sorted(en_ids)}"
+        for se in i["scenarios"]:
+            sv, sid = vs[se["id"]], se["id"]
             for k in ("prompt", "good", "miss"):
-                check_pair(f"ch{ch} moment {n} {k}", se[k], sv[k])
-                assert len(sv[k]) <= 70, f"ch{ch} moment {n} {k}: keep Vietnamese to 70 characters or fewer"
+                check_pair(f"ch{ch} {sid} {k}", se[k], sv[k])
+                assert len(sv[k]) <= 70, f"ch{ch} {sid} {k}: keep Vietnamese to 70 characters or fewer"
+            # the same speaker must appear in both languages (catches a moment joined to the wrong text)
+            for en_name, vi_name in (("Venus", "Sao Kim"), ("Mars", "Sao Hỏa")):
+                assert (en_name in se["prompt"]) == (vi_name in sv["prompt"]), f"ch{ch} {sid}: {en_name} and {vi_name} must both appear or both be absent"
         i["vi"] = {"name": v["name"], "bookTitle": v["bookTitle"], "why": v["why"], "actions": v["actions"],
-                   "scenarios": [{k: sv[k] for k in ("prompt", "good", "miss")} for sv in v["scenarios"]], "lightReason": v["lightReason"]}
+                   "scenarios": [{"id": se["id"], **{k: vs[se["id"]][k] for k in ("prompt", "good", "miss")}} for se in i["scenarios"]],
+                   "lightReason": v["lightReason"]}
 
 def golden(c):
     I = c["ideas"]; by = lambda f: sorted(i["chapter"] for i in I if f(i))

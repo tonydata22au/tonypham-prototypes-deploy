@@ -16,24 +16,28 @@
    },
    "scenarios": [
     {
+     "id": "1-mars-1",
      "for": "mars",
      "prompt": "Venus wants to talk about her whole day.",
      "good": "Sit down and listen.",
      "miss": "Ask for the short version."
     },
     {
+     "id": "1-mars-2",
      "for": "mars",
      "prompt": "Venus is hurt you forgot to call.",
      "good": "\"Sorry. You matter to me.\"",
      "miss": "\"It's not a big deal.\""
     },
     {
+     "id": "1-venus-1",
      "for": "venus",
      "prompt": "Mars goes quiet after a long day.",
      "good": "Let him unwind first.",
      "miss": "\"Why won't you talk to me?\""
     },
     {
+     "id": "1-venus-2",
      "for": "venus",
      "prompt": "Mars answers 'fine' to everything.",
      "good": "Trust he'll open up later.",
@@ -56,24 +60,28 @@
    },
    "scenarios": [
     {
+     "id": "2-mars-1",
      "for": "mars",
      "prompt": "Venus: \"My boss was awful today.\"",
      "good": "\"That sounds awful. Tell me.\"",
      "miss": "\"Just quit, then.\""
     },
     {
+     "id": "2-mars-2",
      "for": "mars",
      "prompt": "Venus: \"I'm so tired of the commute.\"",
      "good": "\"I'd be tired too.\"",
      "miss": "\"Leave earlier.\""
     },
     {
+     "id": "2-venus-1",
      "for": "venus",
      "prompt": "Mars is lost but won't ask directions.",
      "good": "Trust him. Enjoy the ride.",
      "miss": "\"Just ask someone!\""
     },
     {
+     "id": "2-venus-2",
      "for": "venus",
      "prompt": "Mars is fixing the sink his way.",
      "good": "Let him do it.",
@@ -96,24 +104,28 @@
    },
    "scenarios": [
     {
+     "id": "3-mars-1",
      "for": "mars",
      "prompt": "You're stressed. Venus asks what's wrong.",
      "good": "\"I need some time. Back soon.\"",
      "miss": "Grunt. Walk off."
     },
     {
+     "id": "3-mars-2",
      "for": "mars",
      "prompt": "Venus feels shut out by your silence.",
      "good": "\"It's not you. I'll be back.\"",
      "miss": "Say nothing."
     },
     {
+     "id": "3-venus-1",
      "for": "venus",
      "prompt": "Mars goes silent and stares at the TV.",
      "good": "Give him cave time.",
      "miss": "\"What's wrong? Talk to me!\""
     },
     {
+     "id": "3-venus-2",
      "for": "venus",
      "prompt": "Mars: \"I just need to think.\"",
      "good": "\"OK. I'll be here.\"",
@@ -136,24 +148,28 @@
    },
    "scenarios": [
     {
+     "id": "4-mars-1",
      "for": "mars",
      "prompt": "Venus looks worn out after work.",
      "good": "Make her a cup of tea.",
      "miss": "Ask what's for dinner."
     },
     {
+     "id": "4-mars-2",
      "for": "mars",
      "prompt": "Venus mentions a scary appointment.",
      "good": "\"Want me to come with you?\"",
      "miss": "\"You'll be fine.\""
     },
     {
+     "id": "4-venus-1",
      "for": "venus",
      "prompt": "Mars fixed the wobbly table.",
      "good": "\"Thanks, that's so helpful!\"",
      "miss": "\"Took you long enough.\""
     },
     {
+     "id": "4-venus-2",
      "for": "venus",
      "prompt": "Mars offers to help with your move.",
      "good": "\"I'd love your help.\"",
@@ -176,24 +192,28 @@
    },
    "scenarios": [
     {
+     "id": "5-mars-1",
      "for": "mars",
      "prompt": "Venus: \"We NEVER go out anymore!\"",
      "good": "\"Let's go out Friday.\"",
      "miss": "\"We went out last month.\""
     },
     {
+     "id": "5-mars-2",
      "for": "mars",
      "prompt": "Venus: \"You don't listen to me.\"",
      "good": "\"I'm listening now. Go on.\"",
      "miss": "\"Yes I do!\""
     },
     {
+     "id": "5-venus-1",
      "for": "venus",
      "prompt": "Mars: \"I'm fine. It's nothing.\"",
      "good": "Take it at face value.",
      "miss": "\"You're lying to me.\""
     },
     {
+     "id": "5-venus-2",
      "for": "venus",
      "prompt": "Mars: \"Stop worrying about it.\"",
      "good": "Hear: 'I've got this.'",
@@ -216,24 +236,28 @@
    },
    "scenarios": [
     {
+     "id": "6-mars-1",
      "for": "mars",
      "prompt": "You pulled away all week. Now you're back.",
      "good": "Ask about her week.",
      "miss": "Act like nothing happened."
     },
     {
+     "id": "6-mars-2",
      "for": "mars",
      "prompt": "You need some distance today.",
      "good": "\"I need a day. I love you.\"",
      "miss": "Disappear without a word."
     },
     {
+     "id": "6-venus-1",
      "for": "venus",
      "prompt": "Mars has been distant for days.",
      "good": "Give him room. Stay warm.",
      "miss": "Chase him with questions."
     },
     {
+     "id": "6-venus-2",
      "for": "venus",
      "prompt": "Mars comes back, warm and loving again.",
      "good": "\"Welcome back. I missed you.\"",
@@ -256,24 +280,28 @@
    },
    "scenarios": [
     {
+     "id": "7-mars-1",
      "for": "mars",
      "prompt": "Venus feels low for no clear reason.",
      "good": "Hug her. Just listen.",
      "miss": "\"Cheer up! It's nothing.\""
     },
     {
+     "id": "7-mars-2",
      "for": "mars",
      "prompt": "Venus: \"Everything feels like too much.\"",
      "good": "\"I'm here. Tell me.\"",
      "miss": "List what she should do."
     },
     {
+     "id": "7-venus-1",
      "for": "venus",
      "prompt": "You feel low. Mars offers a fix.",
      "good": "\"I just need you to listen.\"",
      "miss": "Snap: \"You don't get it!\""
     },
     {
+     "id": "7-venus-2",
      "for": "venus",
      "prompt": "Your wave crashes. Mars looks worried.",
      "good": "\"Just hold me for a bit.\"",
@@ -296,24 +324,28 @@
    },
    "scenarios": [
     {
+     "id": "8-mars-1",
      "for": "mars",
      "prompt": "Venus shares a worry about her mum.",
      "good": "\"That sounds hard. I get it.\"",
      "miss": "\"Your mum's always like that.\""
     },
     {
+     "id": "8-mars-2",
      "for": "mars",
      "prompt": "Venus wants you at her friend's party.",
      "good": "\"I'll be there.\"",
      "miss": "\"Do I have to?\""
     },
     {
+     "id": "8-venus-1",
      "for": "venus",
      "prompt": "Mars picked a restaurant. It's average.",
      "good": "\"Thanks for planning it.\"",
      "miss": "\"I'd have picked better.\""
     },
     {
+     "id": "8-venus-2",
      "for": "venus",
      "prompt": "Mars makes a choice about the car.",
      "good": "Trust his call.",
@@ -336,24 +368,28 @@
    },
    "scenarios": [
     {
+     "id": "9-mars-1",
      "for": "mars",
      "prompt": "Venus is upset. You think she overreacts.",
      "good": "\"I see why you're upset.\"",
      "miss": "\"You're overreacting.\""
     },
     {
+     "id": "9-mars-2",
      "for": "mars",
      "prompt": "A small disagreement starts heating up.",
      "good": "\"Let's take a breath.\"",
      "miss": "Prove you're right."
     },
     {
+     "id": "9-venus-1",
      "for": "venus",
      "prompt": "Mars forgot your errand.",
      "good": "\"No worries. Next time?\"",
      "miss": "\"You ALWAYS forget.\""
     },
     {
+     "id": "9-venus-2",
      "for": "venus",
      "prompt": "Mars's tone sounds harsh to you.",
      "good": "\"Can we slow down?\"",
@@ -376,24 +412,28 @@
    },
    "scenarios": [
     {
+     "id": "10-mars-1",
      "for": "mars",
      "prompt": "A normal Tuesday evening.",
      "good": "Bring her a small treat.",
      "miss": "Save it for her birthday."
     },
     {
+     "id": "10-mars-2",
      "for": "mars",
      "prompt": "Venus comes home tired.",
      "good": "Hug her first.",
      "miss": "Keep scrolling."
     },
     {
+     "id": "10-venus-1",
      "for": "venus",
      "prompt": "Mars took the bins out unasked.",
      "good": "\"Thanks for doing that.\"",
      "miss": "Say nothing."
     },
     {
+     "id": "10-venus-2",
      "for": "venus",
      "prompt": "Mars makes a small mistake.",
      "good": "Let it go.",
@@ -416,24 +456,28 @@
    },
    "scenarios": [
     {
+     "id": "11-mars-1",
      "for": "mars",
      "prompt": "Venus's comment made you furious.",
      "good": "Write a Love Letter first.",
      "miss": "Fire back instantly."
     },
     {
+     "id": "11-mars-2",
      "for": "mars",
      "prompt": "You can't find words for a hurt.",
      "good": "Write it out, then share.",
      "miss": "Bottle it up."
     },
     {
+     "id": "11-venus-1",
      "for": "venus",
      "prompt": "Mars hurt you. You're about to explode.",
      "good": "Write a Love Letter first.",
      "miss": "Send an angry text."
     },
     {
+     "id": "11-venus-2",
      "for": "venus",
      "prompt": "A hard talk with Mars tonight.",
      "good": "Write what you feel first.",
@@ -456,24 +500,28 @@
    },
    "scenarios": [
     {
+     "id": "12-mars-1",
      "for": "mars",
      "prompt": "Venus: \"Would you take the bins out?\"",
      "good": "\"Sure, happy to.\"",
      "miss": "Grumble and sigh."
     },
     {
+     "id": "12-mars-2",
      "for": "mars",
      "prompt": "Venus hints the car needs washing.",
      "good": "\"Want me to wash it?\"",
      "miss": "Ignore the hint."
     },
     {
+     "id": "12-venus-1",
      "for": "venus",
      "prompt": "You want Mars to cook tonight.",
      "good": "\"Would you cook tonight?\"",
      "miss": "Hope he guesses."
     },
     {
+     "id": "12-venus-2",
      "for": "venus",
      "prompt": "You need help with the shopping.",
      "good": "\"Would you help me shop?\"",
@@ -496,24 +544,28 @@
    },
    "scenarios": [
     {
+     "id": "13-mars-1",
      "for": "mars",
      "prompt": "Six months in. Dates have stopped.",
      "good": "Plan a surprise date.",
      "miss": "Assume she's fine."
     },
     {
+     "id": "13-mars-2",
      "for": "mars",
      "prompt": "Venus misses the early days.",
      "good": "\"Let's redo our first date.\"",
      "miss": "\"That's just how it goes.\""
     },
     {
+     "id": "13-venus-1",
      "for": "venus",
      "prompt": "Mars seems bored with the routine.",
      "good": "Suggest a new adventure.",
      "miss": "Wait for him to change."
     },
     {
+     "id": "13-venus-2",
      "for": "venus",
      "prompt": "Your anniversary is next week.",
      "good": "Plan something together.",

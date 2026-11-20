@@ -14,21 +14,25 @@
    },
    "scenarios": [
     {
+     "id": "1-mars-1",
      "prompt": "Sao Kim muốn kể hết chuyện hôm nay.",
      "good": "Ngồi xuống nghe cô ấy kể.",
      "miss": "Bảo cô ấy kể ngắn gọn thôi."
     },
     {
+     "id": "1-mars-2",
      "prompt": "Sao Kim buồn vì bạn quên gọi.",
      "good": "\"Xin lỗi. Bạn quan trọng với mình mà.\"",
      "miss": "\"Có gì to tát đâu.\""
     },
     {
+     "id": "1-venus-1",
      "prompt": "Sao Hỏa im lặng sau một ngày dài.",
      "good": "Để anh ấy nghỉ một lúc đã.",
      "miss": "\"Sao bạn không nói gì với mình?\""
     },
     {
+     "id": "1-venus-2",
      "prompt": "Sao Hỏa hỏi gì cũng đáp 'ổn'.",
      "good": "Tin là anh ấy sẽ mở lòng sau.",
      "miss": "Hỏi dồn cho tới khi anh ấy nói."
@@ -50,21 +54,25 @@
    },
    "scenarios": [
     {
+     "id": "2-mars-1",
      "prompt": "Sao Kim: \"Hôm nay sếp mình khó chịu kinh khủng.\"",
      "good": "\"Nghe mệt thật. Kể mình nghe đi.\"",
      "miss": "\"Thế thì nghỉ việc đi.\""
     },
     {
+     "id": "2-mars-2",
      "prompt": "Sao Kim: \"Đi làm xa mệt quá.\"",
      "good": "\"Mình đi thế cũng mệt.\"",
      "miss": "\"Đi sớm hơn đi.\""
     },
     {
+     "id": "2-venus-1",
      "prompt": "Sao Hỏa lạc đường mà chẳng chịu hỏi.",
      "good": "Tin anh ấy và cứ thong thả đi tiếp.",
      "miss": "\"Hỏi ai đó đi chứ!\""
     },
     {
+     "id": "2-venus-2",
      "prompt": "Sao Hỏa đang sửa bồn rửa theo cách riêng.",
      "good": "Để anh ấy tự làm.",
      "miss": "Chỉ anh ấy phải sửa thế nào."
@@ -86,21 +94,25 @@
    },
    "scenarios": [
     {
+     "id": "3-mars-1",
      "prompt": "Bạn đang căng thẳng. Sao Kim hỏi có chuyện gì.",
      "good": "\"Cho mình chút thời gian. Mình quay lại sớm.\"",
      "miss": "Ừ hử một tiếng rồi bỏ đi."
     },
     {
+     "id": "3-mars-2",
      "prompt": "Bạn im lặng làm Sao Kim thấy bị gạt ra ngoài.",
      "good": "\"Không phải do bạn đâu. Mình sẽ quay lại.\"",
      "miss": "Im luôn."
     },
     {
+     "id": "3-venus-1",
      "prompt": "Sao Hỏa im thin thít, mắt dán vào TV.",
      "good": "Cho anh ấy ở một mình một lúc.",
      "miss": "\"Có chuyện gì? Nói mình nghe đi!\""
     },
     {
+     "id": "3-venus-2",
      "prompt": "Sao Hỏa: \"Mình chỉ cần chút thời gian để nghĩ.\"",
      "good": "\"Ừ, mình ở đây nhé.\"",
      "miss": "Đi theo anh ấy vào phòng."
@@ -122,21 +134,25 @@
    },
    "scenarios": [
     {
+     "id": "4-mars-1",
      "prompt": "Sao Kim trông phờ phạc sau giờ làm.",
      "good": "Pha cho cô ấy một tách trà.",
      "miss": "Hỏi tối nay ăn gì."
     },
     {
+     "id": "4-mars-2",
      "prompt": "Sao Kim kể về một cuộc hẹn làm cô ấy lo.",
      "good": "\"Bạn muốn mình đi cùng không?\"",
      "miss": "\"Rồi sẽ ổn thôi.\""
     },
     {
+     "id": "4-venus-1",
      "prompt": "Sao Hỏa sửa xong cái bàn lung lay.",
      "good": "\"Cảm ơn nha, đỡ quá!\"",
      "miss": "\"Cuối cùng cũng chịu sửa.\""
     },
     {
+     "id": "4-venus-2",
      "prompt": "Sao Hỏa ngỏ ý giúp bạn chuyển nhà.",
      "good": "\"Có bạn giúp thì tốt quá.\"",
      "miss": "\"Mình tự làm được.\""
@@ -158,21 +174,25 @@
    },
    "scenarios": [
     {
+     "id": "5-mars-1",
      "prompt": "Sao Kim: \"Giờ mình CHẲNG BAO GIỜ đi chơi nữa!\"",
      "good": "\"Thứ Sáu mình đi chơi nhé.\"",
      "miss": "\"Tháng trước mình mới đi mà.\""
     },
     {
+     "id": "5-mars-2",
      "prompt": "Sao Kim: \"Bạn chẳng nghe mình nói gì cả.\"",
      "good": "\"Mình đang nghe đây. Bạn nói tiếp đi.\"",
      "miss": "\"Có nghe chứ!\""
     },
     {
+     "id": "5-venus-1",
      "prompt": "Sao Hỏa: \"Mình ổn. Không có gì đâu.\"",
      "good": "Tin lời anh ấy.",
      "miss": "\"Bạn nói dối mình.\""
     },
     {
+     "id": "5-venus-2",
      "prompt": "Sao Hỏa: \"Đừng lo chuyện đó nữa.\"",
      "good": "Hiểu là 'Mình lo được.'",
      "miss": "Thấy mình bị gạt đi."
@@ -194,21 +214,25 @@
    },
    "scenarios": [
     {
+     "id": "6-mars-1",
      "prompt": "Bạn xa cách cả tuần. Giờ bạn quay lại.",
      "good": "Hỏi tuần qua cô ấy thế nào.",
      "miss": "Coi như chẳng có chuyện gì."
     },
     {
+     "id": "6-mars-2",
      "prompt": "Hôm nay bạn muốn có chút thời gian riêng.",
      "good": "\"Cho mình một ngày nhé. Mình thương bạn.\"",
      "miss": "Biến mất chẳng nói một lời."
     },
     {
+     "id": "6-venus-1",
      "prompt": "Sao Hỏa đã xa cách mấy ngày nay.",
      "good": "Cho anh ấy không gian và vẫn cư xử ấm áp.",
      "miss": "Bám theo hỏi dồn."
     },
     {
+     "id": "6-venus-2",
      "prompt": "Sao Hỏa quay lại, ân cần như trước.",
      "good": "\"Bạn về rồi. Mình nhớ bạn lắm.\"",
      "miss": "\"RỐT CUỘC bạn đã đi đâu?\""
@@ -230,21 +254,25 @@
    },
    "scenarios": [
     {
+     "id": "7-mars-1",
      "prompt": "Sao Kim thấy buồn mà chẳng rõ vì sao.",
      "good": "Ôm cô ấy và lắng nghe.",
      "miss": "\"Vui lên đi! Có gì đâu.\""
     },
     {
+     "id": "7-mars-2",
      "prompt": "Sao Kim: \"Mình thấy mọi thứ quá sức.\"",
      "good": "\"Mình ở đây. Bạn kể đi.\"",
      "miss": "Liệt kê những việc cô ấy nên làm."
     },
     {
+     "id": "7-venus-1",
      "prompt": "Bạn đang buồn. Sao Hỏa bày cách giải quyết.",
      "good": "\"Mình chỉ cần bạn nghe thôi.\"",
      "miss": "Gắt lên: \"Bạn chẳng hiểu gì cả!\""
     },
     {
+     "id": "7-venus-2",
      "prompt": "Bạn đang tụt mood. Sao Hỏa có vẻ lo.",
      "good": "\"Ôm mình một lát thôi.\"",
      "miss": "Giấu đi rồi ấm ức một mình."
@@ -266,21 +294,25 @@
    },
    "scenarios": [
     {
+     "id": "8-mars-1",
      "prompt": "Sao Kim kể chuyện làm cô ấy lo về mẹ.",
      "good": "\"Nghe khó thật. Mình hiểu mà.\"",
      "miss": "\"Mẹ bạn lúc nào chả thế.\""
     },
     {
+     "id": "8-mars-2",
      "prompt": "Sao Kim muốn bạn đi cùng đến tiệc của bạn cô ấy.",
      "good": "\"Mình sẽ đi cùng.\"",
      "miss": "\"Nhất thiết phải đi à?\""
     },
     {
+     "id": "8-venus-1",
      "prompt": "Sao Hỏa chọn quán ăn. Quán cũng bình thường.",
      "good": "\"Cảm ơn bạn đã lo vụ này.\"",
      "miss": "\"Để mình chọn thì ngon hơn.\""
     },
     {
+     "id": "8-venus-2",
      "prompt": "Sao Hỏa quyết một việc liên quan đến xe.",
      "good": "Tin vào lựa chọn của anh ấy.",
      "miss": "Hỏi vặn từng chi tiết."
@@ -302,21 +334,25 @@
    },
    "scenarios": [
     {
+     "id": "9-mars-1",
      "prompt": "Sao Kim đang bực. Bạn thấy cô ấy làm quá.",
      "good": "\"Mình hiểu vì sao bạn bực.\"",
      "miss": "\"Bạn làm quá rồi.\""
     },
     {
+     "id": "9-mars-2",
      "prompt": "Một bất đồng nhỏ bắt đầu căng lên.",
      "good": "\"Mình hít thở một chút nhé.\"",
      "miss": "Cố chứng minh mình đúng."
     },
     {
+     "id": "9-venus-1",
      "prompt": "Sao Hỏa quên việc bạn nhờ.",
      "good": "\"Không sao. Lần sau làm giúp mình nhé?\"",
      "miss": "\"Bạn LÚC NÀO cũng quên.\""
     },
     {
+     "id": "9-venus-2",
      "prompt": "Bạn thấy giọng Sao Hỏa hơi gắt.",
      "good": "\"Mình nói từ từ được không?\"",
      "miss": "\"Đừng có nói với mình kiểu đó!\""
@@ -338,21 +374,25 @@
    },
    "scenarios": [
     {
+     "id": "10-mars-1",
      "prompt": "Một tối thứ Ba bình thường.",
      "good": "Mang cho cô ấy món ăn vặt.",
      "miss": "Để dành đến sinh nhật cô ấy."
     },
     {
+     "id": "10-mars-2",
      "prompt": "Sao Kim về nhà, trông mệt mỏi.",
      "good": "Ôm cô ấy trước.",
      "miss": "Lướt điện thoại tiếp."
     },
     {
+     "id": "10-venus-1",
      "prompt": "Sao Hỏa tự mang rác đi đổ, chẳng cần ai nhờ.",
      "good": "\"Cảm ơn bạn đã đổ rác nhé.\"",
      "miss": "Chẳng nói gì."
     },
     {
+     "id": "10-venus-2",
      "prompt": "Sao Hỏa lỡ làm sai một việc nhỏ.",
      "good": "Bỏ qua đi.",
      "miss": "Chỉ ra lỗi đó."
@@ -374,21 +414,25 @@
    },
    "scenarios": [
     {
+     "id": "11-mars-1",
      "prompt": "Câu nói của Sao Kim làm bạn nổi giận.",
      "good": "Viết Lá thư tình trước.",
      "miss": "Bật lại ngay."
     },
     {
+     "id": "11-mars-2",
      "prompt": "Bạn chẳng biết nói sao về điều làm mình tổn thương.",
      "good": "Viết ra rồi chia sẻ.",
      "miss": "Giữ hết trong lòng."
     },
     {
+     "id": "11-venus-1",
      "prompt": "Sao Hỏa làm bạn tổn thương. Bạn sắp nổi nóng.",
      "good": "Viết Lá thư tình trước.",
      "miss": "Nhắn tin trong lúc đang giận."
     },
     {
+     "id": "11-venus-2",
      "prompt": "Tối nay bạn có chuyện khó nói với Sao Hỏa.",
      "good": "Viết cảm xúc của bạn ra trước.",
      "miss": "Cứ tới đâu hay tới đó."
@@ -410,21 +454,25 @@
    },
    "scenarios": [
     {
+     "id": "12-mars-1",
      "prompt": "Sao Kim: \"Bạn mang rác đi đổ giúp mình nhé?\"",
      "good": "\"Ừ, để mình làm cho.\"",
      "miss": "Càu nhàu rồi thở dài."
     },
     {
+     "id": "12-mars-2",
      "prompt": "Sao Kim nói bóng gió là xe cần rửa.",
      "good": "\"Bạn muốn mình rửa xe không?\"",
      "miss": "Lờ đi."
     },
     {
+     "id": "12-venus-1",
      "prompt": "Bạn muốn Sao Hỏa nấu tối nay.",
      "good": "\"Tối nay bạn nấu ăn giúp mình nhé?\"",
      "miss": "Mong anh ấy tự đoán."
     },
     {
+     "id": "12-venus-2",
      "prompt": "Bạn cần người giúp đi mua đồ.",
      "good": "\"Bạn đi mua đồ cùng mình nhé?\"",
      "miss": "\"Bạn chẳng bao giờ giúp gì cả!\""
@@ -446,21 +494,25 @@
    },
    "scenarios": [
     {
+     "id": "13-mars-1",
      "prompt": "Yêu nhau nửa năm rồi, hai bạn chẳng còn đi hẹn hò.",
      "good": "Lên kế hoạch cho một buổi hẹn bất ngờ.",
      "miss": "Cứ nghĩ cô ấy thấy ổn."
     },
     {
+     "id": "13-mars-2",
      "prompt": "Sao Kim nhớ hồi hai bạn mới yêu.",
      "good": "\"Mình hẹn hò lại như buổi đầu nhé.\"",
      "miss": "\"Yêu lâu thì thế thôi.\""
     },
     {
+     "id": "13-venus-1",
      "prompt": "Sao Hỏa có vẻ chán cảnh ngày nào cũng như nhau.",
      "good": "Rủ anh ấy thử gì đó mới.",
      "miss": "Chờ anh ấy tự thay đổi."
     },
     {
+     "id": "13-venus-2",
      "prompt": "Tuần sau là ngày kỷ niệm của hai bạn.",
      "good": "Cùng nhau lên kế hoạch.",
      "miss": "Cứ nghĩ anh ấy sẽ tự nhớ."
