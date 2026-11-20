@@ -3,7 +3,8 @@
 A 30-second phone game based on John Gray's book *Men Are from Mars, Women
 Are from Venus* (1992). You pick your planet, then swipe how you would react
 to moments from the other planet. Each habit shows two things: what readers
-love, and what research says.
+love, and what research says. It plays in English and Vietnamese: use the
+EN | VI switch, or add `?lang=vi` to the link.
 
 **Play it:** https://demo-mars-venus.tonypham-demos.pages.dev
 (the "How I built it" page is at `/how`).
@@ -13,15 +14,20 @@ love, and what research says.
 | Path | What it is |
 |---|---|
 | `public/` | The live game: `index.html`, `app.js`, `styles.css`, the "How I built it" page (`how.html`) and its pictures (`img/`). |
-| `public/data/content.json` | The one data file the game reads. It is generated, so do not edit it by hand. |
+| `public/data/content.json` | The habits, moments and research the game reads, in both languages. Generated: do not edit by hand. |
+| `public/i18n.js` | Every screen text in English and Vietnamese. Generated: do not edit by hand. |
 | `content/ideas.json` | The game's words: 13 habits, the book's advice for Mars and for Venus, a daily action, and 52 moments. |
+| `content/ideas.vi.json` | The same, in Vietnamese, in the same order. Translated by Codex (GPT-6.2 Sol). |
+| `content/ui.en.json`, `content/ui.vi.json` | Every screen text, in English and in Vietnamese. |
 | `research/ranking.json` | How much readers love each habit: Goodreads quote likes and mentions in 124 reviews. |
 | `research/science.json` | What research says about each habit, with source links. |
-| `scripts/build_content.py` | Joins the three files above into `public/data/content.json` and checks them. |
+| `scripts/build_content.py` | Builds `public/data/content.json` and `public/i18n.js` from the files above, and checks them. |
 
 ## How do I change the game?
 
-1. Edit `content/ideas.json`. Keep each moment to 9 words or fewer.
+1. Edit `content/ideas.json` (English moments: 9 words or fewer) and the same
+   entry in `content/ideas.vi.json` (Vietnamese: 70 characters or fewer).
+   Screen text lives in `content/ui.en.json` and `content/ui.vi.json`.
 2. Rebuild the data file:
 
    ```sh
@@ -29,7 +35,8 @@ love, and what research says.
    ```
 
    The script stops if a habit has no source link, if a planet is missing a
-   moment, or if any of its 5 test questions gives the wrong answer.
+   moment, if any of its 5 test questions gives the wrong answer, or if the
+   English and Vietnamese texts don't match (same keys, blanks and tags).
 3. Open `public/` with any local web server to try it, for example
    `cd public && python3 -m http.server 8000`.
 4. Publish again with `scripts/publish mars-venus <folder>` from a fresh
@@ -41,4 +48,6 @@ love, and what research says.
   each habit, not each reply.
 - Few reviews name a single habit; most talk about the whole book.
 - It was tested in a phone-size browser, not on every phone.
+- A native Vietnamese speaker has not checked the translation yet.
+- The Vietnamese moments are matched to the English by position in the list.
 - It is a game, not therapy. It stores nothing and tracks nothing.
