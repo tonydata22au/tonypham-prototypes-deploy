@@ -1,0 +1,577 @@
+{
+ "_note": "Hand-written game content in the book's framing (Mars = men, Venus = women). 'for' = the planet the PLAYER is from; the moment comes from the other planet. Numbers and sources are joined in by scripts/build_content.py from research/.",
+ "ideas": [
+  {
+   "chapter": 1,
+   "name": "Remember our differences",
+   "bookTitle": "Men Are from Mars, Women Are from Venus",
+   "icon": "planets",
+   "why": {
+    "mars": "Venusians share feelings to feel close. Don't expect her to act like a Martian.",
+    "venus": "Martians think before they talk. Don't expect him to act like a Venusian."
+   },
+   "actions": {
+    "mars": "Ask about her day, then just listen.",
+    "venus": "Give him quiet time without taking it personally."
+   },
+   "scenarios": [
+    {
+     "id": "1-mars-1",
+     "for": "mars",
+     "prompt": "Venus wants to talk about her whole day.",
+     "good": "Sit down and listen.",
+     "miss": "Ask for the short version."
+    },
+    {
+     "id": "1-mars-2",
+     "for": "mars",
+     "prompt": "Venus is hurt you forgot to call.",
+     "good": "\"Sorry. You matter to me.\"",
+     "miss": "\"It's not a big deal.\""
+    },
+    {
+     "id": "1-venus-1",
+     "for": "venus",
+     "prompt": "Mars goes quiet after a long day.",
+     "good": "Let him unwind first.",
+     "miss": "\"Why won't you talk to me?\""
+    },
+    {
+     "id": "1-venus-2",
+     "for": "venus",
+     "prompt": "Mars answers 'fine' to everything.",
+     "good": "Trust he'll open up later.",
+     "miss": "Push until he talks."
+    }
+   ]
+  },
+  {
+   "chapter": 2,
+   "name": "No fixing, no improving",
+   "bookTitle": "Mr. Fix-It and the Home-Improvement Committee",
+   "icon": "toolbox",
+   "why": {
+    "mars": "Venus talks to feel better, not to get solutions. Don't play Mr Fix-It.",
+    "venus": "Advice he didn't ask for feels like criticism to Mars. Don't try to 'improve' him."
+   },
+   "actions": {
+    "mars": "When she vents, nod for 2 minutes. No fixes.",
+    "venus": "Hold back one piece of advice today."
+   },
+   "scenarios": [
+    {
+     "id": "2-mars-1",
+     "for": "mars",
+     "prompt": "Venus: \"My boss was awful today.\"",
+     "good": "\"That sounds awful. Tell me.\"",
+     "miss": "\"Just quit, then.\""
+    },
+    {
+     "id": "2-mars-2",
+     "for": "mars",
+     "prompt": "Venus: \"I'm so tired of the commute.\"",
+     "good": "\"I'd be tired too.\"",
+     "miss": "\"Leave earlier.\""
+    },
+    {
+     "id": "2-venus-1",
+     "for": "venus",
+     "prompt": "Mars is lost but won't ask directions.",
+     "good": "Trust him. Enjoy the ride.",
+     "miss": "\"Just ask someone!\""
+    },
+    {
+     "id": "2-venus-2",
+     "for": "venus",
+     "prompt": "Mars is fixing the sink his way.",
+     "good": "Let him do it.",
+     "miss": "Tell him how to do it."
+    }
+   ]
+  },
+  {
+   "chapter": 3,
+   "name": "The cave",
+   "bookTitle": "Men Go to Their Caves and Women Talk",
+   "icon": "cave",
+   "why": {
+    "mars": "Going to your cave is OK. Tell her you'll come back.",
+    "venus": "Martians go to their cave to think. Don't follow him in. He'll come back."
+   },
+   "actions": {
+    "mars": "Say 'I need time to think. I'll be back.'",
+    "venus": "Let him have his cave. Do something you enjoy."
+   },
+   "scenarios": [
+    {
+     "id": "3-mars-1",
+     "for": "mars",
+     "prompt": "You're stressed. Venus asks what's wrong.",
+     "good": "\"I need some time. Back soon.\"",
+     "miss": "Grunt. Walk off."
+    },
+    {
+     "id": "3-mars-2",
+     "for": "mars",
+     "prompt": "Venus feels shut out by your silence.",
+     "good": "\"It's not you. I'll be back.\"",
+     "miss": "Say nothing."
+    },
+    {
+     "id": "3-venus-1",
+     "for": "venus",
+     "prompt": "Mars goes silent and stares at the TV.",
+     "good": "Give him cave time.",
+     "miss": "\"What's wrong? Talk to me!\""
+    },
+    {
+     "id": "3-venus-2",
+     "for": "venus",
+     "prompt": "Mars: \"I just need to think.\"",
+     "good": "\"OK. I'll be here.\"",
+     "miss": "Follow him into the room."
+    }
+   ]
+  },
+  {
+   "chapter": 4,
+   "name": "Needed and cherished",
+   "bookTitle": "How to Motivate the Opposite Sex",
+   "icon": "heart",
+   "why": {
+    "mars": "On Venus, people try harder when they feel cared for. Show you care.",
+    "venus": "On Mars, people try harder when they feel needed. Thank him for what he does."
+   },
+   "actions": {
+    "mars": "Do one small thing that says 'I cherish you'.",
+    "venus": "Thank him for one thing he did today."
+   },
+   "scenarios": [
+    {
+     "id": "4-mars-1",
+     "for": "mars",
+     "prompt": "Venus looks worn out after work.",
+     "good": "Make her a cup of tea.",
+     "miss": "Ask what's for dinner."
+    },
+    {
+     "id": "4-mars-2",
+     "for": "mars",
+     "prompt": "Venus mentions a scary appointment.",
+     "good": "\"Want me to come with you?\"",
+     "miss": "\"You'll be fine.\""
+    },
+    {
+     "id": "4-venus-1",
+     "for": "venus",
+     "prompt": "Mars fixed the wobbly table.",
+     "good": "\"Thanks, that's so helpful!\"",
+     "miss": "\"Took you long enough.\""
+    },
+    {
+     "id": "4-venus-2",
+     "for": "venus",
+     "prompt": "Mars offers to help with your move.",
+     "good": "\"I'd love your help.\"",
+     "miss": "\"I can do it myself.\""
+    }
+   ]
+  },
+  {
+   "chapter": 5,
+   "name": "Translate the language",
+   "bookTitle": "Speaking Different Languages",
+   "icon": "signal",
+   "why": {
+    "mars": "When Venus says 'never', she means 'I feel unheard'. Don't argue the facts.",
+    "venus": "When Mars says 'I'm fine', he means 'I'll handle it'. He isn't pushing you away."
+   },
+   "actions": {
+    "mars": "Hear 'you never'? Ask 'what happened?'",
+    "venus": "Hear 'I'm fine'? Give him room."
+   },
+   "scenarios": [
+    {
+     "id": "5-mars-1",
+     "for": "mars",
+     "prompt": "Venus: \"We NEVER go out anymore!\"",
+     "good": "\"Let's go out Friday.\"",
+     "miss": "\"We went out last month.\""
+    },
+    {
+     "id": "5-mars-2",
+     "for": "mars",
+     "prompt": "Venus: \"You don't listen to me.\"",
+     "good": "\"I'm listening now. Go on.\"",
+     "miss": "\"Yes I do!\""
+    },
+    {
+     "id": "5-venus-1",
+     "for": "venus",
+     "prompt": "Mars: \"I'm fine. It's nothing.\"",
+     "good": "Take it at face value.",
+     "miss": "\"You're lying to me.\""
+    },
+    {
+     "id": "5-venus-2",
+     "for": "venus",
+     "prompt": "Mars: \"Stop worrying about it.\"",
+     "good": "Hear: 'I've got this.'",
+     "miss": "Feel brushed off."
+    }
+   ]
+  },
+  {
+   "chapter": 6,
+   "name": "The rubber band",
+   "bookTitle": "Men Are Like Rubber Bands",
+   "icon": "orbit",
+   "why": {
+    "mars": "Pulling away and springing back is normal. Come back warm.",
+    "venus": "Mars pulls away, then springs back. Don't chase him. Welcome him back."
+   },
+   "actions": {
+    "mars": "After time alone, come back and ask about her day.",
+    "venus": "When he comes back, welcome him without blame."
+   },
+   "scenarios": [
+    {
+     "id": "6-mars-1",
+     "for": "mars",
+     "prompt": "You pulled away all week. Now you're back.",
+     "good": "Ask about her week.",
+     "miss": "Act like nothing happened."
+    },
+    {
+     "id": "6-mars-2",
+     "for": "mars",
+     "prompt": "You need some distance today.",
+     "good": "\"I need a day. I love you.\"",
+     "miss": "Disappear without a word."
+    },
+    {
+     "id": "6-venus-1",
+     "for": "venus",
+     "prompt": "Mars has been distant for days.",
+     "good": "Give him room. Stay warm.",
+     "miss": "Chase him with questions."
+    },
+    {
+     "id": "6-venus-2",
+     "for": "venus",
+     "prompt": "Mars comes back, warm and loving again.",
+     "good": "\"Welcome back. I missed you.\"",
+     "miss": "\"Where have you BEEN?\""
+    }
+   ]
+  },
+  {
+   "chapter": 7,
+   "name": "Ride the wave",
+   "bookTitle": "Women Are Like Waves",
+   "icon": "wave",
+   "why": {
+    "mars": "Her mood rises and falls like a wave. At the bottom she needs you, not fixes.",
+    "venus": "When your wave crashes, tell him you just need him to listen."
+   },
+   "actions": {
+    "mars": "On her low day, stay close and listen.",
+    "venus": "On a low day, say 'I just need you to listen.'"
+   },
+   "scenarios": [
+    {
+     "id": "7-mars-1",
+     "for": "mars",
+     "prompt": "Venus feels low for no clear reason.",
+     "good": "Hug her. Just listen.",
+     "miss": "\"Cheer up! It's nothing.\""
+    },
+    {
+     "id": "7-mars-2",
+     "for": "mars",
+     "prompt": "Venus: \"Everything feels like too much.\"",
+     "good": "\"I'm here. Tell me.\"",
+     "miss": "List what she should do."
+    },
+    {
+     "id": "7-venus-1",
+     "for": "venus",
+     "prompt": "You feel low. Mars offers a fix.",
+     "good": "\"I just need you to listen.\"",
+     "miss": "Snap: \"You don't get it!\""
+    },
+    {
+     "id": "7-venus-2",
+     "for": "venus",
+     "prompt": "Your wave crashes. Mars looks worried.",
+     "good": "\"Just hold me for a bit.\"",
+     "miss": "Hide it and stew."
+    }
+   ]
+  },
+  {
+   "chapter": 8,
+   "name": "Love needs",
+   "bookTitle": "Discovering Our Different Emotional Needs",
+   "icon": "gauge",
+   "why": {
+    "mars": "Venus needs care, understanding and respect. Give her what she needs, not what you'd want.",
+    "venus": "Mars needs trust, acceptance and thanks. Give him what he needs, not what you'd want."
+   },
+   "actions": {
+    "mars": "Show understanding: say back how she feels.",
+    "venus": "Show trust: let him decide one thing."
+   },
+   "scenarios": [
+    {
+     "id": "8-mars-1",
+     "for": "mars",
+     "prompt": "Venus shares a worry about her mum.",
+     "good": "\"That sounds hard. I get it.\"",
+     "miss": "\"Your mum's always like that.\""
+    },
+    {
+     "id": "8-mars-2",
+     "for": "mars",
+     "prompt": "Venus wants you at her friend's party.",
+     "good": "\"I'll be there.\"",
+     "miss": "\"Do I have to?\""
+    },
+    {
+     "id": "8-venus-1",
+     "for": "venus",
+     "prompt": "Mars picked a restaurant. It's average.",
+     "good": "\"Thanks for planning it.\"",
+     "miss": "\"I'd have picked better.\""
+    },
+    {
+     "id": "8-venus-2",
+     "for": "venus",
+     "prompt": "Mars makes a choice about the car.",
+     "good": "Trust his call.",
+     "miss": "Question every detail."
+    }
+   ]
+  },
+  {
+   "chapter": 9,
+   "name": "Avoid arguments",
+   "bookTitle": "How to Avoid Arguments",
+   "icon": "heat",
+   "why": {
+    "mars": "Fights grow when Mars waves her feelings away. Say her feelings make sense first.",
+    "venus": "Fights grow when Venus judges how Mars talks. Assume he means well first."
+   },
+   "actions": {
+    "mars": "Mid-fight: 'You're right to feel upset.'",
+    "venus": "Mid-fight: 'I trust you. Let's restart.'"
+   },
+   "scenarios": [
+    {
+     "id": "9-mars-1",
+     "for": "mars",
+     "prompt": "Venus is upset. You think she overreacts.",
+     "good": "\"I see why you're upset.\"",
+     "miss": "\"You're overreacting.\""
+    },
+    {
+     "id": "9-mars-2",
+     "for": "mars",
+     "prompt": "A small disagreement starts heating up.",
+     "good": "\"Let's take a breath.\"",
+     "miss": "Prove you're right."
+    },
+    {
+     "id": "9-venus-1",
+     "for": "venus",
+     "prompt": "Mars forgot your errand.",
+     "good": "\"No worries. Next time?\"",
+     "miss": "\"You ALWAYS forget.\""
+    },
+    {
+     "id": "9-venus-2",
+     "for": "venus",
+     "prompt": "Mars's tone sounds harsh to you.",
+     "good": "\"Can we slow down?\"",
+     "miss": "\"Don't talk to me like that!\""
+    }
+   ]
+  },
+  {
+   "chapter": 10,
+   "name": "Scoring points",
+   "bookTitle": "Scoring Points with the Opposite Sex",
+   "icon": "spark",
+   "why": {
+    "mars": "On Venus, a small gift scores as much as a big one. Do lots of little things.",
+    "venus": "Mars scores points by doing things for you. Notice them. Let small slips go."
+   },
+   "actions": {
+    "mars": "Do 3 small things: a hug, a note, a coffee.",
+    "venus": "Notice one thing he did and say so."
+   },
+   "scenarios": [
+    {
+     "id": "10-mars-1",
+     "for": "mars",
+     "prompt": "A normal Tuesday evening.",
+     "good": "Bring her a small treat.",
+     "miss": "Save it for her birthday."
+    },
+    {
+     "id": "10-mars-2",
+     "for": "mars",
+     "prompt": "Venus comes home tired.",
+     "good": "Hug her first.",
+     "miss": "Keep scrolling."
+    },
+    {
+     "id": "10-venus-1",
+     "for": "venus",
+     "prompt": "Mars took the bins out unasked.",
+     "good": "\"Thanks for doing that.\"",
+     "miss": "Say nothing."
+    },
+    {
+     "id": "10-venus-2",
+     "for": "venus",
+     "prompt": "Mars makes a small mistake.",
+     "good": "Let it go.",
+     "miss": "Point it out."
+    }
+   ]
+  },
+  {
+   "chapter": 11,
+   "name": "The Love Letter",
+   "bookTitle": "How to Communicate Difficult Feelings",
+   "icon": "letter",
+   "why": {
+    "mars": "Write down your anger, sadness, fear, regret, then love. Then talk.",
+    "venus": "Write down your anger, sadness, fear, regret, then love. Then talk."
+   },
+   "actions": {
+    "mars": "Angry? Write a 5-line Love Letter first.",
+    "venus": "Angry? Write a 5-line Love Letter first."
+   },
+   "scenarios": [
+    {
+     "id": "11-mars-1",
+     "for": "mars",
+     "prompt": "Venus's comment made you furious.",
+     "good": "Write a Love Letter first.",
+     "miss": "Fire back instantly."
+    },
+    {
+     "id": "11-mars-2",
+     "for": "mars",
+     "prompt": "You can't find words for a hurt.",
+     "good": "Write it out, then share.",
+     "miss": "Bottle it up."
+    },
+    {
+     "id": "11-venus-1",
+     "for": "venus",
+     "prompt": "Mars hurt you. You're about to explode.",
+     "good": "Write a Love Letter first.",
+     "miss": "Send an angry text."
+    },
+    {
+     "id": "11-venus-2",
+     "for": "venus",
+     "prompt": "A hard talk with Mars tonight.",
+     "good": "Write what you feel first.",
+     "miss": "Wing it."
+    }
+   ]
+  },
+  {
+   "chapter": 12,
+   "name": "Ask for support",
+   "bookTitle": "How to Ask for Support and Get It",
+   "icon": "arrow",
+   "why": {
+    "mars": "When Venus asks, give a warm yes, or a kind no. No grumbling.",
+    "venus": "Martians need to be asked. Ask briefly: 'Would you...?' Then say thanks."
+   },
+   "actions": {
+    "mars": "When she asks, say a warm yes.",
+    "venus": "Ask once: 'Would you...?' Then thank him."
+   },
+   "scenarios": [
+    {
+     "id": "12-mars-1",
+     "for": "mars",
+     "prompt": "Venus: \"Would you take the bins out?\"",
+     "good": "\"Sure, happy to.\"",
+     "miss": "Grumble and sigh."
+    },
+    {
+     "id": "12-mars-2",
+     "for": "mars",
+     "prompt": "Venus hints the car needs washing.",
+     "good": "\"Want me to wash it?\"",
+     "miss": "Ignore the hint."
+    },
+    {
+     "id": "12-venus-1",
+     "for": "venus",
+     "prompt": "You want Mars to cook tonight.",
+     "good": "\"Would you cook tonight?\"",
+     "miss": "Hope he guesses."
+    },
+    {
+     "id": "12-venus-2",
+     "for": "venus",
+     "prompt": "You need help with the shopping.",
+     "good": "\"Would you help me shop?\"",
+     "miss": "\"You never help!\""
+    }
+   ]
+  },
+  {
+   "chapter": 13,
+   "name": "Keep the magic alive",
+   "bookTitle": "Keeping the Magic of Love Alive",
+   "icon": "star",
+   "why": {
+    "mars": "Love has seasons. Keep doing the little things from the start.",
+    "venus": "Love has seasons. Keep doing the little things from the start."
+   },
+   "actions": {
+    "mars": "Plan a small date like the early days.",
+    "venus": "Plan a small date like the early days."
+   },
+   "scenarios": [
+    {
+     "id": "13-mars-1",
+     "for": "mars",
+     "prompt": "Six months in. Dates have stopped.",
+     "good": "Plan a surprise date.",
+     "miss": "Assume she's fine."
+    },
+    {
+     "id": "13-mars-2",
+     "for": "mars",
+     "prompt": "Venus misses the early days.",
+     "good": "\"Let's redo our first date.\"",
+     "miss": "\"That's just how it goes.\""
+    },
+    {
+     "id": "13-venus-1",
+     "for": "venus",
+     "prompt": "Mars seems bored with the routine.",
+     "good": "Suggest a new adventure.",
+     "miss": "Wait for him to change."
+    },
+    {
+     "id": "13-venus-2",
+     "for": "venus",
+     "prompt": "Your anniversary is next week.",
+     "good": "Plan something together.",
+     "miss": "Expect him to remember."
+    }
+   ]
+  }
+ ]
+}

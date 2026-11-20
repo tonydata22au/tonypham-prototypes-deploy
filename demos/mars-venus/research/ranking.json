@@ -1,0 +1,22 @@
+{
+  "method": "Two separate signals. Reader rank: score = Goodreads quote likes (quotes matched to their real chapter in the book text) / 10 + 5 x verified reader mentions. Research light: what peer-reviewed research says (see science.json).",
+  "read_on": "2026-11-20",
+  "reviews_read": 124,
+  "quotes_checked": 43,
+  "chapters": [
+    {"rank": 1,  "chapter": 1,  "idea": "We are different",        "quote_likes": 581, "mentions": 8,  "score": 98.1, "research": "RED"},
+    {"rank": 2,  "chapter": 8,  "idea": "Love needs (love tank)",  "quote_likes": 525, "mentions": 0,  "score": 52.5, "research": "AMBER"},
+    {"rank": 3,  "chapter": 3,  "idea": "The cave vs talking it out", "quote_likes": 21, "mentions": 10, "score": 52.1, "research": "AMBER"},
+    {"rank": 4,  "chapter": 4,  "idea": "Needed and valued",       "quote_likes": 362, "mentions": 3,  "score": 51.2, "research": "GREEN"},
+    {"rank": 5,  "chapter": 7,  "idea": "Waves",                   "quote_likes": 192, "mentions": 3,  "score": 34.2, "research": "AMBER"},
+    {"rank": 6,  "chapter": 2,  "idea": "Mr Fix-It",               "quote_likes": 94,  "mentions": 4,  "score": 29.4, "research": "GREEN"},
+    {"rank": 7,  "chapter": 9,  "idea": "Avoiding arguments",      "quote_likes": 23,  "mentions": 4,  "score": 22.3, "research": "GREEN"},
+    {"rank": 8,  "chapter": 13, "idea": "Keeping the magic",       "quote_likes": 126, "mentions": 1,  "score": 17.6, "research": "GREEN"},
+    {"rank": 9,  "chapter": 10, "idea": "Scoring points",          "quote_likes": 9,   "mentions": 3,  "score": 15.9, "research": "GREEN"},
+    {"rank": 10, "chapter": 6,  "idea": "Rubber band",             "quote_likes": 0,   "mentions": 2,  "score": 10.0, "research": "AMBER"},
+    {"rank": 11, "chapter": 12, "idea": "Asking for support",      "quote_likes": 0,   "mentions": 1,  "score": 5.0,  "research": "GREY"},
+    {"rank": 12, "chapter": 5,  "idea": "Different languages",     "quote_likes": 26,  "mentions": 0,  "score": 2.6,  "research": "AMBER"},
+    {"rank": 13, "chapter": 11, "idea": "The Love Letter",         "quote_likes": 4,   "mentions": 0,  "score": 0.4,  "research": "AMBER"}
+  ],
+  "caveats": ["Ranks 2-4 are almost tied.", "Mentions for chapters 4, 9 and 12 are keyword matches only.", "Most Ch 3 (cave) mentions come from 1-2 star reviews."]
+}
