@@ -18,6 +18,11 @@ a { color: var(--fg); }
 
 #app { position: relative; z-index: 1; max-width: 440px; margin: 0 auto; height: 100dvh; display: flex; flex-direction: column; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
 .hud { display: flex; justify-content: space-between; align-items: flex-start; padding: 16px 20px 0; }
+.hudright { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.langs { display: flex; gap: 6px; align-items: center; font-size: 12px; letter-spacing: .16em; }
+.langs a { color: var(--dim); text-decoration: none; padding: 2px 4px; border: 1px solid transparent; }
+.langs a[aria-current] { color: var(--fg); border-color: var(--line); }
+.langs span { color: var(--faint); }
 .clock { font-variant-numeric: tabular-nums; letter-spacing: .14em; font-size: 15px; color: var(--dim); }
 
 /* ---------- the two planets ---------- */
@@ -178,6 +183,7 @@ a { color: var(--fg); }
 .sheet[hidden] { display: none; }
 .sheet-body { position: relative; width: 100%; max-width: 440px; max-height: 82dvh; overflow-y: auto; background: #06080b; border-top: 1px solid var(--line); padding: 22px 20px 28px; animation: up .3s ease; }
 @keyframes up { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+#sheetContent > .label:first-child { padding-right: 46px; }
 .sheet h3 { margin: 4px 0 10px; font-size: 24px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; padding-right: 40px; }
 .sheet p { font-size: 15px; line-height: 1.45; color: #e9ecef; margin: 10px 0; }
 .sheet .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0; text-align: center; }
@@ -192,4 +198,5 @@ a { color: var(--fg); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+@media (max-height: 640px) { .telemetry { display: none; } .space { min-height: 170px; } .planet { --size: 72px; } .stack { height: 170px; } .prompt { font-size: 20px; } }
 @media (min-height: 860px) { .planet { --size: 110px; } }

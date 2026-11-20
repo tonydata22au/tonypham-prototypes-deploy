@@ -67,6 +67,41 @@
    "map": {
     "x": 1.0,
     "y": 0.1
+   },
+   "vi": {
+    "name": "Nhớ rằng mỗi người mỗi khác",
+    "bookTitle": "Đàn ông sao Hỏa, đàn bà sao Kim",
+    "why": {
+     "mars": "Người Sao Kim chia sẻ cảm xúc để thấy gần gũi hơn. Đừng mong cô ấy cư xử như người Sao Hỏa.",
+     "venus": "Người Sao Hỏa nghĩ kỹ rồi mới nói. Đừng mong anh ấy cư xử như người Sao Kim."
+    },
+    "actions": {
+     "mars": "Hỏi hôm nay cô ấy thế nào rồi lắng nghe.",
+     "venus": "Để anh ấy yên một lúc, đừng nghĩ là do bạn."
+    },
+    "scenarios": [
+     {
+      "prompt": "Sao Kim muốn kể hết chuyện hôm nay.",
+      "good": "Ngồi xuống nghe cô ấy kể.",
+      "miss": "Bảo cô ấy kể ngắn gọn thôi."
+     },
+     {
+      "prompt": "Sao Kim buồn vì bạn quên gọi.",
+      "good": "\"Xin lỗi. Bạn quan trọng với mình mà.\"",
+      "miss": "\"Có gì to tát đâu.\""
+     },
+     {
+      "prompt": "Sao Hỏa im lặng sau một ngày dài.",
+      "good": "Để anh ấy nghỉ một lúc đã.",
+      "miss": "\"Sao bạn không nói gì với mình?\""
+     },
+     {
+      "prompt": "Sao Hỏa hỏi gì cũng đáp 'ổn'.",
+      "good": "Tin là anh ấy sẽ mở lòng sau.",
+      "miss": "Hỏi dồn cho tới khi anh ấy nói."
+     }
+    ],
+    "lightReason": "Các bài tổng hợp nhiều nghiên cứu cho thấy nam và nữ giống nhau ở phần lớn đặc điểm tâm lý. Những đặc điểm này cũng khó chia thành hai nhóm rõ ràng theo giới. Tôn trọng sự khác biệt của người yêu là lời khuyên hay, vì mỗi người mỗi khác."
    }
   },
   {
@@ -131,6 +166,41 @@
    "map": {
     "x": 0.3,
     "y": 0.86
+   },
+   "vi": {
+    "name": "Đừng vội bày cách hay góp ý",
+    "bookTitle": "Anh Sửa Chữa và Hội Cải Tạo Gia Đình",
+    "why": {
+     "mars": "Sao Kim kể chuyện để nhẹ lòng. Cô ấy chưa cần cách giải quyết, nên đừng đóng vai Anh Sửa Chữa.",
+     "venus": "Với Sao Hỏa, lời khuyên khi chưa được hỏi dễ nghe như lời chê. Đừng cố 'sửa' anh ấy."
+    },
+    "actions": {
+     "mars": "Khi cô ấy than thở, cứ gật đầu nghe 2 phút. Khoan bày cách giải quyết.",
+     "venus": "Hôm nay, thử bớt một lời góp ý khi chưa được hỏi."
+    },
+    "scenarios": [
+     {
+      "prompt": "Sao Kim: \"Hôm nay sếp mình khó chịu kinh khủng.\"",
+      "good": "\"Nghe mệt thật. Kể mình nghe đi.\"",
+      "miss": "\"Thế thì nghỉ việc đi.\""
+     },
+     {
+      "prompt": "Sao Kim: \"Đi làm xa mệt quá.\"",
+      "good": "\"Mình đi thế cũng mệt.\"",
+      "miss": "\"Đi sớm hơn đi.\""
+     },
+     {
+      "prompt": "Sao Hỏa lạc đường mà chẳng chịu hỏi.",
+      "good": "Tin anh ấy và cứ thong thả đi tiếp.",
+      "miss": "\"Hỏi ai đó đi chứ!\""
+     },
+     {
+      "prompt": "Sao Hỏa đang sửa bồn rửa theo cách riêng.",
+      "good": "Để anh ấy tự làm.",
+      "miss": "Chỉ anh ấy phải sửa thế nào."
+     }
+    ],
+    "lightReason": "Lời khuyên khi chưa được hỏi thường bị đánh giá thấp hơn và ít được làm theo. Giúp đỡ quá lộ liễu còn có thể khiến người đang căng thẳng thấy mình kém cỏi. Giúp đúng lúc họ muốn hoặc giúp một cách kín đáo thường hiệu quả hơn."
    }
   },
   {
@@ -200,6 +270,41 @@
    "map": {
     "x": 0.531,
     "y": 0.5
+   },
+   "vi": {
+    "name": "Vào hang một lúc",
+    "bookTitle": "Đàn ông vào hang, phụ nữ trò chuyện",
+    "why": {
+     "mars": "Bạn có thể vào hang một lúc. Nhớ nói với cô ấy là bạn sẽ quay lại.",
+     "venus": "Người Sao Hỏa vào hang để suy nghĩ. Cứ cho anh ấy chút thời gian riêng, anh ấy sẽ quay lại."
+    },
+    "actions": {
+     "mars": "Nói 'Mình cần chút thời gian để nghĩ. Mình sẽ quay lại.'",
+     "venus": "Cho anh ấy thời gian một mình (\"vào hang\"). Bạn làm việc mình thích."
+    },
+    "scenarios": [
+     {
+      "prompt": "Bạn đang căng thẳng. Sao Kim hỏi có chuyện gì.",
+      "good": "\"Cho mình chút thời gian. Mình quay lại sớm.\"",
+      "miss": "Ừ hử một tiếng rồi bỏ đi."
+     },
+     {
+      "prompt": "Bạn im lặng làm Sao Kim thấy bị gạt ra ngoài.",
+      "good": "\"Không phải do bạn đâu. Mình sẽ quay lại.\"",
+      "miss": "Im luôn."
+     },
+     {
+      "prompt": "Sao Hỏa im thin thít, mắt dán vào TV.",
+      "good": "Cho anh ấy ở một mình một lúc.",
+      "miss": "\"Có chuyện gì? Nói mình nghe đi!\""
+     },
+     {
+      "prompt": "Sao Hỏa: \"Mình chỉ cần chút thời gian để nghĩ.\"",
+      "good": "\"Ừ, mình ở đây nhé.\"",
+      "miss": "Đi theo anh ấy vào phòng."
+     }
+    ],
+    "lightReason": "Khi cãi nhau đến mức tim đập nhanh, nghỉ ít nhất 20 phút có thể giúp bạn bình tĩnh. Im lặng bỏ đi mà không hẹn lúc quay lại dễ tạo cảnh một người hỏi dồn, người kia né tránh. Kiểu này thường đi cùng mối quan hệ kém hạnh phúc. Trung bình phụ nữ hay hỏi dồn và đàn ông hay rút lui hơn, nhưng còn tùy ai đang muốn thay đổi tình hình."
    }
   },
   {
@@ -264,6 +369,41 @@
    "map": {
     "x": 0.522,
     "y": 0.86
+   },
+   "vi": {
+    "name": "Thấy mình được cần đến và được yêu thương",
+    "bookTitle": "Cách khích lệ người khác giới",
+    "why": {
+     "mars": "Sao Kim có thêm động lực khi thấy mình được quan tâm. Hãy cho cô ấy thấy bạn để tâm.",
+     "venus": "Sao Hỏa có thêm động lực khi thấy mình được cần đến. Hãy cảm ơn anh ấy vì những việc anh ấy làm."
+    },
+    "actions": {
+     "mars": "Làm một việc nhỏ để cô ấy biết bạn thương cô ấy.",
+     "venus": "Cảm ơn anh ấy vì một việc anh ấy đã làm hôm nay."
+    },
+    "scenarios": [
+     {
+      "prompt": "Sao Kim trông phờ phạc sau giờ làm.",
+      "good": "Pha cho cô ấy một tách trà.",
+      "miss": "Hỏi tối nay ăn gì."
+     },
+     {
+      "prompt": "Sao Kim kể về một cuộc hẹn làm cô ấy lo.",
+      "good": "\"Bạn muốn mình đi cùng không?\"",
+      "miss": "\"Rồi sẽ ổn thôi.\""
+     },
+     {
+      "prompt": "Sao Hỏa sửa xong cái bàn lung lay.",
+      "good": "\"Cảm ơn nha, đỡ quá!\"",
+      "miss": "\"Cuối cùng cũng chịu sửa.\""
+     },
+     {
+      "prompt": "Sao Hỏa ngỏ ý giúp bạn chuyển nhà.",
+      "good": "\"Có bạn giúp thì tốt quá.\"",
+      "miss": "\"Mình tự làm được.\""
+     }
+    ],
+    "lightReason": "Cảm ơn và ghi nhận công sức của người yêu giúp tình cảm bền hơn. Cảm giác được hiểu, được coi trọng và được quan tâm giúp hai người gần nhau hơn, bất kể giới tính."
    }
   },
   {
@@ -328,6 +468,41 @@
    "map": {
     "x": 0.027,
     "y": 0.5
+   },
+   "vi": {
+    "name": "Hiểu ý sau lời nói",
+    "bookTitle": "Nói hai thứ tiếng khác nhau",
+    "why": {
+     "mars": "Khi Sao Kim nói 'chẳng bao giờ', ý cô ấy là 'mình thấy bạn chẳng lắng nghe'. Đừng vội cãi đúng sai.",
+     "venus": "Khi Sao Hỏa nói 'mình ổn', ý anh ấy là 'mình tự lo được'. Câu đó không có nghĩa là anh ấy muốn xa cách bạn."
+    },
+    "actions": {
+     "mars": "Nghe 'bạn chẳng bao giờ…'? Hỏi 'có chuyện gì vậy?'",
+     "venus": "Nghe 'mình ổn'? Cho anh ấy chút không gian riêng."
+    },
+    "scenarios": [
+     {
+      "prompt": "Sao Kim: \"Giờ mình CHẲNG BAO GIỜ đi chơi nữa!\"",
+      "good": "\"Thứ Sáu mình đi chơi nhé.\"",
+      "miss": "\"Tháng trước mình mới đi mà.\""
+     },
+     {
+      "prompt": "Sao Kim: \"Bạn chẳng nghe mình nói gì cả.\"",
+      "good": "\"Mình đang nghe đây. Bạn nói tiếp đi.\"",
+      "miss": "\"Có nghe chứ!\""
+     },
+     {
+      "prompt": "Sao Hỏa: \"Mình ổn. Không có gì đâu.\"",
+      "good": "Tin lời anh ấy.",
+      "miss": "\"Bạn nói dối mình.\""
+     },
+     {
+      "prompt": "Sao Hỏa: \"Đừng lo chuyện đó nữa.\"",
+      "good": "Hiểu là 'Mình lo được.'",
+      "miss": "Thấy mình bị gạt đi."
+     }
+    ],
+    "lightReason": "Câu “bạn chẳng bao giờ…” có thể là dấu hiệu người kia đang buồn. Nghiên cứu của Gottman cho thấy những lời trách kiểu “lúc nào cũng” hay “chẳng bao giờ” dễ gây tổn thương hơn việc góp ý về một chuyện cụ thể. Các nhà ngôn ngữ học cũng thấy cách nói của hai giới có rất nhiều điểm chung."
    }
   },
   {
@@ -392,6 +567,41 @@
    "map": {
     "x": 0.102,
     "y": 0.5
+   },
+   "vi": {
+    "name": "Sợi dây thun",
+    "bookTitle": "Đàn ông như sợi dây thun",
+    "why": {
+     "mars": "Muốn tách ra một lúc rồi lại gần nhau là chuyện bình thường. Khi quay lại, hãy gần gũi với cô ấy.",
+     "venus": "Sao Hỏa có lúc muốn ở riêng rồi sẽ quay lại. Cho anh ấy chút không gian và vui vẻ đón anh ấy về."
+    },
+    "actions": {
+     "mars": "Sau lúc ở một mình, quay lại hỏi hôm nay cô ấy thế nào.",
+     "venus": "Khi anh ấy quay lại, cứ vui vẻ đón anh ấy, đừng trách móc."
+    },
+    "scenarios": [
+     {
+      "prompt": "Bạn xa cách cả tuần. Giờ bạn quay lại.",
+      "good": "Hỏi tuần qua cô ấy thế nào.",
+      "miss": "Coi như chẳng có chuyện gì."
+     },
+     {
+      "prompt": "Hôm nay bạn muốn có chút thời gian riêng.",
+      "good": "\"Cho mình một ngày nhé. Mình thương bạn.\"",
+      "miss": "Biến mất chẳng nói một lời."
+     },
+     {
+      "prompt": "Sao Hỏa đã xa cách mấy ngày nay.",
+      "good": "Cho anh ấy không gian và vẫn cư xử ấm áp.",
+      "miss": "Bám theo hỏi dồn."
+     },
+     {
+      "prompt": "Sao Hỏa quay lại, ân cần như trước.",
+      "good": "\"Bạn về rồi. Mình nhớ bạn lắm.\"",
+      "miss": "\"RỐT CUỘC bạn đã đi đâu?\""
+     }
+    ],
+    "lightReason": "Ai cũng có lúc vừa muốn gần gũi vừa muốn có không gian riêng. Thường xuyên rút lui có thể là dấu hiệu của kiểu gắn bó né tránh, vốn đi cùng mức độ hài lòng thấp hơn trong tình yêu. Việc rút lui có thể xảy ra ở bất kỳ giới nào và đôi khi gây hại."
    }
   },
   {
@@ -456,6 +666,41 @@
    "map": {
     "x": 0.349,
     "y": 0.5
+   },
+   "vi": {
+    "name": "Theo nhịp con sóng",
+    "bookTitle": "Phụ nữ như con sóng",
+    "why": {
+     "mars": "Tâm trạng cô ấy lên xuống như con sóng. Lúc buồn nhất, cô ấy cần bạn ở bên và lắng nghe.",
+     "venus": "Khi con sóng của bạn đổ xuống, hãy nói với anh ấy là bạn chỉ cần được lắng nghe."
+    },
+    "actions": {
+     "mars": "Hôm cô ấy buồn, ở bên và lắng nghe.",
+     "venus": "Hôm nào buồn, hãy nói 'Mình chỉ cần bạn nghe thôi.'"
+    },
+    "scenarios": [
+     {
+      "prompt": "Sao Kim thấy buồn mà chẳng rõ vì sao.",
+      "good": "Ôm cô ấy và lắng nghe.",
+      "miss": "\"Vui lên đi! Có gì đâu.\""
+     },
+     {
+      "prompt": "Sao Kim: \"Mình thấy mọi thứ quá sức.\"",
+      "good": "\"Mình ở đây. Bạn kể đi.\"",
+      "miss": "Liệt kê những việc cô ấy nên làm."
+     },
+     {
+      "prompt": "Bạn đang buồn. Sao Hỏa bày cách giải quyết.",
+      "good": "\"Mình chỉ cần bạn nghe thôi.\"",
+      "miss": "Gắt lên: \"Bạn chẳng hiểu gì cả!\""
+     },
+     {
+      "prompt": "Bạn đang tụt mood. Sao Hỏa có vẻ lo.",
+      "good": "\"Ôm mình một lát thôi.\"",
+      "miss": "Giấu đi rồi ấm ức một mình."
+     }
+    ],
+    "lightReason": "Khi ai đó buồn, lắng nghe, thể hiện tình cảm và đón nhận cảm xúc của họ thường có ích. Gạt đi cảm xúc có thể làm họ thấy tệ hơn. Có người cũng muốn được giúp xử lý vấn đề, nên cứ hỏi họ cần gì."
    }
   },
   {
@@ -520,6 +765,41 @@
    "map": {
     "x": 0.535,
     "y": 0.5
+   },
+   "vi": {
+    "name": "Mỗi người cần gì khi yêu",
+    "bookTitle": "Tìm hiểu nhu cầu tình cảm của nhau",
+    "why": {
+     "mars": "Sao Kim cần được quan tâm, thấu hiểu và tôn trọng. Hãy để ý cô ấy cần gì, vì có thể khác điều bạn muốn.",
+     "venus": "Sao Hỏa cần được tin tưởng, chấp nhận và cảm ơn. Hãy để ý anh ấy cần gì, vì có thể khác điều bạn muốn."
+    },
+    "actions": {
+     "mars": "Nói lại cảm xúc cô ấy vừa chia sẻ để cô ấy biết bạn hiểu.",
+     "venus": "Thể hiện sự tin tưởng bằng cách để anh ấy tự quyết một việc."
+    },
+    "scenarios": [
+     {
+      "prompt": "Sao Kim kể chuyện làm cô ấy lo về mẹ.",
+      "good": "\"Nghe khó thật. Mình hiểu mà.\"",
+      "miss": "\"Mẹ bạn lúc nào chả thế.\""
+     },
+     {
+      "prompt": "Sao Kim muốn bạn đi cùng đến tiệc của bạn cô ấy.",
+      "good": "\"Mình sẽ đi cùng.\"",
+      "miss": "\"Nhất thiết phải đi à?\""
+     },
+     {
+      "prompt": "Sao Hỏa chọn quán ăn. Quán cũng bình thường.",
+      "good": "\"Cảm ơn bạn đã lo vụ này.\"",
+      "miss": "\"Để mình chọn thì ngon hơn.\""
+     },
+     {
+      "prompt": "Sao Hỏa quyết một việc liên quan đến xe.",
+      "good": "Tin vào lựa chọn của anh ấy.",
+      "miss": "Hỏi vặn từng chi tiết."
+     }
+    ],
+    "lightReason": "Thường xuyên thể hiện tình cảm là điều quan trọng. Nghiên cứu về “ngôn ngữ tình yêu” cho thấy mọi người quý nhiều cách thể hiện tình cảm. Có cùng một kiểu ưa thích cũng chẳng dự đoán được hai người có hạnh phúc hơn hay không. Cứ nghĩ như ăn uống cân bằng, cần nhiều món khác nhau."
    }
   },
   {
@@ -579,6 +859,41 @@
    "map": {
     "x": 0.227,
     "y": 0.86
+   },
+   "vi": {
+    "name": "Bớt cãi nhau",
+    "bookTitle": "Cách tránh cãi nhau",
+    "why": {
+     "mars": "Cuộc cãi vã dễ căng hơn khi Sao Hỏa gạt đi cảm xúc của cô ấy. Trước hết, hãy nói bạn hiểu vì sao cô ấy thấy vậy.",
+     "venus": "Cuộc cãi vã dễ căng hơn khi Sao Kim phán xét cách anh ấy nói. Trước hết, hãy nghĩ rằng anh ấy có ý tốt."
+    },
+    "actions": {
+     "mars": "Đang cãi nhau, thử nói 'Bạn khó chịu cũng dễ hiểu.'",
+     "venus": "Đang cãi nhau, thử nói 'Mình tin bạn. Mình nói lại từ đầu nhé.'"
+    },
+    "scenarios": [
+     {
+      "prompt": "Sao Kim đang bực. Bạn thấy cô ấy làm quá.",
+      "good": "\"Mình hiểu vì sao bạn bực.\"",
+      "miss": "\"Bạn làm quá rồi.\""
+     },
+     {
+      "prompt": "Một bất đồng nhỏ bắt đầu căng lên.",
+      "good": "\"Mình hít thở một chút nhé.\"",
+      "miss": "Cố chứng minh mình đúng."
+     },
+     {
+      "prompt": "Sao Hỏa quên việc bạn nhờ.",
+      "good": "\"Không sao. Lần sau làm giúp mình nhé?\"",
+      "miss": "\"Bạn LÚC NÀO cũng quên.\""
+     },
+     {
+      "prompt": "Bạn thấy giọng Sao Hỏa hơi gắt.",
+      "good": "\"Mình nói từ từ được không?\"",
+      "miss": "\"Đừng có nói với mình kiểu đó!\""
+     }
+    ],
+    "lightReason": "Các nghiên cứu dài hạn của Gottman cho thấy hay chỉ trích, coi thường, chống chế và im lặng cắt đứt cuộc trò chuyện báo trước nguy cơ chia tay rõ hơn nhiều so với chuyện hai người cãi nhau về điều gì."
    }
   },
   {
@@ -643,6 +958,41 @@
    "map": {
     "x": 0.162,
     "y": 0.86
+   },
+   "vi": {
+    "name": "Ghi điểm từ việc nhỏ",
+    "bookTitle": "Cách ghi điểm với người khác giới",
+    "why": {
+     "mars": "Với Sao Kim, món quà nhỏ cũng ghi điểm như món quà lớn. Hãy làm nhiều việc nhỏ cho cô ấy.",
+     "venus": "Sao Hỏa ghi điểm bằng những việc anh ấy làm cho bạn. Hãy để ý và bỏ qua mấy sơ suất nhỏ."
+    },
+    "actions": {
+     "mars": "Làm 3 việc nhỏ: ôm cô ấy, để lại lời nhắn, pha cà phê.",
+     "venus": "Để ý một việc anh ấy đã làm và nói cho anh ấy biết."
+    },
+    "scenarios": [
+     {
+      "prompt": "Một tối thứ Ba bình thường.",
+      "good": "Mang cho cô ấy món ăn vặt.",
+      "miss": "Để dành đến sinh nhật cô ấy."
+     },
+     {
+      "prompt": "Sao Kim về nhà, trông mệt mỏi.",
+      "good": "Ôm cô ấy trước.",
+      "miss": "Lướt điện thoại tiếp."
+     },
+     {
+      "prompt": "Sao Hỏa tự mang rác đi đổ, chẳng cần ai nhờ.",
+      "good": "\"Cảm ơn bạn đã đổ rác nhé.\"",
+      "miss": "Chẳng nói gì."
+     },
+     {
+      "prompt": "Sao Hỏa lỡ làm sai một việc nhỏ.",
+      "good": "Bỏ qua đi.",
+      "miss": "Chỉ ra lỗi đó."
+     }
+    ],
+    "lightReason": "Các cặp vẫn còn kết hôn đáp lại những lời gọi, câu hỏi hay cử chỉ nhỏ để kết nối khoảng 86% số lần, so với 33% ở các cặp ly hôn. Những lời cảm ơn nhỏ mỗi ngày cũng giúp tình cảm tốt lên. Quy tắc “mỗi việc được một điểm” trong sách vẫn chưa được kiểm chứng."
    }
   },
   {
@@ -712,6 +1062,41 @@
    "map": {
     "x": 0.004,
     "y": 0.5
+   },
+   "vi": {
+    "name": "Lá thư tình",
+    "bookTitle": "Cách nói ra những cảm xúc khó nói",
+    "why": {
+     "mars": "Viết ra điều bạn giận, buồn, sợ, tiếc và cuối cùng là tình yêu bạn dành cho người ấy. Rồi hãy nói chuyện.",
+     "venus": "Viết ra điều bạn giận, buồn, sợ, tiếc và cuối cùng là tình yêu bạn dành cho người ấy. Rồi hãy nói chuyện."
+    },
+    "actions": {
+     "mars": "Đang giận? Thử viết Lá thư tình 5 dòng trước.",
+     "venus": "Đang giận? Thử viết Lá thư tình 5 dòng trước."
+    },
+    "scenarios": [
+     {
+      "prompt": "Câu nói của Sao Kim làm bạn nổi giận.",
+      "good": "Viết Lá thư tình trước.",
+      "miss": "Bật lại ngay."
+     },
+     {
+      "prompt": "Bạn chẳng biết nói sao về điều làm mình tổn thương.",
+      "good": "Viết ra rồi chia sẻ.",
+      "miss": "Giữ hết trong lòng."
+     },
+     {
+      "prompt": "Sao Hỏa làm bạn tổn thương. Bạn sắp nổi nóng.",
+      "good": "Viết Lá thư tình trước.",
+      "miss": "Nhắn tin trong lúc đang giận."
+     },
+     {
+      "prompt": "Tối nay bạn có chuyện khó nói với Sao Hỏa.",
+      "good": "Viết cảm xúc của bạn ra trước.",
+      "miss": "Cứ tới đâu hay tới đó."
+     }
+    ],
+    "lightReason": "Gọi tên cảm xúc giúp bạn bình tĩnh hơn. Trong một bài tập viết kéo dài 21 phút, các cặp nhìn lại cuộc cãi vã từ góc nhìn của người ngoài cuộc. Mức độ hài lòng trong mối quan hệ của họ không giảm theo thời gian. Viết cảm xúc nói chung chỉ giúp một chút, và cách viết thư đúng như sách thì chưa được kiểm chứng."
    }
   },
   {
@@ -771,6 +1156,41 @@
    "map": {
     "x": 0.051,
     "y": 0.3
+   },
+   "vi": {
+    "name": "Mở lời nhờ giúp",
+    "bookTitle": "Cách mở lời và được giúp đỡ",
+    "why": {
+     "mars": "Khi Sao Kim nhờ, hãy vui vẻ đồng ý hoặc nhẹ nhàng từ chối. Đừng càu nhàu.",
+     "venus": "Người Sao Hỏa cần bạn mở lời. Hỏi ngắn gọn 'Bạn giúp mình… nhé?' rồi cảm ơn."
+    },
+    "actions": {
+     "mars": "Khi cô ấy nhờ, hãy vui vẻ nhận lời.",
+     "venus": "Mở lời một lần: 'Bạn giúp mình… nhé?' Rồi cảm ơn anh ấy."
+    },
+    "scenarios": [
+     {
+      "prompt": "Sao Kim: \"Bạn mang rác đi đổ giúp mình nhé?\"",
+      "good": "\"Ừ, để mình làm cho.\"",
+      "miss": "Càu nhàu rồi thở dài."
+     },
+     {
+      "prompt": "Sao Kim nói bóng gió là xe cần rửa.",
+      "good": "\"Bạn muốn mình rửa xe không?\"",
+      "miss": "Lờ đi."
+     },
+     {
+      "prompt": "Bạn muốn Sao Hỏa nấu tối nay.",
+      "good": "\"Tối nay bạn nấu ăn giúp mình nhé?\"",
+      "miss": "Mong anh ấy tự đoán."
+     },
+     {
+      "prompt": "Bạn cần người giúp đi mua đồ.",
+      "good": "\"Bạn đi mua đồ cùng mình nhé?\"",
+      "miss": "\"Bạn chẳng bao giờ giúp gì cả!\""
+     }
+    ],
+    "lightReason": "Nói rõ điều bạn muốn là hợp lý. Chưa tìm thấy nghiên cứu nào thử xem khi nhờ người yêu, cách hỏi với “would” có hiệu quả hơn “could” hay không. Các nhà ngôn ngữ học xem cả hai là cách nhờ lịch sự trong tiếng Anh."
    }
   },
   {
@@ -835,6 +1255,41 @@
    "map": {
     "x": 0.179,
     "y": 0.86
+   },
+   "vi": {
+    "name": "Giữ lửa tình yêu",
+    "bookTitle": "Giữ tình yêu luôn tươi mới",
+    "why": {
+     "mars": "Tình yêu cũng có lúc lên lúc xuống. Hãy tiếp tục làm những việc nhỏ như hồi mới yêu.",
+     "venus": "Tình yêu cũng có lúc lên lúc xuống. Hãy tiếp tục làm những việc nhỏ như hồi mới yêu."
+    },
+    "actions": {
+     "mars": "Lên kế hoạch cho một buổi hẹn nhỏ như hồi mới yêu.",
+     "venus": "Lên kế hoạch cho một buổi hẹn nhỏ như hồi mới yêu."
+    },
+    "scenarios": [
+     {
+      "prompt": "Yêu nhau nửa năm rồi, hai bạn chẳng còn đi hẹn hò.",
+      "good": "Lên kế hoạch cho một buổi hẹn bất ngờ.",
+      "miss": "Cứ nghĩ cô ấy thấy ổn."
+     },
+     {
+      "prompt": "Sao Kim nhớ hồi hai bạn mới yêu.",
+      "good": "\"Mình hẹn hò lại như buổi đầu nhé.\"",
+      "miss": "\"Yêu lâu thì thế thôi.\""
+     },
+     {
+      "prompt": "Sao Hỏa có vẻ chán cảnh ngày nào cũng như nhau.",
+      "good": "Rủ anh ấy thử gì đó mới.",
+      "miss": "Chờ anh ấy tự thay đổi."
+     },
+     {
+      "prompt": "Tuần sau là ngày kỷ niệm của hai bạn.",
+      "good": "Cùng nhau lên kế hoạch.",
+      "miss": "Cứ nghĩ anh ấy sẽ tự nhớ."
+     }
+    ],
+    "lightReason": "Trung bình, cảm giác hạnh phúc tăng lên sau khi cưới trở về mức bình thường sau vài năm. Các cặp vẫn chăm chút cho nhau mỗi ngày, như cư xử tích cực, trấn an nhau và chia sẻ việc cần làm, thường gắn bó và hài lòng hơn."
    }
   }
  ]

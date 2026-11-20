@@ -13,8 +13,8 @@
   <canvas id="stars" aria-hidden="true"></canvas>
   <main id="app" data-step="hook">
     <header class="hud">
-      <div><span class="label">Mission 01</span><span id="stepLabel" class="label strong">Pick your planet</span></div>
-      <div class="clock" aria-hidden="true">T+<span id="clock">00:00</span></div>
+      <div><span class="label" data-i18n="hud.mission">Mission 01</span><span id="stepLabel" class="label strong">Pick your planet</span></div>
+      <div class="hudright"><nav id="langSwitch" class="langs" aria-label="Language"></nav><div class="clock" aria-hidden="true">T+<span id="clock">00:00</span></div></div>
     </header>
 
     <section class="space" aria-label="Two planets">
@@ -26,9 +26,9 @@
       <button id="mars" class="planet" data-mode="mars" data-mood="calm" aria-label="Mars"><svg class="face" viewBox="0 0 100 100" aria-hidden="true"></svg><i class="moon"></i><i class="moon m2"></i><span class="tag label">Mars</span></button>
       <button id="venus" class="planet" data-mode="venus" data-mood="calm" aria-label="Venus"><svg class="face" viewBox="0 0 100 100" aria-hidden="true"></svg><span class="tag label">Venus</span></button>
       <div class="telemetry" aria-hidden="true">
-        <div><b id="tOrbit">820</b><span class="label">Distance km</span></div>
-        <div><b id="tHeat">30</b><span class="label">Tension %</span></div>
-        <div><b id="tSignal">0</b><span class="label">Good moves</span></div>
+        <div><b id="tOrbit">820</b><span class="label" data-i18n="tel.distance">Distance km</span></div>
+        <div><b id="tHeat">30</b><span class="label" data-i18n="tel.tension">Tension %</span></div>
+        <div><b id="tSignal">0</b><span class="label" data-i18n="tel.good">Good moves</span></div>
       </div>
     </section>
 
@@ -42,7 +42,8 @@
     </div>
   </div>
 
-  <noscript><p class="noscript">This mission needs JavaScript.</p></noscript>
+  <noscript><p class="noscript">This game needs JavaScript. · Trò chơi này cần JavaScript.</p></noscript>
+  <script src="i18n.js" defer></script>
   <script src="app.js" defer></script>
 </body>
 </html>
