@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <title>Swipe the Moment · Mars/Venus</title>
+  <meta name="description" content="A 30-second space mission from Men Are from Mars, Women Are from Venus: pick your planet, swipe how you'd react, and see what the book says and what research says.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2235%22 cy=%2250%22 r=%2226%22 fill=%22%23e4572e%22/%3E%3Ccircle cx=%2275%22 cy=%2250%22 r=%2218%22 fill=%22%23f4b400%22/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <canvas id="stars" aria-hidden="true"></canvas>
+  <main id="app" data-step="hook">
+    <header class="hud">
+      <div><span class="label">Mission 01</span><span id="stepLabel" class="label strong">Pick your planet</span></div>
+      <div class="clock" aria-hidden="true">T+<span id="clock">00:00</span></div>
+    </header>
+
+    <section class="space" aria-label="Two planets">
+      <div id="signal" class="signal" role="status" aria-live="polite">
+        <span id="signalFrom" class="label">Start here</span>
+        <span id="signalText">Which planet are you from?</span>
+      </div>
+      <div id="tether" class="tether"><span id="tetherKm" class="label">820 km</span></div>
+      <button id="mars" class="planet" data-mode="mars" data-mood="calm" aria-label="Mars"><svg class="face" viewBox="0 0 100 100" aria-hidden="true"></svg><i class="moon"></i><i class="moon m2"></i><span class="tag label">Mars</span></button>
+      <button id="venus" class="planet" data-mode="venus" data-mood="calm" aria-label="Venus"><svg class="face" viewBox="0 0 100 100" aria-hidden="true"></svg><span class="tag label">Venus</span></button>
+      <div class="telemetry" aria-hidden="true">
+        <div><b id="tOrbit">820</b><span class="label">Distance km</span></div>
+        <div><b id="tHeat">30</b><span class="label">Tension %</span></div>
+        <div><b id="tSignal">0</b><span class="label">Good moves</span></div>
+      </div>
+    </section>
+
+    <section id="panel" class="panel" aria-live="polite"></section>
+  </main>
+
+  <div id="sheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden>
+    <div class="sheet-body">
+      <button class="close" id="sheetClose" aria-label="Close">×</button>
+      <div id="sheetContent"></div>
+    </div>
+  </div>
+
+  <noscript><p class="noscript">This mission needs JavaScript.</p></noscript>
+  <script src="app.js" defer></script>
+</body>
+</html>

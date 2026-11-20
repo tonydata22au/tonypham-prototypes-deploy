@@ -1,0 +1,841 @@
+{
+ "version": 1,
+ "method": "How we rank: we counted likes on quotes from each habit's chapter on Goodreads (a book review site), and how often 124 real reviews mention it (read on 2026-11-20). The light shows what research studies say. We keep the two apart.",
+ "readOn": "2026-11-20",
+ "reviewsRead": 124,
+ "quotesChecked": 43,
+ "ideas": [
+  {
+   "chapter": 1,
+   "name": "Remember our differences",
+   "bookTitle": "Men Are from Mars, Women Are from Venus",
+   "icon": "planets",
+   "why": {
+    "mars": "Venusians share feelings to feel close. Don't expect her to act like a Martian.",
+    "venus": "Martians think before they talk. Don't expect him to act like a Venusian."
+   },
+   "actions": {
+    "mars": "Ask about her day, then just listen.",
+    "venus": "Give him quiet time without taking it personally."
+   },
+   "scenarios": [
+    {
+     "for": "mars",
+     "prompt": "Venus wants to talk about her whole day.",
+     "good": "Sit down and listen.",
+     "miss": "Ask for the short version."
+    },
+    {
+     "for": "mars",
+     "prompt": "Venus is hurt you forgot to call.",
+     "good": "\"Sorry. You matter to me.\"",
+     "miss": "\"It's not a big deal.\""
+    },
+    {
+     "for": "venus",
+     "prompt": "Mars goes quiet after a long day.",
+     "good": "Let him unwind first.",
+     "miss": "\"Why won't you talk to me?\""
+    },
+    {
+     "for": "venus",
+     "prompt": "Mars answers 'fine' to everything.",
+     "good": "Trust he'll open up later.",
+     "miss": "Push until he talks."
+    }
+   ],
+   "reader": {
+    "rank": 1,
+    "score": 98.1,
+    "quoteLikes": 581,
+    "mentions": 8
+   },
+   "light": "RED",
+   "lightReason": "Big reviews of many studies show men and women are alike on most psychological traits, and gender is not split into two clear types. Accepting that your partner is different from you is fine advice, but the differences are between individual people, not between sexes.",
+   "sources": [
+    {
+     "title": "Hyde (2005) The Gender Similarities Hypothesis, American Psychologist",
+     "url": "https://www.apa.org/pubs/journals/releases/amp-606581.pdf",
+     "status": "read"
+    },
+    {
+     "title": "Carothers & Reis (2013) Men and women are from Earth: examining the latent structure of gender, JPSP",
+     "url": "https://pubmed.ncbi.nlm.nih.gov/23088230/",
+     "status": "snippet"
+    }
+   ],
+   "map": {
+    "x": 1.0,
+    "y": 0.1
+   }
+  },
+  {
+   "chapter": 2,
+   "name": "No fixing, no improving",
+   "bookTitle": "Mr. Fix-It and the Home-Improvement Committee",
+   "icon": "toolbox",
+   "why": {
+    "mars": "Venus talks to feel better, not to get solutions. Don't play Mr Fix-It.",
+    "venus": "Advice he didn't ask for feels like criticism to Mars. Don't try to 'improve' him."
+   },
+   "actions": {
+    "mars": "When she vents, nod for 2 minutes. No fixes.",
+    "venus": "Hold back one piece of advice today."
+   },
+   "scenarios": [
+    {
+     "for": "mars",
+     "prompt": "Venus: \"My boss was awful today.\"",
+     "good": "\"That sounds awful. Tell me.\"",
+     "miss": "\"Just quit, then.\""
+    },
+    {
+     "for": "mars",
+     "prompt": "Venus: \"I'm so tired of the commute.\"",
+     "good": "\"I'd be tired too.\"",
+     "miss": "\"Leave earlier.\""
+    },
+    {
+     "for": "venus",
+     "prompt": "Mars is lost but won't ask directions.",
+     "good": "Trust him. Enjoy the ride.",
+     "miss": "\"Just ask someone!\""
+    },
+    {
+     "for": "venus",
+     "prompt": "Mars is fixing the sink his way.",
+     "good": "Let him do it.",
+     "miss": "Tell him how to do it."
+    }
+   ],
+   "reader": {
+    "rank": 6,
+    "score": 29.4,
+    "quoteLikes": 94,
+    "mentions": 4
+   },
+   "light": "GREEN",
+   "lightReason": "Studies find advice you did not ask for is rated as worse and followed less often, and support that is obvious can make a stressed person feel less capable. Support works best when it is wanted or barely noticed.",
+   "sources": [
+    {
+     "title": "Bolger, Zuckerman & Kessler (2000) Invisible support and adjustment to stress, JPSP",
+     "url": "https://pubmed.ncbi.nlm.nih.gov/11138764/",
+     "status": "snippet"
+    },
+    {
+     "title": "MacGeorge, Feng & Guntzviller, Advice: Expanding the communication paradigm (Communication Yearbook)",
+     "url": "http://www.lisaguntzviller.com/wp-content/uploads/2012/04/MacGeorge-Feng-Guntzviller-Communication-Yearbook-in-press.pdf",
+     "status": "snippet"
+    }
+   ],
+   "map": {
+    "x": 0.3,
+    "y": 0.86
+   }
+  },
+  {
+   "chapter": 3,
+   "name": "The cave",
+   "bookTitle": "Men Go to Their Caves and Women Talk",
+   "icon": "cave",
+   "why": {
+    "mars": "Going to your cave is OK. Tell her you'll come back.",
+    "venus": "Martians go to their cave to think. Don't follow him in. He'll come back."
+   },
+   "actions": {
+    "mars": "Say 'I need time to think. I'll be back.'",
+    "venus": "Let him have his cave. Do something you enjoy."
+   },
+   "scenarios": [
+    {
+     "for": "mars",
+     "prompt": "You're stressed. Venus asks what's wrong.",
+     "good": "\"I need some time. Back soon.\"",
+     "miss": "Grunt. Walk off."
+    },
+    {
+     "for": "mars",
+     "prompt": "Venus feels shut out by your silence.",
+     "good": "\"It's not you. I'll be back.\"",
+     "miss": "Say nothing."
+    },
+    {
+     "for": "venus",
+     "prompt": "Mars goes silent and stares at the TV.",
+     "good": "Give him cave time.",
+     "miss": "\"What's wrong? Talk to me!\""
+    },
+    {
+     "for": "venus",
+     "prompt": "Mars: \"I just need to think.\"",
+     "good": "\"OK. I'll be here.\"",
+     "miss": "Follow him into the room."
+    }
+   ],
+   "reader": {
+    "rank": 3,
+    "score": 52.1,
+    "quoteLikes": 21,
+    "mentions": 10
+   },
+   "light": "AMBER",
+   "lightReason": "A short break (at least 20 minutes) when your heart is racing during a fight helps, but going quiet without saying when you will come back is the 'demand–withdraw' pattern, and research links that pattern to unhappier relationships. Women tend to push and men tend to pull back on average, but this depends a lot on who wants the change.",
+   "sources": [
+    {
+     "title": "Gottman Institute: Manage Conflict Part 4 (flooding and self-soothing breaks)",
+     "url": "https://www.gottman.com/blog/manage-conflict-part-4/",
+     "status": "read"
+    },
+    {
+     "title": "Christensen & Heavey (1990) Gender and social structure in the demand/withdraw pattern of marital conflict, JPSP",
+     "url": "https://pubmed.ncbi.nlm.nih.gov/2213491/",
+     "status": "snippet"
+    },
+    {
+     "title": "Schrodt et al. (2014) Meta-analysis of the demand/withdraw pattern, Communication Monographs",
+     "url": "https://www.researchgate.net/publication/263347858_A_Meta-Analytical_Review_of_the_DemandWithdraw_Pattern_of_Interaction_and_its_Associations_with_Individual_Relational_and_Communicative_Outcomes",
+     "status": "snippet"
+    }
+   ],
+   "map": {
+    "x": 0.531,
+    "y": 0.5
+   }
+  },
+  {
+   "chapter": 4,
+   "name": "Needed and cherished",
+   "bookTitle": "How to Motivate the Opposite Sex",
+   "icon": "heart",
+   "why": {
+    "mars": "On Venus, people try harder when they feel cared for. Show you care.",
+    "venus": "On Mars, people try harder when they feel needed. Thank him for what he does."
+   },
+   "actions": {
+    "mars": "Do one small thing that says 'I cherish you'.",
+    "venus": "Thank him for one thing he did today."
+   },
+   "scenarios": [
+    {
+     "for": "mars",
+     "prompt": "Venus looks worn out after work.",
+     "good": "Make her a cup of tea.",
+     "miss": "Ask what's for dinner."
+    },
+    {
+     "for": "mars",
+     "prompt": "Venus mentions a scary appointment.",
+     "good": "\"Want me to come with you?\"",
+     "miss": "\"You'll be fine.\""
+    },
+    {
+     "for": "venus",
+     "prompt": "Mars fixed the wobbly table.",
+     "good": "\"Thanks, that's so helpful!\"",
+     "miss": "\"Took you long enough.\""
+    },
+    {
+     "for": "venus",
+     "prompt": "Mars offers to help with your move.",
+     "good": "\"I'd love your help.\"",
+     "miss": "\"I can do it myself.\""
+    }
+   ],
+   "reader": {
+    "rank": 4,
+    "score": 51.2,
+    "quoteLikes": 362,
+    "mentions": 3
+   },
+   "light": "GREEN",
+   "lightReason": "Saying thank you and showing you notice your partner's effort strengthens relationships, and feeling understood, valued and cared for is a core driver of closeness. This is true for everyone, not split by sex.",
+   "sources": [
+    {
+     "title": "Algoe (2012) Find, Remind, and Bind: The Functions of Gratitude in Everyday Relationships",
+     "url": "https://compass.onlinelibrary.wiley.com/doi/abs/10.1111/j.1751-9004.2012.00439.x",
+     "status": "snippet"
+    },
+    {
+     "title": "Reis, Clark & Holmes (2004) Perceived partner responsiveness as an organizing construct",
+     "url": "https://www.sas.rochester.edu/psy/people/faculty/reis_harry/assets/pdf/ReisClarkHolmes_2004.pdf",
+     "status": "snippet"
+    }
+   ],
+   "map": {
+    "x": 0.522,
+    "y": 0.86
+   }
+  },
+  {
+   "chapter": 5,
+   "name": "Translate the language",
+   "bookTitle": "Speaking Different Languages",
+   "icon": "signal",
+   "why": {
+    "mars": "When Venus says 'never', she means 'I feel unheard'. Don't argue the facts.",
+    "venus": "When Mars says 'I'm fine', he means 'I'll handle it'. He isn't pushing you away."
+   },
+   "actions": {
+    "mars": "Hear 'you never'? Ask 'what happened?'",
+    "venus": "Hear 'I'm fine'? Give him room."
+   },
+   "scenarios": [
+    {
+     "for": "mars",
+     "prompt": "Venus: \"We NEVER go out anymore!\"",
+     "good": "\"Let's go out Friday.\"",
+     "miss": "\"We went out last month.\""
+    },
+    {
+     "for": "mars",
+     "prompt": "Venus: \"You don't listen to me.\"",
+     "good": "\"I'm listening now. Go on.\"",
+     "miss": "\"Yes I do!\""
+    },
+    {
+     "for": "venus",
+     "prompt": "Mars: \"I'm fine. It's nothing.\"",
+     "good": "Take it at face value.",
+     "miss": "\"You're lying to me.\""
+    },
+    {
+     "for": "venus",
+     "prompt": "Mars: \"Stop worrying about it.\"",
+     "good": "Hear: 'I've got this.'",
+     "miss": "Feel brushed off."
+    }
+   ],
+   "reader": {
+    "rank": 12,
+    "score": 2.6,
+    "quoteLikes": 26,
+    "mentions": 0
+   },
+   "light": "AMBER",
+   "lightReason": "Treating 'you never' as a sign of hurt is sensible, and Gottman's work shows sweeping 'you always/never' attacks (criticism) do more harm than a specific complaint. But linguists find men and women do not really speak different languages; the overlap is huge.",
+   "sources": [
+    {
+     "title": "Gottman Institute: The Four Horsemen (criticism vs complaint)",
+     "url": "https://www.gottman.com/blog/the-four-horsemen-recognizing-criticism-contempt-defensiveness-and-stonewalling/",
+     "status": "read"
+    },
+    {
+     "title": "Deborah Cameron (2007) The Myth of Mars and Venus (book summary)",
+     "url": "https://en.wikipedia.org/wiki/The_Myth_of_Mars_and_Venus",
+     "status": "snippet"
+    }
+   ],
+   "map": {
+    "x": 0.027,
+    "y": 0.5
+   }
+  },
+  {
+   "chapter": 6,
+   "name": "The rubber band",
+   "bookTitle": "Men Are Like Rubber Bands",
+   "icon": "orbit",
+   "why": {
+    "mars": "Pulling away and springing back is normal. Come back warm.",
+    "venus": "Mars pulls away, then springs back. Don't chase him. Welcome him back."
+   },
+   "actions": {
+    "mars": "After time alone, come back and ask about her day.",
+    "venus": "When he comes back, welcome him without blame."
+   },
+   "scenarios": [
+    {
+     "for": "mars",
+     "prompt": "You pulled away all week. Now you're back.",
+     "good": "Ask about her week.",
+     "miss": "Act like nothing happened."
+    },
+    {
+     "for": "mars",
+     "prompt": "You need some distance today.",
+     "good": "\"I need a day. I love you.\"",
+     "miss": "Disappear without a word."
+    },
+    {
+     "for": "venus",
+     "prompt": "Mars has been distant for days.",
+     "good": "Give him room. Stay warm.",
+     "miss": "Chase him with questions."
+    },
+    {
+     "for": "venus",
+     "prompt": "Mars comes back, warm and loving again.",
+     "good": "\"Welcome back. I missed you.\"",
+     "miss": "\"Where have you BEEN?\""
+    }
+   ],
+   "reader": {
+    "rank": 10,
+    "score": 10.0,
+    "quoteLikes": 0,
+    "mentions": 2
+   },
+   "light": "AMBER",
+   "lightReason": "Research agrees everyone feels a push and pull between wanting closeness and wanting independence. But a strong habit of pulling away matches 'avoidant attachment', which is linked to lower satisfaction, so it is not always healthy and it is not a male trait.",
+   "sources": [
+    {
+     "title": "Relational dialectics theory (Baxter & Montgomery) overview",
+     "url": "https://en.wikipedia.org/wiki/Relational_dialectics",
+     "status": "snippet"
+    },
+    {
+     "title": "Shaver & Mikulincer (2006) Attachment theory, individual psychodynamics and relationship functioning",
+     "url": "https://adultattachment.faculty.ucdavis.edu/wp-content/uploads/sites/66/2015/09/Shaver_2006_Attachment-theory-individual-psychodynamics-and-relationship-functioning.pdf",
+     "status": "snippet"
+    }
+   ],
+   "map": {
+    "x": 0.102,
+    "y": 0.5
+   }
+  },
+  {
+   "chapter": 7,
+   "name": "Ride the wave",
+   "bookTitle": "Women Are Like Waves",
+   "icon": "wave",
+   "why": {
+    "mars": "Her mood rises and falls like a wave. At the bottom she needs you, not fixes.",
+    "venus": "When your wave crashes, tell him you just need him to listen."
+   },
+   "actions": {
+    "mars": "On her low day, stay close and listen.",
+    "venus": "On a low day, say 'I just need you to listen.'"
+   },
+   "scenarios": [
+    {
+     "for": "mars",
+     "prompt": "Venus feels low for no clear reason.",
+     "good": "Hug her. Just listen.",
+     "miss": "\"Cheer up! It's nothing.\""
+    },
+    {
+     "for": "mars",
+     "prompt": "Venus: \"Everything feels like too much.\"",
+     "good": "\"I'm here. Tell me.\"",
+     "miss": "List what she should do."
+    },
+    {
+     "for": "venus",
+     "prompt": "You feel low. Mars offers a fix.",
+     "good": "\"I just need you to listen.\"",
+     "miss": "Snap: \"You don't get it!\""
+    },
+    {
+     "for": "venus",
+     "prompt": "Your wave crashes. Mars looks worried.",
+     "good": "\"Just hold me for a bit.\"",
+     "miss": "Hide it and stew."
+    }
+   ],
+   "reader": {
+    "rank": 5,
+    "score": 34.2,
+    "quoteLikes": 192,
+    "mentions": 3
+   },
+   "light": "AMBER",
+   "lightReason": "Listening, affection and showing you accept their feelings usually helps someone who is upset, and dismissing feelings makes things worse. But some people do want practical help, so the best move is to ask what they need.",
+   "sources": [
+    {
+     "title": "Interpersonal Emotion Regulation: an Experience Sampling Study (PMC)",
+     "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9382965/",
+     "status": "snippet"
+    },
+    {
+     "title": "May I Help You? Interpersonal emotion regulation and wellbeing in daily life, Collabra",
+     "url": "https://online.ucpress.edu/collabra/article/10/1/90797/199794/May-I-Help-You-The-Relationship-Between",
+     "status": "snippet"
+    }
+   ],
+   "map": {
+    "x": 0.349,
+    "y": 0.5
+   }
+  },
+  {
+   "chapter": 8,
+   "name": "Love needs",
+   "bookTitle": "Discovering Our Different Emotional Needs",
+   "icon": "gauge",
+   "why": {
+    "mars": "Venus needs care, understanding and respect. Give her what she needs, not what you'd want.",
+    "venus": "Mars needs trust, acceptance and thanks. Give him what he needs, not what you'd want."
+   },
+   "actions": {
+    "mars": "Show understanding: say back how she feels.",
+    "venus": "Show trust: let him decide one thing."
+   },
+   "scenarios": [
+    {
+     "for": "mars",
+     "prompt": "Venus shares a worry about her mum.",
+     "good": "\"That sounds hard. I get it.\"",
+     "miss": "\"Your mum's always like that.\""
+    },
+    {
+     "for": "mars",
+     "prompt": "Venus wants you at her friend's party.",
+     "good": "\"I'll be there.\"",
+     "miss": "\"Do I have to?\""
+    },
+    {
+     "for": "venus",
+     "prompt": "Mars picked a restaurant. It's average.",
+     "good": "\"Thanks for planning it.\"",
+     "miss": "\"I'd have picked better.\""
+    },
+    {
+     "for": "venus",
+     "prompt": "Mars makes a choice about the car.",
+     "good": "Trust his call.",
+     "miss": "Question every detail."
+    }
+   ],
+   "reader": {
+    "rank": 2,
+    "score": 52.5,
+    "quoteLikes": 525,
+    "mentions": 0
+   },
+   "light": "AMBER",
+   "lightReason": "Showing love often matters, but research on the similar 'love languages' idea finds people value all kinds of love, not one special type, and matching on a type does not predict happiness. Think of it as a balanced diet, not one tank.",
+   "sources": [
+    {
+     "title": "APS Observer: Empirical Evidence Is My Love Language (on Impett, Park & Muise 2024)",
+     "url": "https://www.psychologicalscience.org/publications/observer/teaching-current-directions-love-languages.html",
+     "status": "read"
+    },
+    {
+     "title": "Impett, Park & Muise (2024) Evaluating Love Languages From a Relationship Science Perspective, Current Directions in Psychological Science",
+     "url": "https://journals.sagepub.com/doi/10.1177/09637214231217663",
+     "status": "snippet"
+    }
+   ],
+   "map": {
+    "x": 0.535,
+    "y": 0.5
+   }
+  },
+  {
+   "chapter": 9,
+   "name": "Avoid arguments",
+   "bookTitle": "How to Avoid Arguments",
+   "icon": "heat",
+   "why": {
+    "mars": "Fights grow when Mars waves her feelings away. Say her feelings make sense first.",
+    "venus": "Fights grow when Venus judges how Mars talks. Assume he means well first."
+   },
+   "actions": {
+    "mars": "Mid-fight: 'You're right to feel upset.'",
+    "venus": "Mid-fight: 'I trust you. Let's restart.'"
+   },
+   "scenarios": [
+    {
+     "for": "mars",
+     "prompt": "Venus is upset. You think she overreacts.",
+     "good": "\"I see why you're upset.\"",
+     "miss": "\"You're overreacting.\""
+    },
+    {
+     "for": "mars",
+     "prompt": "A small disagreement starts heating up.",
+     "good": "\"Let's take a breath.\"",
+     "miss": "Prove you're right."
+    },
+    {
+     "for": "venus",
+     "prompt": "Mars forgot your errand.",
+     "good": "\"No worries. Next time?\"",
+     "miss": "\"You ALWAYS forget.\""
+    },
+    {
+     "for": "venus",
+     "prompt": "Mars's tone sounds harsh to you.",
+     "good": "\"Can we slow down?\"",
+     "miss": "\"Don't talk to me like that!\""
+    }
+   ],
+   "reader": {
+    "rank": 7,
+    "score": 22.3,
+    "quoteLikes": 23,
+    "mentions": 4
+   },
+   "light": "GREEN",
+   "lightReason": "Gottman's long-term studies of couples found that criticism, contempt, defensiveness and stonewalling predict break-ups much better than the topic of the fight.",
+   "sources": [
+    {
+     "title": "Gottman Institute: The Four Horsemen",
+     "url": "https://www.gottman.com/blog/the-four-horsemen-recognizing-criticism-contempt-defensiveness-and-stonewalling/",
+     "status": "read"
+    }
+   ],
+   "map": {
+    "x": 0.227,
+    "y": 0.86
+   }
+  },
+  {
+   "chapter": 10,
+   "name": "Scoring points",
+   "bookTitle": "Scoring Points with the Opposite Sex",
+   "icon": "spark",
+   "why": {
+    "mars": "On Venus, a small gift scores as much as a big one. Do lots of little things.",
+    "venus": "Mars scores points by doing things for you. Notice them. Let small slips go."
+   },
+   "actions": {
+    "mars": "Do 3 small things: a hug, a note, a coffee.",
+    "venus": "Notice one thing he did and say so."
+   },
+   "scenarios": [
+    {
+     "for": "mars",
+     "prompt": "A normal Tuesday evening.",
+     "good": "Bring her a small treat.",
+     "miss": "Save it for her birthday."
+    },
+    {
+     "for": "mars",
+     "prompt": "Venus comes home tired.",
+     "good": "Hug her first.",
+     "miss": "Keep scrolling."
+    },
+    {
+     "for": "venus",
+     "prompt": "Mars took the bins out unasked.",
+     "good": "\"Thanks for doing that.\"",
+     "miss": "Say nothing."
+    },
+    {
+     "for": "venus",
+     "prompt": "Mars makes a small mistake.",
+     "good": "Let it go.",
+     "miss": "Point it out."
+    }
+   ],
+   "reader": {
+    "rank": 9,
+    "score": 15.9,
+    "quoteLikes": 9,
+    "mentions": 3
+   },
+   "light": "GREEN",
+   "lightReason": "Couples who stayed married responded to each other's small everyday bids for attention about 86% of the time versus 33% for couples who divorced, and small daily thanks gives a measurable boost. The book's 'every act scores one point' rule itself is not tested.",
+   "sources": [
+    {
+     "title": "Gottman Institute: Turn Towards Instead of Away (bids research)",
+     "url": "https://www.gottman.com/blog/turn-toward-instead-of-away/",
+     "status": "read"
+    },
+    {
+     "title": "Algoe (2012) Find, Remind, and Bind (cites Algoe, Gable & Maisel 2010 'It's the little things')",
+     "url": "https://compass.onlinelibrary.wiley.com/doi/abs/10.1111/j.1751-9004.2012.00439.x",
+     "status": "snippet"
+    }
+   ],
+   "map": {
+    "x": 0.162,
+    "y": 0.86
+   }
+  },
+  {
+   "chapter": 11,
+   "name": "The Love Letter",
+   "bookTitle": "How to Communicate Difficult Feelings",
+   "icon": "letter",
+   "why": {
+    "mars": "Write down your anger, sadness, fear, regret, then love. Then talk.",
+    "venus": "Write down your anger, sadness, fear, regret, then love. Then talk."
+   },
+   "actions": {
+    "mars": "Angry? Write a 5-line Love Letter first.",
+    "venus": "Angry? Write a 5-line Love Letter first."
+   },
+   "scenarios": [
+    {
+     "for": "mars",
+     "prompt": "Venus's comment made you furious.",
+     "good": "Write a Love Letter first.",
+     "miss": "Fire back instantly."
+    },
+    {
+     "for": "mars",
+     "prompt": "You can't find words for a hurt.",
+     "good": "Write it out, then share.",
+     "miss": "Bottle it up."
+    },
+    {
+     "for": "venus",
+     "prompt": "Mars hurt you. You're about to explode.",
+     "good": "Write a Love Letter first.",
+     "miss": "Send an angry text."
+    },
+    {
+     "for": "venus",
+     "prompt": "A hard talk with Mars tonight.",
+     "good": "Write what you feel first.",
+     "miss": "Wing it."
+    }
+   ],
+   "reader": {
+    "rank": 13,
+    "score": 0.4,
+    "quoteLikes": 4,
+    "mentions": 0
+   },
+   "light": "AMBER",
+   "lightReason": "Naming feelings in words calms the brain's alarm system, and a 21-minute writing task where couples looked at a fight as a neutral outsider stopped their relationship quality from dropping. General expressive writing only helps a little, and Gray's exact letter format has not been tested.",
+   "sources": [
+    {
+     "title": "Finkel et al. (2013) A Brief Intervention to Promote Conflict Reappraisal Preserves Marital Quality Over Time, Psychological Science",
+     "url": "https://faculty.wcas.northwestern.edu/eli-finkel/documents/InPress_FinkelSlotterLuchiesWaltonGross_PSci.pdf",
+     "status": "read"
+    },
+    {
+     "title": "Lieberman et al. (2007) Putting feelings into words: affect labeling disrupts amygdala activity",
+     "url": "https://pubmed.ncbi.nlm.nih.gov/17576282/",
+     "status": "snippet"
+    },
+    {
+     "title": "Frattaroli (2006) Experimental disclosure and its moderators: A meta-analysis",
+     "url": "https://psycnet.apa.org/record/2006-20202-001",
+     "status": "snippet"
+    }
+   ],
+   "map": {
+    "x": 0.004,
+    "y": 0.5
+   }
+  },
+  {
+   "chapter": 12,
+   "name": "Ask for support",
+   "bookTitle": "How to Ask for Support and Get It",
+   "icon": "arrow",
+   "why": {
+    "mars": "When Venus asks, give a warm yes, or a kind no. No grumbling.",
+    "venus": "Martians need to be asked. Ask briefly: 'Would you...?' Then say thanks."
+   },
+   "actions": {
+    "mars": "When she asks, say a warm yes.",
+    "venus": "Ask once: 'Would you...?' Then thank him."
+   },
+   "scenarios": [
+    {
+     "for": "mars",
+     "prompt": "Venus: \"Would you take the bins out?\"",
+     "good": "\"Sure, happy to.\"",
+     "miss": "Grumble and sigh."
+    },
+    {
+     "for": "mars",
+     "prompt": "Venus hints the car needs washing.",
+     "good": "\"Want me to wash it?\"",
+     "miss": "Ignore the hint."
+    },
+    {
+     "for": "venus",
+     "prompt": "You want Mars to cook tonight.",
+     "good": "\"Would you cook tonight?\"",
+     "miss": "Hope he guesses."
+    },
+    {
+     "for": "venus",
+     "prompt": "You need help with the shopping.",
+     "good": "\"Would you help me shop?\"",
+     "miss": "\"You never help!\""
+    }
+   ],
+   "reader": {
+    "rank": 11,
+    "score": 5.0,
+    "quoteLikes": 0,
+    "mentions": 1
+   },
+   "light": "GREY",
+   "lightReason": "Asking clearly for what you want makes sense, but no study found tests whether 'would' works better than 'could' with a partner; linguists treat both as normal polite requests.",
+   "sources": [
+    {
+     "title": "Clark & Schunk (1980) Polite responses to polite requests (strangers, not couples)",
+     "url": "https://www.stanford.edu/~clark/1980s/Clark,%20H.H.%20_%20Schunk,%20D.H.%20_Polite%20responses%20to%20polite%20requests_%201980.pdf",
+     "status": "snippet"
+    }
+   ],
+   "map": {
+    "x": 0.051,
+    "y": 0.3
+   }
+  },
+  {
+   "chapter": 13,
+   "name": "Keep the magic alive",
+   "bookTitle": "Keeping the Magic of Love Alive",
+   "icon": "star",
+   "why": {
+    "mars": "Love has seasons. Keep doing the little things from the start.",
+    "venus": "Love has seasons. Keep doing the little things from the start."
+   },
+   "actions": {
+    "mars": "Plan a small date like the early days.",
+    "venus": "Plan a small date like the early days."
+   },
+   "scenarios": [
+    {
+     "for": "mars",
+     "prompt": "Six months in. Dates have stopped.",
+     "good": "Plan a surprise date.",
+     "miss": "Assume she's fine."
+    },
+    {
+     "for": "mars",
+     "prompt": "Venus misses the early days.",
+     "good": "\"Let's redo our first date.\"",
+     "miss": "\"That's just how it goes.\""
+    },
+    {
+     "for": "venus",
+     "prompt": "Mars seems bored with the routine.",
+     "good": "Suggest a new adventure.",
+     "miss": "Wait for him to change."
+    },
+    {
+     "for": "venus",
+     "prompt": "Your anniversary is next week.",
+     "good": "Plan something together.",
+     "miss": "Expect him to remember."
+    }
+   ],
+   "reader": {
+    "rank": 8,
+    "score": 17.6,
+    "quoteLikes": 126,
+    "mentions": 1
+   },
+   "light": "GREEN",
+   "lightReason": "The happiness boost from getting married fades back to normal within a few years on average, and couples who keep doing everyday upkeep (being positive, reassuring each other, sharing tasks) stay more committed and satisfied.",
+   "sources": [
+    {
+     "title": "Stafford & Canary (1991) Maintenance strategies and romantic relationship type, gender and relational characteristics",
+     "url": "https://journals.sagepub.com/doi/10.1177/0265407591082004",
+     "status": "snippet"
+    },
+    {
+     "title": "Lucas et al. (2003) Reexamining adaptation and the set point model of happiness: marital status",
+     "url": "https://pubmed.ncbi.nlm.nih.gov/12635914/",
+     "status": "snippet"
+    }
+   ],
+   "map": {
+    "x": 0.179,
+    "y": 0.86
+   }
+  }
+ ]
+}

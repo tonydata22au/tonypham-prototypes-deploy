@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <title>How I built it · Swipe the Moment</title>
+  <meta name="description" content="How a 1992 relationship book became a 30-second game, with every idea checked against reader reviews and research.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2235%22 cy=%2250%22 r=%2226%22 fill=%22%23e4572e%22/%3E%3Ccircle cx=%2275%22 cy=%2250%22 r=%2218%22 fill=%22%23f4b400%22/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    html, body { overflow: auto; height: auto; }
+    .how { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: 22px 20px 60px; }
+    .how a.back { display: inline-block; margin-bottom: 28px; }
+    .how h1 { font-size: 44px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; margin: 6px 0 10px; line-height: 1; }
+    .how .lede { font-size: 19px; line-height: 1.45; color: #e9ecef; max-width: 36em; margin: 0 0 28px; }
+    .glance { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 0 0 14px; }
+    .glance div { border: 1px solid var(--faint); padding: 14px 10px; text-align: center; }
+    .glance b { display: block; font-size: 38px; font-weight: 500; font-variant-numeric: tabular-nums; }
+    .lights { display: flex; height: 12px; margin: 6px 0 6px; border: 1px solid var(--faint); }
+    .lights span { display: block; height: 100%; }
+    .lights-key { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--dim); margin-bottom: 40px; }
+    .lights-key i { margin-right: 6px; vertical-align: -1px; }
+    .steps { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .steps > li { position: relative; padding: 0 0 38px 28px; }
+    .steps > li::before { content: attr(data-n); position: absolute; left: -15px; top: -2px; width: 28px; height: 28px; border-radius: 50%;
+      background: #000; border: 1px solid var(--fg); display: grid; place-items: center; font-size: 13px; }
+    .steps h2 { margin: 0 0 6px; font-size: 22px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; }
+    .steps p { margin: 0 0 12px; font-size: 17px; line-height: 1.5; color: #e9ecef; max-width: 36em; }
+    .steps figure { margin: 10px 0 0; }
+    .steps img { display: block; max-width: 100%; height: auto; border: 1px solid var(--faint); border-radius: 6px; background: #fff; }
+    .steps img.phone { max-width: 260px; background: none; border-radius: 18px; }
+    .steps img.tall { max-width: 360px; }
+    .steps figcaption { font-size: 13px; color: var(--dim); margin-top: 6px; line-height: 1.4; }
+    .pair { display: grid; grid-template-columns: 1fr; gap: 14px; }
+    .tools { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 40px; }
+    .tool { border: 1px solid var(--line); padding: 8px 12px; font-size: 13px; }
+    .tool b { display: block; font-size: 11px; letter-spacing: .18em; text-transform: uppercase; font-weight: 500; color: var(--dim); margin-bottom: 2px; }
+    .honest { border: 1px solid var(--line); padding: 16px 18px; margin-bottom: 30px; }
+    .honest h2 { margin: 0 0 8px; font-size: 18px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; }
+    .honest ul { margin: 0; padding-left: 18px; } .honest li { margin: 6px 0; font-size: 15px; line-height: 1.45; color: #e9ecef; }
+    @media (max-width: 560px) { .glance { grid-template-columns: repeat(2, 1fr); } .how h1 { font-size: 34px; } }
+  </style>
+</head>
+<body>
+  <canvas id="stars" aria-hidden="true"></canvas>
+  <main class="how">
+    <a class="link back" href="./">← Back to the game</a>
+    <span class="label">How I built it</span>
+    <h1>Swipe the Moment</h1>
+    <p class="lede">A 30-second game that turns a 1992 relationship book into choices you can practise. Every idea is checked twice: what readers love, and what research says.</p>
+
+    <div class="glance" aria-label="At a glance">
+      <div><b data-k="reviews">124</b><span class="label">reviews read</span></div>
+      <div><b data-k="quotes">43</b><span class="label">quotes checked</span></div>
+      <div><b data-k="ideas">13</b><span class="label">ideas tested</span></div>
+      <div><b data-k="moments">52</b><span class="label">moments written</span></div>
+    </div>
+    <div class="lights" id="lights" role="img" aria-label="Research lights for the 13 ideas"></div>
+    <div class="lights-key" id="lightsKey"></div>
+
+    <ol class="steps">
+      <li data-n="1">
+        <h2>Ask the readers</h2>
+        <p>I read <span data-k="reviews">124</span> reviews on Goodreads, StoryGraph, Google Play and Amazon. I also matched <span data-k="quotes">43</span> popular quotes to the chapter they come from.</p>
+        <p>My first guesses about the quotes were wrong 21 times out of 43, so I checked each one against the book's text.</p>
+      </li>
+      <li data-n="2">
+        <h2>Check the research</h2>
+        <p>Each idea got a coloured light. Green means research backs it, amber means it partly does, red means research disagrees, and grey means nobody has tested it.</p>
+        <p>Only one idea is both loved by readers and backed by research: feeling needed and cherished.</p>
+      </li>
+      <li data-n="3">
+        <h2>Map the ideas</h2>
+        <p>I drew how the 13 ideas lead into each other, with one small daily action for each.</p>
+        <figure><img class="tall" src="img/how-1-idea-map.jpg" alt="The idea map: 13 ideas, each with a reader rank, a research light and a daily action" loading="lazy">
+          <figcaption>The idea map, drawn in Excalidraw.</figcaption></figure>
+      </li>
+      <li data-n="4">
+        <h2>Sketch, then cut the words</h2>
+        <p>My first sketches had too many words. So I planned the first 30 seconds, second by second: you play first and choose later.</p>
+        <div class="pair">
+          <figure><img src="img/how-2-first-sketch.jpg" alt="An early text-heavy wireframe of a scenario game" loading="lazy"><figcaption>Before: too much text.</figcaption></figure>
+          <figure><img src="img/how-4-storyboard.jpg" alt="The Swipe the Moment storyboard, from 0 to 30 seconds" loading="lazy"><figcaption>After: a 30-second storyboard with almost no words.</figcaption></figure>
+        </div>
+      </li>
+      <li data-n="5">
+        <h2>Pick the look</h2>
+        <p>At first I made the two planets neutral. Then I matched the book: Mars is the men and Venus is the women. The research lights stay, so you always see both sides.</p>
+        <figure><img src="img/how-3-cast.jpg" alt="Early cast sheet with two planet characters and the objects for each idea" loading="lazy"><figcaption>The early cast sheet. Each idea became one object: a cave, a wave, a plant, a heat meter.</figcaption></figure>
+      </li>
+      <li data-n="6">
+        <h2>Build it</h2>
+        <p>The game is plain HTML, CSS and JavaScript. One data file joins the game's words with the research. A check stops the build if any number has no source.</p>
+        <p>Nothing is saved or sent. There are no accounts and no tracking.</p>
+      </li>
+      <li data-n="7">
+        <h2>Test it</h2>
+        <p>I played both planets in a phone-size browser. Two new readers also checked the words, and their ease score rose from 2 to 3 out of 5.</p>
+        <figure><img class="phone" src="img/how-5-game.jpg" alt="The finished game: a swipe card with two round buttons" loading="lazy"><figcaption>The finished swipe card.</figcaption></figure>
+      </li>
+    </ol>
+
+    <span class="label">Tools I used</span>
+    <div class="tools">
+      <span class="tool"><b>Research</b>Firecrawl</span>
+      <span class="tool"><b>Sketches</b>Excalidraw</span>
+      <span class="tool"><b>Coding partner</b>Claude Code (AI)</span>
+      <span class="tool"><b>Knowledge map</b>graphify</span>
+      <span class="tool"><b>Hosting</b>Cloudflare Pages</span>
+    </div>
+
+    <section class="honest">
+      <h2>What isn't proven</h2>
+      <ul>
+        <li>The "good" replies are my reading of the book. The research lights cover each idea, not each reply.</li>
+        <li>Few reviews name one idea; most talk about the whole book.</li>
+        <li>I tested in a phone-size browser, not on every phone.</li>
+        <li>This is a game, not therapy.</li>
+      </ul>
+    </section>
+
+    <a class="btn solid" href="./">Play the game ▶</a>
+  </main>
+  <script>
+    // Numbers on this page come from the same data file the game uses.
+    fetch("data/content.json").then((r) => r.json()).then((c) => {
+      const n = { reviews: c.reviewsRead, quotes: c.quotesChecked, ideas: c.ideas.length, moments: c.ideas.reduce((a, i) => a + i.scenarios.length, 0) };
+      document.querySelectorAll("[data-k]").forEach((el) => { el.textContent = n[el.dataset.k]; });
+      const order = ["GREEN", "AMBER", "RED", "GREY"], name = { GREEN: "research backs it", AMBER: "partly", RED: "disagrees", GREY: "not tested" };
+      const col = { GREEN: "#69db7c", AMBER: "#ffc078", RED: "#ff6b6b", GREY: "#adb5bd" };
+      const count = Object.fromEntries(order.map((k) => [k, c.ideas.filter((i) => i.light === k).length]));
+      document.getElementById("lights").innerHTML = order.map((k) => `<span style="width:${(count[k] / c.ideas.length) * 100}%;background:${col[k]}"></span>`).join("");
+      document.getElementById("lightsKey").innerHTML = order.map((k) => `<span><i class="dot ${k}"></i>${count[k]} ${name[k]}</span>`).join("");
+    }).catch(() => {});
+    // The same starfield as the game, without motion if the reader prefers less.
+    const cv = document.getElementById("stars"), cx = cv.getContext("2d"), still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let W, H, s = [];
+    const size = () => { const d = devicePixelRatio || 1; W = innerWidth; H = innerHeight; cv.width = W * d; cv.height = H * d; cx.setTransform(d, 0, 0, d, 0, 0);
+      s = Array.from({ length: Math.round((W * H) / 3500) }, () => ({ x: Math.random() * W, y: Math.random() * H, z: Math.random() * 0.9 + 0.1, p: Math.random() * 6.28 })); };
+    const draw = (t) => { cx.clearRect(0, 0, W, H); for (const p of s) { const a = still ? 0.7 : 0.45 + 0.45 * Math.sin(t / 900 * p.z + p.p); cx.fillStyle = `rgba(255,255,255,${a * p.z + 0.1})`; cx.fillRect(p.x, p.y, p.z * 1.6, p.z * 1.6); } if (!still) requestAnimationFrame(draw); };
+    addEventListener("resize", size); size(); requestAnimationFrame(draw);
+  </script>
+</body>
+</html>
