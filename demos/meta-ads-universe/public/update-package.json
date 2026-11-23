@@ -1,0 +1,823 @@
+{
+ "about": "Input for the update prompt on the Updates page. Report changes; do not edit.",
+ "field_notes": {
+  "tools_checked": "The day the Meta pages behind the tool list were last read.",
+  "use": "Whether an account used a tool is always the 12 months to 22 Nov 2026. The One Big Table download (tools.csv) uses that window in its column names.",
+  "rank": "A popularity rank is a score from public sources that name the tool, not measured use.",
+  "ad_set_counts": "An ad-set count 'X of N': for VN, N is the top 40 ad sets by spend; for US, N is all 19 ad sets by spend. A share of spend is the spend of the counted ad sets divided by the spend of all the ad sets in N."
+ },
+ "tools_checked": "2026-11-22",
+ "dead_sources": [
+  "https://developers.facebook.com/docs/marketing-api/ad-preview"
+ ],
+ "groups": [
+  "PLAN AND BUY",
+  "CREATIVE AND AI",
+  "PLACEMENTS AND FORMATS",
+  "AUDIENCES",
+  "MEASUREMENT",
+  "OPTIMISE AND TEST",
+  "BUSINESS AND ACCOUNT"
+ ],
+ "sorting": {
+  "branches": [
+   "Tracking: are sales counted right?",
+   "Audience: who sees the ads?",
+   "Creative and placement: what do people see, where?",
+   "Bidding and budget: where does the money go?",
+   "After the click: what happens next?",
+   "Profit: does the spend make money?",
+   "Running the account: access, policy, tools (added)"
+  ],
+  "benefits": [
+   "More sales",
+   "Cheaper sales",
+   "True numbers",
+   "Safe account",
+   "Less work"
+  ],
+  "stages": [
+   "Delivery (who saw it, at what cost)",
+   "Attention (clicks, views)",
+   "Conversion (chats, carts, purchases)",
+   "Value (ROAS, order value)",
+   "Profit and causation",
+   "Signal, data and account health"
+  ],
+  "rules": {
+   "group": {
+    "rule": "Each tool sits in exactly one of 7 groups, as set in the feature map. The map was built from Meta for Business pages and the Meta developer docs, read 22 November 2026. Groups are ordered by their best-ranked tool: the group that holds the top-ranked tool comes first. A tie goes to the group with the higher total score. Group size does not decide.",
+    "excludes": "Inside a group, ranked tools come first by rank; tools with fewer than 2 public sources are not ranked and keep Meta's page order."
+   },
+   "branch": {
+    "rule": "The issue-tree question the tool mainly helps answer. If it helps two, it goes to the one earlier in the money chain: tracking, audience, creative, bidding, after the click, profit.",
+    "excludes": "'Running the account' holds only access, policy and admin tools, which never move sales directly."
+   },
+   "benefit": {
+    "rule": "The profit lever the tool is built to move: more sales, cheaper sales, true numbers, a safe account or less work.",
+    "excludes": "A tool judged by a cost metric but built to win results (the campaign goals, lookalikes, formats) keeps 'more sales'. 'Cheaper sales' is listed as its second lever."
+   },
+   "stage": {
+    "rule": "The funnel stage of the tool's main metric: delivery, attention, conversion, value, profit; or signal and account health. A metric that names two stages takes the later one.",
+    "excludes": "The earlier stage is kept as the tool's second stage. Reporting, API and account-health tools take 'signal and account health' even when their metric names a funnel stage; each is listed with a reason."
+   }
+  }
+ },
+ "tools": [
+  {
+   "name": "Advantage+ sales campaigns",
+   "group": "PLAN AND BUY",
+   "what": "Fully automated sales campaign: audience, placements, budget and creative set by AI (was Advantage+ shopping).",
+   "source": "https://www.facebook.com/business/ads/meta-advantage-plus/sales-campaigns"
+  },
+  {
+   "name": "Advantage+ creative enhancements",
+   "group": "CREATIVE AND AI",
+   "what": "Meta auto-adjusts brightness, crops, music, text and layout per person.",
+   "source": "https://www.facebook.com/business/ads/meta-advantage-plus/creative"
+  },
+  {
+   "name": "Click-to-message ads",
+   "group": "PLACEMENTS AND FORMATS",
+   "what": "Ad button opens a chat in Messenger, Instagram Direct or WhatsApp.",
+   "source": "https://www.facebook.com/business/ads/click-to-message-ads"
+  },
+  {
+   "name": "Advantage+ audience",
+   "group": "AUDIENCES",
+   "what": "AI finds the audience; your settings act as suggestions.",
+   "source": "https://www.facebook.com/business/ads/automation"
+  },
+  {
+   "name": "Reels ads",
+   "group": "PLACEMENTS AND FORMATS",
+   "what": "Vertical video ads between Reels.",
+   "source": "https://www.facebook.com/business/ads/facebook-instagram-reels-ads"
+  },
+  {
+   "name": "Video ads",
+   "group": "PLACEMENTS AND FORMATS",
+   "what": "One video in feed, Stories, Reels or in-stream.",
+   "source": "https://www.facebook.com/business/ads/ad-formats"
+  },
+  {
+   "name": "Lead ads with instant forms",
+   "group": "PLACEMENTS AND FORMATS",
+   "what": "A form inside Facebook or Instagram, prefilled with profile data.",
+   "source": "https://www.facebook.com/business/ads/ad-objectives/lead-generation/lead-ads-with-forms"
+  },
+  {
+   "name": "Advantage+ campaign budget",
+   "group": "PLAN AND BUY",
+   "what": "One campaign budget that Meta moves to the best ad sets (was CBO).",
+   "source": "https://www.facebook.com/business/ads/meta-advantage-plus/budget"
+  },
+  {
+   "name": "Advantage+ placements",
+   "group": "PLACEMENTS AND FORMATS",
+   "what": "Meta picks where ads show across its apps for the best result.",
+   "source": "https://www.facebook.com/business/ads/automation"
+  },
+  {
+   "name": "Partnership ads",
+   "group": "CREATIVE AND AI",
+   "what": "Run ads from a creator's or partner's handle with both names shown.",
+   "source": "https://www.facebook.com/business/m/partnership-ads"
+  },
+  {
+   "name": "Conversions API",
+   "group": "MEASUREMENT",
+   "what": "Send website, app, store or CRM events from your server to Meta.",
+   "source": "https://developers.facebook.com/docs/marketing-api/conversions-api"
+  },
+  {
+   "name": "Conversion Lift",
+   "group": "MEASUREMENT",
+   "what": "Test and control groups show sales caused by ads.",
+   "source": "https://www.facebook.com/business/measurement/conversion-lift"
+  },
+  {
+   "name": "Custom audiences",
+   "group": "AUDIENCES",
+   "what": "Reach or exclude people you know: customer lists, site visitors, engagers, app users, store buyers.",
+   "source": "https://developers.facebook.com/docs/marketing-api/audiences"
+  },
+  {
+   "name": "Meta Pixel",
+   "group": "MEASUREMENT",
+   "what": "Code on your website that reports visits and purchases to Meta.",
+   "source": "https://www.facebook.com/business/tools/meta-pixel"
+  },
+  {
+   "name": "Stories ads",
+   "group": "PLACEMENTS AND FORMATS",
+   "what": "Full-screen vertical ads between Stories.",
+   "source": "https://www.facebook.com/business/ads/stories-ad-format"
+  },
+  {
+   "name": "Advantage+ catalog ads",
+   "group": "CREATIVE AND AI",
+   "what": "Ads built from your product catalog, shown to the people most likely to buy (was dynamic ads).",
+   "source": "https://www.facebook.com/business/ads/meta-advantage-plus/catalog-ads"
+  },
+  {
+   "name": "A/B testing",
+   "group": "OPTIMISE AND TEST",
+   "what": "Split audiences to test one variable: creative, audience, placement or objective.",
+   "source": "https://www.facebook.com/business/measurement/ab-testing"
+  },
+  {
+   "name": "Lookalike audience",
+   "group": "AUDIENCES",
+   "what": "Find new people similar to an existing audience.",
+   "source": "https://www.facebook.com/business/ads/ad-targeting"
+  },
+  {
+   "name": "Carousel ads",
+   "group": "PLACEMENTS AND FORMATS",
+   "what": "Up to 10 swipeable images or videos, each with its own link.",
+   "source": "https://www.facebook.com/business/ads/ad-formats"
+  },
+  {
+   "name": "Opportunity score and recommendations",
+   "group": "OPTIMISE AND TEST",
+   "what": "0 to 100 score with suggested fixes for your account.",
+   "source": "https://www.facebook.com/business/ads"
+  },
+  {
+   "name": "Awareness objective",
+   "group": "PLAN AND BUY",
+   "what": "Show ads to people most likely to remember them (reach, brand awareness).",
+   "source": "https://www.facebook.com/business/ads/ad-objectives"
+  },
+  {
+   "name": "Traffic objective",
+   "group": "PLAN AND BUY",
+   "what": "Send people to a website, app, profile or event.",
+   "source": "https://www.facebook.com/business/ads/ad-objectives"
+  },
+  {
+   "name": "Engagement objective",
+   "group": "PLAN AND BUY",
+   "what": "Get messages, video views, post engagement or Page likes.",
+   "source": "https://www.facebook.com/business/ads/ad-objectives"
+  },
+  {
+   "name": "Leads objective",
+   "group": "PLAN AND BUY",
+   "what": "Collect contact details from interested people.",
+   "source": "https://www.facebook.com/business/ads/ad-objectives"
+  },
+  {
+   "name": "App promotion objective",
+   "group": "PLAN AND BUY",
+   "what": "Get people to install or use an app.",
+   "source": "https://www.facebook.com/business/ads/ad-objectives"
+  },
+  {
+   "name": "Sales objective",
+   "group": "PLAN AND BUY",
+   "what": "Find people likely to buy, on a website, app, in chat or in store.",
+   "source": "https://www.facebook.com/business/ads/ad-objectives"
+  },
+  {
+   "name": "Advantage+ leads campaigns",
+   "group": "PLAN AND BUY",
+   "what": "Automated leads campaign with the same AI settings turned on.",
+   "source": "https://www.facebook.com/business/ads/meta-advantage-plus/leads"
+  },
+  {
+   "name": "Advantage+ app campaigns",
+   "group": "PLAN AND BUY",
+   "what": "Automated campaign for app installs and app events.",
+   "source": "https://www.facebook.com/business/ads/meta-advantage-plus"
+  },
+  {
+   "name": "Ad set budget sharing",
+   "group": "PLAN AND BUY",
+   "what": "Ad sets with their own budgets may share part of it with each other.",
+   "source": "https://developers.facebook.com/docs/marketing-api"
+  },
+  {
+   "name": "Daily or lifetime budget",
+   "group": "PLAN AND BUY",
+   "what": "Spend a set amount per day or across the whole run.",
+   "source": "https://www.facebook.com/business/ads/pricing"
+  },
+  {
+   "name": "Highest volume bidding",
+   "group": "PLAN AND BUY",
+   "what": "Default: get the most results for the budget, no cost limit.",
+   "source": "https://developers.facebook.com/docs/marketing-api/bidding"
+  },
+  {
+   "name": "Cost per result goal (cost cap)",
+   "group": "PLAN AND BUY",
+   "what": "Keep the average cost per result near a target.",
+   "source": "https://developers.facebook.com/docs/marketing-api/bidding"
+  },
+  {
+   "name": "Bid cap",
+   "group": "PLAN AND BUY",
+   "what": "Set the most Meta may bid in any one auction.",
+   "source": "https://developers.facebook.com/docs/marketing-api/bidding"
+  },
+  {
+   "name": "ROAS goal and highest value",
+   "group": "PLAN AND BUY",
+   "what": "Bid for purchase value or a minimum return on ad spend.",
+   "source": "https://developers.facebook.com/docs/marketing-api/bidding"
+  },
+  {
+   "name": "Value rules",
+   "group": "PLAN AND BUY",
+   "what": "Tell Meta some audiences or placements are worth more, so it bids more for them.",
+   "source": "https://developers.facebook.com/docs/marketing-api"
+  },
+  {
+   "name": "Bid multipliers",
+   "group": "PLAN AND BUY",
+   "what": "Raise or lower bids for chosen audience segments (API).",
+   "source": "https://developers.facebook.com/docs/marketing-api"
+  },
+  {
+   "name": "Reservation (reach and frequency)",
+   "group": "PLAN AND BUY",
+   "what": "Buy reach in advance at a fixed price with frequency control.",
+   "source": "https://developers.facebook.com/docs/marketing-api/reachandfrequency"
+  },
+  {
+   "name": "Ad scheduling (dayparting)",
+   "group": "PLAN AND BUY",
+   "what": "Run ads only on chosen days and hours (lifetime budgets).",
+   "source": "https://developers.facebook.com/docs/marketing-api"
+  },
+  {
+   "name": "Special ad categories",
+   "group": "PLAN AND BUY",
+   "what": "Required declaration for credit, jobs, housing, social issues; limits targeting.",
+   "source": "https://developers.facebook.com/docs/marketing-api/audiences"
+  },
+  {
+   "name": "Boost a post",
+   "group": "PLAN AND BUY",
+   "what": "Turn a Facebook or Instagram post into an ad from Business Suite or the app.",
+   "source": "https://www.facebook.com/business/tools/meta-business-suite"
+  },
+  {
+   "name": "Location, age and gender targeting",
+   "group": "AUDIENCES",
+   "what": "Choose countries, cities, radius, age and gender.",
+   "source": "https://www.facebook.com/business/ads/ad-targeting"
+  },
+  {
+   "name": "Detailed targeting (interests, behaviours)",
+   "group": "AUDIENCES",
+   "what": "Target by interests, behaviours and demographics.",
+   "source": "https://www.facebook.com/business/ads/ad-targeting"
+  },
+  {
+   "name": "Advantage detailed targeting and lookalike",
+   "group": "AUDIENCES",
+   "what": "Let Meta go beyond your interests or lookalike when it helps results.",
+   "source": "https://www.facebook.com/business/ads/automation"
+  },
+  {
+   "name": "Value-based lookalike",
+   "group": "AUDIENCES",
+   "what": "Lookalike weighted by how much each customer spends.",
+   "source": "https://developers.facebook.com/docs/marketing-api/audiences"
+  },
+  {
+   "name": "Dynamic product audiences",
+   "group": "AUDIENCES",
+   "what": "Retarget people with the exact products they viewed.",
+   "source": "https://developers.facebook.com/docs/marketing-api/audiences"
+  },
+  {
+   "name": "Saved audiences",
+   "group": "AUDIENCES",
+   "what": "Save a targeting set to reuse in other ad sets.",
+   "source": "https://developers.facebook.com/docs/marketing-api/audiences"
+  },
+  {
+   "name": "Audience size estimate",
+   "group": "AUDIENCES",
+   "what": "See how many people a targeting set can reach before launch.",
+   "source": "https://developers.facebook.com/docs/marketing-api/audiences"
+  },
+  {
+   "name": "Manual placements",
+   "group": "PLACEMENTS AND FORMATS",
+   "what": "Choose exact apps and positions yourself.",
+   "source": "https://www.facebook.com/business/ads/facebook-instagram-reels-ads"
+  },
+  {
+   "name": "Feed ads",
+   "group": "PLACEMENTS AND FORMATS",
+   "what": "Ads in Facebook and Instagram feeds.",
+   "source": "https://www.facebook.com/business/ads/ad-creative"
+  },
+  {
+   "name": "Instagram Explore ads",
+   "group": "PLACEMENTS AND FORMATS",
+   "what": "Ads in the Instagram Explore grid and feed.",
+   "source": "https://www.facebook.com/business/ads/instagram-ad"
+  },
+  {
+   "name": "Messenger ads and sponsored messages",
+   "group": "PLACEMENTS AND FORMATS",
+   "what": "Ads in the Messenger inbox and messages to past chats.",
+   "source": "https://www.facebook.com/business/ads/messenger-ads"
+  },
+  {
+   "name": "Threads ads",
+   "group": "PLACEMENTS AND FORMATS",
+   "what": "Ads in the Threads app feed.",
+   "source": "https://developers.facebook.com/docs/marketing-api"
+  },
+  {
+   "name": "WhatsApp Status ads",
+   "group": "PLACEMENTS AND FORMATS",
+   "what": "Ads between WhatsApp Status updates.",
+   "source": "https://developers.facebook.com/docs/marketing-api"
+  },
+  {
+   "name": "Audience Network",
+   "group": "PLACEMENTS AND FORMATS",
+   "what": "Ads in other apps outside Meta.",
+   "source": "https://developers.facebook.com/docs/marketing-api"
+  },
+  {
+   "name": "Image ads",
+   "group": "PLACEMENTS AND FORMATS",
+   "what": "One photo with text and a button.",
+   "source": "https://www.facebook.com/business/ads/ad-formats"
+  },
+  {
+   "name": "Slideshow ads",
+   "group": "PLACEMENTS AND FORMATS",
+   "what": "Light video made from still images.",
+   "source": "https://www.facebook.com/business/ads/ad-formats"
+  },
+  {
+   "name": "Collection ads",
+   "group": "PLACEMENTS AND FORMATS",
+   "what": "Cover image or video plus products that open a full-screen shop.",
+   "source": "https://www.facebook.com/business/ads/collection-ad-format"
+  },
+  {
+   "name": "Instant Experience",
+   "group": "PLACEMENTS AND FORMATS",
+   "what": "Full-screen, fast-loading page that opens from an ad.",
+   "source": "https://www.facebook.com/business/ads/Instant-experiences-ad-destination"
+  },
+  {
+   "name": "Playable ads",
+   "group": "PLACEMENTS AND FORMATS",
+   "what": "Try-before-you-download game demo ads.",
+   "source": "https://www.facebook.com/business/ads/ad-formats"
+  },
+  {
+   "name": "Flexible ad format",
+   "group": "PLACEMENTS AND FORMATS",
+   "what": "Upload several images or videos; Meta picks the format per person.",
+   "source": "https://developers.facebook.com/docs/marketing-api"
+  },
+  {
+   "name": "Lead ads with messaging",
+   "group": "PLACEMENTS AND FORMATS",
+   "what": "Collect leads in a chat in Messenger, Instagram or WhatsApp.",
+   "source": "https://www.facebook.com/business/ads/ad-objectives/lead-generation/lead-ads-with-messaging"
+  },
+  {
+   "name": "WhatsApp marketing messages",
+   "group": "PLACEMENTS AND FORMATS",
+   "what": "Send marketing messages to opted-in WhatsApp contacts from Ads Manager.",
+   "source": "https://www.facebook.com/business/ads/marketing-messages"
+  },
+  {
+   "name": "Call ads",
+   "group": "PLACEMENTS AND FORMATS",
+   "what": "Ad button starts a phone call to the business.",
+   "source": "https://developers.facebook.com/docs/marketing-api"
+  },
+  {
+   "name": "Profile visit ads",
+   "group": "PLACEMENTS AND FORMATS",
+   "what": "Send people to your Instagram profile or Facebook Page.",
+   "source": "https://developers.facebook.com/docs/marketing-api"
+  },
+  {
+   "name": "Event and reminder ads",
+   "group": "PLACEMENTS AND FORMATS",
+   "what": "Promote events or let people set a reminder for a launch.",
+   "source": "https://developers.facebook.com/docs/marketing-api"
+  },
+  {
+   "name": "Omnichannel ads",
+   "group": "PLACEMENTS AND FORMATS",
+   "what": "One campaign for online and in-store sales.",
+   "source": "https://www.facebook.com/business/ads/omnichannel-ads"
+  },
+  {
+   "name": "AI text generation",
+   "group": "CREATIVE AND AI",
+   "what": "Meta AI writes extra headlines and primary text options.",
+   "source": "https://www.facebook.com/business/ads/meta-advantage-plus/creative"
+  },
+  {
+   "name": "AI image expansion and generation",
+   "group": "CREATIVE AND AI",
+   "what": "Meta AI expands, generates or touches up images.",
+   "source": "https://www.facebook.com/business/ads/meta-advantage-plus/creative"
+  },
+  {
+   "name": "AI video generation and image animation",
+   "group": "CREATIVE AND AI",
+   "what": "Meta AI turns images into short videos or adds motion.",
+   "source": "https://www.facebook.com/business/ads/meta-advantage-plus/creative"
+  },
+  {
+   "name": "Translation and multi-language ads",
+   "group": "CREATIVE AND AI",
+   "what": "Translate text and dub speech so one ad runs in many languages.",
+   "source": "https://www.facebook.com/business/ads/meta-advantage-plus/creative"
+  },
+  {
+   "name": "Dynamic creative",
+   "group": "CREATIVE AND AI",
+   "what": "Mix several images, headlines and texts; Meta tests the best combinations.",
+   "source": "https://www.facebook.com/business/tools/ads-manager"
+  },
+  {
+   "name": "Placement asset customisation",
+   "group": "CREATIVE AND AI",
+   "what": "Use different images or videos per placement in one ad.",
+   "source": "https://developers.facebook.com/docs/marketing-api"
+  },
+  {
+   "name": "Catalog product video and image templates",
+   "group": "CREATIVE AND AI",
+   "what": "Add product videos and frames or overlays to catalog ads.",
+   "source": "https://www.facebook.com/business/ads/meta-advantage-plus/catalog-ads"
+  },
+  {
+   "name": "Product extensions and site links",
+   "group": "CREATIVE AND AI",
+   "what": "Add catalog products or extra links under a single ad.",
+   "source": "https://developers.facebook.com/docs/marketing-api"
+  },
+  {
+   "name": "Branded content tools",
+   "group": "CREATIVE AND AI",
+   "what": "Tag paid partnerships and manage creator permissions.",
+   "source": "https://developers.facebook.com/docs/marketing-api"
+  },
+  {
+   "name": "Collaborative ads",
+   "group": "CREATIVE AND AI",
+   "what": "Brands run catalog ads that send shoppers to a retailer's site.",
+   "source": "https://developers.facebook.com/docs/marketing-api"
+  },
+  {
+   "name": "Shops ads",
+   "group": "CREATIVE AND AI",
+   "what": "Ads that send people to your Facebook or Instagram shop or your site.",
+   "source": "https://developers.facebook.com/docs/marketing-api"
+  },
+  {
+   "name": "Industry catalog ads",
+   "group": "CREATIVE AND AI",
+   "what": "Catalog ads for travel, hotels, flights, cars and real estate.",
+   "source": "https://developers.facebook.com/docs/marketing-api"
+  },
+  {
+   "name": "Creator discovery",
+   "group": "CREATIVE AND AI",
+   "what": "Find and work with creators through Meta and partner tools.",
+   "source": "https://www.facebook.com/business/m/partnership-ads"
+  },
+  {
+   "name": "Conversions API Gateway",
+   "group": "MEASUREMENT",
+   "what": "Low-code server set-up for the Conversions API.",
+   "source": "https://www.facebook.com/business/ads/omnichannel-ads"
+  },
+  {
+   "name": "Conversions API for CRM",
+   "group": "MEASUREMENT",
+   "what": "Send lead stages from your CRM so Meta finds better leads.",
+   "source": "https://www.facebook.com/business/generate-leads/conversions-api-for-crm"
+  },
+  {
+   "name": "App events (SDK and App Events API)",
+   "group": "MEASUREMENT",
+   "what": "Report installs and in-app actions to Meta.",
+   "source": "https://developers.facebook.com/docs/marketing-api"
+  },
+  {
+   "name": "Offline conversions",
+   "group": "MEASUREMENT",
+   "what": "Upload in-store or phone sales to measure ads.",
+   "source": "https://www.facebook.com/business/ads/omnichannel-ads"
+  },
+  {
+   "name": "Custom conversions",
+   "group": "MEASUREMENT",
+   "what": "Define a conversion from URL rules or event parameters.",
+   "source": "https://developers.facebook.com/docs/marketing-api"
+  },
+  {
+   "name": "Events Manager and data quality",
+   "group": "MEASUREMENT",
+   "what": "Check events, match quality and set-up issues for each dataset.",
+   "source": "https://www.facebook.com/business/tools/meta-pixel"
+  },
+  {
+   "name": "Attribution settings",
+   "group": "MEASUREMENT",
+   "what": "Choose the click and view windows that count a conversion.",
+   "source": "https://developers.facebook.com/docs/marketing-api"
+  },
+  {
+   "name": "Ads Manager reporting and breakdowns",
+   "group": "MEASUREMENT",
+   "what": "Real-time reports split by age, placement, region, time and more.",
+   "source": "https://www.facebook.com/business/tools/ads-manager"
+  },
+  {
+   "name": "Insights API",
+   "group": "MEASUREMENT",
+   "what": "Pull ad results into your own tools and dashboards.",
+   "source": "https://developers.facebook.com/docs/marketing-api/insights"
+  },
+  {
+   "name": "Brand Lift",
+   "group": "MEASUREMENT",
+   "what": "Poll test and control groups to measure ad recall and awareness.",
+   "source": "https://www.facebook.com/business/m/partnership-ads"
+  },
+  {
+   "name": "Marketing mix modelling",
+   "group": "MEASUREMENT",
+   "what": "Data and open-source Robyn to model the effect of all channels.",
+   "source": "https://developers.facebook.com/docs/marketing-api"
+  },
+  {
+   "name": "Ad Library and API",
+   "group": "MEASUREMENT",
+   "what": "Public search of ads running on Meta, including competitors'.",
+   "source": "https://www.facebook.com/ads/library/api"
+  },
+  {
+   "name": "Commerce Manager insights",
+   "group": "MEASUREMENT",
+   "what": "Shop sales, orders, product and audience reports.",
+   "source": "https://www.facebook.com/business/tools/commerce-manager"
+  },
+  {
+   "name": "Automated rules",
+   "group": "OPTIMISE AND TEST",
+   "what": "Rules that pause, adjust budget or alert you when results change.",
+   "source": "https://developers.facebook.com/docs/marketing-api/ad-rules"
+  },
+  {
+   "name": "Frequency controls",
+   "group": "OPTIMISE AND TEST",
+   "what": "Limit how often one person sees your ads.",
+   "source": "https://developers.facebook.com/docs/marketing-api/reachandfrequency"
+  },
+  {
+   "name": "Creative fatigue and delivery alerts",
+   "group": "OPTIMISE AND TEST",
+   "what": "Warnings when an ad is shown too often or has issues.",
+   "source": "https://developers.facebook.com/docs/marketing-api"
+  },
+  {
+   "name": "Learning phase and delivery insights",
+   "group": "OPTIMISE AND TEST",
+   "what": "Shows when an ad set is still learning and why delivery is limited.",
+   "source": "https://www.facebook.com/business/ads/ad-set-structure"
+  },
+  {
+   "name": "Ad set consolidation guidance",
+   "group": "OPTIMISE AND TEST",
+   "what": "Meta advice to merge ad sets to exit learning faster.",
+   "source": "https://www.facebook.com/business/ads/ad-set-structure"
+  },
+  {
+   "name": "Meta AI business assistant",
+   "group": "OPTIMISE AND TEST",
+   "what": "Chat assistant that finds trends, fixes issues and compares benchmarks.",
+   "source": "https://www.facebook.com/business/ai/business-assistant"
+  },
+  {
+   "name": "Brand safety controls",
+   "group": "OPTIMISE AND TEST",
+   "what": "Inventory filter and block lists for placements and content.",
+   "source": "https://developers.facebook.com/docs/marketing-api/brand-safety-and-suitability"
+  },
+  {
+   "name": "Content and publisher delivery reports",
+   "group": "OPTIMISE AND TEST",
+   "what": "See exactly where your ads appeared.",
+   "source": "https://developers.facebook.com/docs/marketing-api/brand-safety-and-suitability"
+  },
+  {
+   "name": "Ads Manager",
+   "group": "BUSINESS AND ACCOUNT",
+   "what": "The main tool to create, manage and report on ads.",
+   "source": "https://www.facebook.com/business/tools/ads-manager"
+  },
+  {
+   "name": "Meta Business Suite",
+   "group": "BUSINESS AND ACCOUNT",
+   "what": "Post, reply to messages and run simple ads for Facebook and Instagram in one place.",
+   "source": "https://www.facebook.com/business/tools/meta-business-suite"
+  },
+  {
+   "name": "Business Manager (business portfolio)",
+   "group": "BUSINESS AND ACCOUNT",
+   "what": "Owns ad accounts, Pages, pixels and catalogs in one place.",
+   "source": "https://www.facebook.com/business/tools/business-manager/advanced-guide"
+  },
+  {
+   "name": "Roles, permissions and partner access",
+   "group": "BUSINESS AND ACCOUNT",
+   "what": "Give staff and agencies access to assets without sharing logins.",
+   "source": "https://www.facebook.com/business/tools/business-manager/advanced-guide"
+  },
+  {
+   "name": "Billing, payment methods and invoicing",
+   "group": "BUSINESS AND ACCOUNT",
+   "what": "Pay for ads by card or monthly invoice; set spending limits.",
+   "source": "https://www.facebook.com/business/tools/business-manager/advanced-guide"
+  },
+  {
+   "name": "Security center",
+   "group": "BUSINESS AND ACCOUNT",
+   "what": "Two-factor login and extra admins to protect the business.",
+   "source": "https://www.facebook.com/business/tools/business-manager/advanced-guide"
+  },
+  {
+   "name": "Commerce Manager and catalogs",
+   "group": "BUSINESS AND ACCOUNT",
+   "what": "Create product catalogs and shops for ads and selling.",
+   "source": "https://www.facebook.com/business/tools/commerce-manager"
+  },
+  {
+   "name": "Catalog data feeds and partner sync",
+   "group": "BUSINESS AND ACCOUNT",
+   "what": "Keep the catalog up to date by file, feed or platform (Shopify and others).",
+   "source": "https://www.facebook.com/business/tools/shopping-catalog/get-started"
+  },
+  {
+   "name": "Marketing API",
+   "group": "BUSINESS AND ACCOUNT",
+   "what": "Create and manage ads with code.",
+   "source": "https://developers.facebook.com/docs/marketing-api"
+  },
+  {
+   "name": "Business SDK and system users",
+   "group": "BUSINESS AND ACCOUNT",
+   "what": "Code libraries and server accounts for safe API access.",
+   "source": "https://developers.facebook.com/docs/business-management-apis"
+  },
+  {
+   "name": "Ads webhooks",
+   "group": "BUSINESS AND ACCOUNT",
+   "what": "Get notified when ad status, issues or recommendations change.",
+   "source": "https://developers.facebook.com/docs/marketing-api"
+  },
+  {
+   "name": "Meta ads MCP server",
+   "group": "BUSINESS AND ACCOUNT",
+   "what": "Manage Meta ads from AI tools such as Claude or ChatGPT.",
+   "source": "https://www.facebook.com/business/tools/ads-mcp-server"
+  },
+  {
+   "name": "Meta Verified for business",
+   "group": "BUSINESS AND ACCOUNT",
+   "what": "Paid badge, impersonation protection and support.",
+   "source": "https://www.facebook.com/business/tools/meta-verified-for-business"
+  },
+  {
+   "name": "Ad review and policies",
+   "group": "BUSINESS AND ACCOUNT",
+   "what": "Meta reviews each ad against its advertising standards before it runs.",
+   "source": "https://www.facebook.com/business/ads"
+  },
+  {
+   "name": "Facebook Page and Instagram account",
+   "group": "BUSINESS AND ACCOUNT",
+   "what": "Every ad runs from a Page or Instagram profile.",
+   "source": "https://www.facebook.com/business/ads/instagram-ad"
+  }
+ ],
+ "sources": [
+  "https://www.facebook.com/business",
+  "https://www.facebook.com/business/ads",
+  "https://www.facebook.com/business/ads/ad-objectives",
+  "https://www.facebook.com/business/ads/ad-objectives/lead-generation/lead-ads-with-forms",
+  "https://www.facebook.com/business/ads/ad-objectives/lead-generation/lead-ads-with-messaging",
+  "https://www.facebook.com/business/ads/ad-formats",
+  "https://www.facebook.com/business/ads/ad-targeting",
+  "https://www.facebook.com/business/ads/ad-creative",
+  "https://www.facebook.com/business/ads/ad-set-structure",
+  "https://www.facebook.com/business/ads/automation",
+  "https://www.facebook.com/business/ads/meta-advantage-plus",
+  "https://www.facebook.com/business/ads/meta-advantage-plus/budget",
+  "https://www.facebook.com/business/ads/meta-advantage-plus/creative",
+  "https://www.facebook.com/business/ads/meta-advantage-plus/leads",
+  "https://www.facebook.com/business/ads/meta-advantage-plus/sales-campaigns",
+  "https://www.facebook.com/business/ads/meta-advantage-plus/catalog-ads",
+  "https://www.facebook.com/business/ads/meta-advantage-plus/advanced-catalog",
+  "https://www.facebook.com/business/ads/click-to-message-ads",
+  "https://www.facebook.com/business/ads/collection-ad-format",
+  "https://www.facebook.com/business/ads/facebook-instagram-reels-ads",
+  "https://www.facebook.com/business/ads/stories-ad-format",
+  "https://www.facebook.com/business/ads/instagram-ad",
+  "https://www.facebook.com/business/ads/messenger-ads",
+  "https://www.facebook.com/business/ads/marketing-messages",
+  "https://www.facebook.com/business/ads/omnichannel-ads",
+  "https://www.facebook.com/business/ads/pricing",
+  "https://www.facebook.com/business/ads/Instant-experiences-ad-destination",
+  "https://www.facebook.com/business/measurement/ab-testing",
+  "https://www.facebook.com/business/measurement/conversion-lift",
+  "https://www.facebook.com/business/tools/ads-manager",
+  "https://www.facebook.com/business/tools/meta-business-suite",
+  "https://www.facebook.com/business/tools/meta-pixel",
+  "https://www.facebook.com/business/tools/commerce-manager",
+  "https://www.facebook.com/business/tools/shopping-catalog/get-started",
+  "https://www.facebook.com/business/tools/business-manager/advanced-guide",
+  "https://www.facebook.com/business/tools/ads-mcp-server",
+  "https://www.facebook.com/business/m/partnership-ads",
+  "https://www.facebook.com/business/generate-leads/conversions-api-for-crm",
+  "https://www.facebook.com/business/ai/business-assistant",
+  "https://www.facebook.com/business/tools/meta-verified-for-business",
+  "https://developers.facebook.com/docs/marketing-api",
+  "https://developers.facebook.com/docs/marketing-api/get-started",
+  "https://developers.facebook.com/docs/marketing-api/campaign-structure",
+  "https://developers.facebook.com/docs/marketing-api/bidding",
+  "https://developers.facebook.com/docs/marketing-api/audiences",
+  "https://developers.facebook.com/docs/marketing-api/creative",
+  "https://developers.facebook.com/docs/marketing-api/advantage-campaigns",
+  "https://developers.facebook.com/docs/marketing-api/insights",
+  "https://developers.facebook.com/docs/marketing-api/ad-rules",
+  "https://developers.facebook.com/docs/marketing-api/conversions-api",
+  "https://developers.facebook.com/docs/marketing-api/catalog",
+  "https://developers.facebook.com/docs/marketing-api/guides/lead-ads",
+  "https://developers.facebook.com/docs/marketing-api/brand-safety-and-suitability",
+  "https://developers.facebook.com/docs/marketing-api/reachandfrequency",
+  "https://developers.facebook.com/docs/marketing-api/ad-preview",
+  "https://developers.facebook.com/docs/meta-pixel",
+  "https://developers.facebook.com/docs/business-management-apis",
+  "https://www.facebook.com/ads/library/api"
+ ],
+ "changelogs": [
+  "https://developers.facebook.com/docs/marketing-api/marketing-api-changelog",
+  "https://developers.facebook.com/docs/graph-api/changelog"
+ ],
+ "prompt": "You are checking \"The Meta Ads Universe\": 115 Meta ads tools, last checked 22 Nov 2026. The latest change confirmed on a Meta page is 12 Oct 2025. The latest change reported anywhere is 12 Nov 2026, by a vendor blog only.\nInput: attach the file update-package.json (download it with the \"Download update package\" link on the Updates page). If you cannot attach files, open it at the address where this file was published. It holds the 115 tools (name, group, what it does, source link), the 58 Meta source pages, the 7 groups, the rules to sort a tool (branch, benefit, stage) and the rules below.\n1. Open every source page.\n2. Open these 2 change logs: https://developers.facebook.com/docs/marketing-api/marketing-api-changelog and https://developers.facebook.com/docs/graph-api/changelog.\n3. Note each change made after 22 Nov 2026.\n4. For each new, changed or removed ads tool, write one line: name, new/changed/removed, group (one of the 7), what it does, source link, date.\n5. Rule: every tool has exactly 1 group.\n6. Rule: a new tool's use is 'not sure' until someone checks the ad account.\n7. Rule: rank a tool only if 2 or more public sources name it.\nBefore you report a line, check four things.\n- The link opens on a Meta page.\n- The date is after the last check.\n- The group exists.\n- A new tool is not in the package yet. A changed or removed tool names its entry in the package.\nOutput: a change report only. You cannot edit the demo or the ad accounts.\nA maintainer applies the report. The maintainer sorts each new tool into a branch, benefit and stage, then re-runs the demo's checks."
+}
